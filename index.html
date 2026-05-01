@@ -152,17 +152,83 @@ select option{background:var(--bg2)}
 .xb:hover{color:var(--re)}
 
 /* LOGIN */
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#0a1628,#0c2a4a 40%,#0a3d62 70%,#051e3e);
-  position:relative;overflow:hidden}
-.login-wrap::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 120% 60% at 50% 110%,rgba(0,150,255,.2) 0%,transparent 60%);
-  animation:waves 6s ease-in-out infinite alternate}
-@keyframes waves{from{transform:translateY(0)}to{transform:translateY(-10px)}}
-.lc{width:100%;max-width:450px;margin:16px;background:rgba(5,20,50,.8);
-  border:1px solid rgba(0,180,255,.2);border-radius:20px;padding:40px;
-  backdrop-filter:blur(20px);position:relative;z-index:1;
-  box-shadow:0 28px 60px rgba(0,0,0,.5)}
+/* ── LOGIN SLIDESHOW ── */
+.login-wrap{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;background:#051628;
+}
+
+/* Slideshow slides */
+.ls-slide{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  opacity:0;transition:opacity 1.8s ease;
+  animation:none;
+}
+.ls-slide.act{opacity:1;}
+
+/* Dark overlay gradient on all slides */
+.ls-slide::after{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to left, rgba(0,0,0,.15) 0%, transparent 40%),
+    linear-gradient(to top, rgba(0,10,30,.85) 0%, rgba(0,10,30,.3) 50%, rgba(0,10,30,.1) 100%);
+}
+
+/* Ken Burns zoom animation */
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.08)}}
+.ls-slide.act .ls-img{animation:kb 8s ease-out forwards;}
+.ls-img{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  width:100%;height:100%;
+}
+
+/* Slide dots */
+.ls-dots{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;z-index:5;
+}
+.ls-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,.4);cursor:pointer;
+  transition:all .3s;border:none;padding:0;
+}
+.ls-dot.act{background:#fff;width:24px;border-radius:4px;}
+
+/* Caption */
+.ls-caption{
+  position:absolute;bottom:50px;right:40px;z-index:5;
+  color:rgba(255,255,255,.7);font-size:13px;font-weight:500;
+  text-shadow:0 1px 4px rgba(0,0,0,.5);
+}
+
+/* Login card */
+.lc{
+  width:100%;max-width:420px;margin:16px;
+  background:rgba(5,15,40,.82);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:22px;padding:40px;
+  backdrop-filter:blur(24px);
+  position:relative;z-index:10;
+  box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);
+}
+
+/* Sharm logo watermark */
+.ls-brand{
+  position:absolute;top:24px;right:32px;z-index:10;
+  display:flex;align-items:center;gap:10px;
+}
+.ls-brand-ic{
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.12);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+}
+.ls-brand-txt{color:rgba(255,255,255,.9);font-size:15px;font-weight:800;
+  text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.ls-brand-sub{color:rgba(255,255,255,.55);font-size:11px;margin-top:1px;}
+
 
 /* SYNC BAR */
 .sybar{position:fixed;bottom:0;left:0;right:0;z-index:100;
@@ -206,25 +272,112 @@ select option{background:var(--bg2)}
 
 <!-- LOGIN PAGE -->
 <div id="login-page" class="login-wrap">
+
+  <!-- SLIDESHOW BACKGROUND -->
+  <div id="ls-container">
+    <!-- Slide 1: Sharm boats at sea — vivid blue water -->
+    <div class="ls-slide act" id="slide-0">
+      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1600&q=85&auto=format');"></div>
+    </div>
+    <!-- Slide 2: Coral reef / underwater Sharm -->
+    <div class="ls-slide" id="slide-1">
+      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1600&q=85&auto=format');"></div>
+    </div>
+    <!-- Slide 3: Luxury cruise yacht -->
+    <div class="ls-slide" id="slide-2">
+      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=1600&q=85&auto=format');"></div>
+    </div>
+    <!-- Slide 4: Red Sea sunrise golden hour -->
+    <div class="ls-slide" id="slide-3">
+      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=1600&q=85&auto=format');"></div>
+    </div>
+    <!-- Slide 5: Snorkeling boat trip -->
+    <div class="ls-slide" id="slide-4">
+      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1540202404-a2f29016b523?w=1600&q=85&auto=format');"></div>
+    </div>
+  </div>
+
+  <!-- Brand watermark top right -->
+  <div class="ls-brand">
+    <div class="ls-brand-ic">⛵</div>
+    <div>
+      <div class="ls-brand-txt">Daily Account Boats</div>
+      <div class="ls-brand-sub">شرم الشيخ • البحر الأحمر</div>
+    </div>
+  </div>
+
+  <!-- Slide dots -->
+  <div class="ls-dots" id="ls-dots"></div>
+
+  <!-- Slide caption -->
+  <div class="ls-caption" id="ls-caption">شرم الشيخ • البحر الأحمر</div>
+
+  <!-- LOGIN CARD -->
   <div class="lc">
-    <div style="text-align:center;margin-bottom:24px">
-      <div style="font-size:52px;margin-bottom:10px">⛵</div>
-      <div style="font-size:20px;font-weight:900;color:#e2e8f0">Daily Account Boats</div>
-      <div style="font-size:12px;color:rgba(148,216,255,.7);margin-top:5px">إدارة مالية متكاملة • شرم الشيخ</div>
+    <div style="text-align:center;margin-bottom:28px">
+      <!-- Animated logo -->
+      <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,rgba(8,145,178,.3),rgba(29,78,216,.3));border:2px solid rgba(8,145,178,.4);display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 14px;box-shadow:0 0 30px rgba(8,145,178,.25)">⛵</div>
+      <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:.3px">Daily Account Boats</div>
+      <div style="font-size:12px;color:rgba(148,216,255,.65);margin-top:6px;display:flex;align-items:center;justify-content:center;gap:6px">
+        <span style="width:30px;height:1px;background:rgba(148,216,255,.3);display:inline-block"></span>
+        إدارة مالية متكاملة
+        <span style="width:30px;height:1px;background:rgba(148,216,255,.3);display:inline-block"></span>
+      </div>
     </div>
     <div class="fgrid">
-      <div class="ff"><label>اسم المستخدم</label>
-        <input id="l-user" placeholder="username" autocomplete="username"/>
+      <div class="ff">
+        <label style="color:rgba(255,255,255,.6)">👤 اسم المستخدم</label>
+        <input id="l-user" placeholder="username" autocomplete="username"
+          style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"/>
       </div>
-      <div class="ff"><label>كلمة المرور</label>
-        <input id="l-pass" type="password" placeholder="••••••" autocomplete="current-password"/>
+      <div class="ff">
+        <label style="color:rgba(255,255,255,.6)">🔑 كلمة المرور</label>
+        <input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"
+          style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"/>
       </div>
-      <div id="l-err" style="display:none;color:#fca5a5;font-size:12px;background:rgba(127,29,29,.2);padding:8px 10px;border-radius:6px"></div>
-      <button class="btn bp" style="justify-content:center;padding:12px;font-size:14px" onclick="doLogin()">🔓 تسجيل الدخول</button>
-      <div style="text-align:center;font-size:11px;color:rgba(148,163,184,.4)">نظام محمي بكلمة مرور</div>
+      <div id="l-err" style="display:none;color:#fca5a5;font-size:12px;background:rgba(127,29,29,.3);padding:8px 12px;border-radius:8px;border:1px solid rgba(220,38,38,.3)"></div>
+      <button class="btn bp" style="justify-content:center;padding:13px;font-size:15px;font-weight:700;letter-spacing:.3px;border-radius:12px;background:linear-gradient(135deg,#0891b2,#1d4ed8);box-shadow:0 4px 20px rgba(8,145,178,.4)" onclick="doLogin()">
+        🔓 تسجيل الدخول
+      </button>
+      <div style="text-align:center;font-size:11px;color:rgba(148,163,184,.35);margin-top:4px">
+        🔒 نظام محمي بكلمة مرور
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+// ── SLIDESHOW ──
+const SLIDES=[
+  {id:0,caption:"مراكب سياحية • شرم الشيخ"},
+  {id:1,caption:"الشعاب المرجانية • البحر الأحمر"},
+  {id:2,caption:"رحلات بحرية فاخرة"},
+  {id:3,caption:"شروق الشمس على البحر الأحمر"},
+  {id:4,caption:"رحلات الغطس والسنوركل"},
+];
+let curSlide=0;
+const dotsEl=document.getElementById("ls-dots");
+const capEl=document.getElementById("ls-caption");
+
+// Build dots
+SLIDES.forEach((s,i)=>{
+  const d=document.createElement("button");
+  d.className="ls-dot"+(i===0?" act":"");
+  d.onclick=()=>goSlide(i);
+  dotsEl.appendChild(d);
+});
+
+function goSlide(n){
+  document.getElementById("slide-"+curSlide)?.classList.remove("act");
+  dotsEl.children[curSlide]?.classList.remove("act");
+  curSlide=n;
+  document.getElementById("slide-"+curSlide)?.classList.add("act");
+  dotsEl.children[curSlide]?.classList.add("act");
+  if(capEl)capEl.textContent=SLIDES[curSlide].caption;
+}
+
+setInterval(()=>goSlide((curSlide+1)%SLIDES.length),5000);
+</script>
 
 <!-- MAIN APP -->
 <div id="main-app" style="display:none">

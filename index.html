@@ -461,7 +461,9 @@ async function doLogin(){
     buildNav();
     updateSyncUI();
     if(isOnline)drain();
-    navigate("dash");
+    // HR starts on payroll page, not dash
+    const startPage=found.role==="hr"?"payroll":"dash";
+    navigate(startPage);
     if(found.username==="admin"&&found.password==="admin123"){
       setTimeout(()=>alert("⚠️ تنبيه: يرجى تغيير كلمة السر الافتراضية من صفحة المستخدمين!"),1500);
     }
@@ -492,19 +494,19 @@ document.getElementById("l-user").addEventListener("keydown",e=>{if(e.key==="Ent
 // roles: admin=all | user=all except users page | hr=dash+users+clients+lists+payroll | viewer=all readonly
 const NAV_DEF=[
   {g:"الرئيسية",items:[
-    {id:"dash",ic:"📊",l:"لوحة التحكم"}
+    {id:"dash",ic:"📊",l:"لوحة التحكم",roles:["admin","user","viewer"]}
   ]},
   {g:"الإدارة",items:[
     {id:"users",ic:"👥",l:"المستخدمون",roles:["admin"]},
     {id:"clients",ic:"👤",l:"العملاء",roles:["admin","user","viewer"]},
-    {id:"lists",ic:"📋",l:"القوائم",roles:["admin","user"]}
+    {id:"lists",ic:"📋",l:"القوائم",roles:["admin","user","hr"]}
   ]},
   {g:"الإيرادات",items:[
-    {id:"se",ic:"💼",l:"تسجيل المبيعات",roles:["admin","user","viewer"]},
+    {id:"se",ic:"💼",l:"تسجيل المبيعات",roles:["admin","user"]},
     {id:"sv",ic:"📈",l:"بيان المبيعات",roles:["admin","user","viewer"]}
   ]},
   {g:"المصاريف",items:[
-    {id:"ee",ic:"🧾",l:"تسجيل المصاريف",roles:["admin","user","viewer"]},
+    {id:"ee",ic:"🧾",l:"تسجيل المصاريف",roles:["admin","user"]},
     {id:"ev",ic:"📉",l:"بيان المصاريف",roles:["admin","user","viewer"]}
   ]},
   {g:"الموارد البشرية",items:[
@@ -618,69 +620,277 @@ function renderPage(id){
 
 // ─── DASHBOARD ───
 function renderDash(){
-  return`<div class="card">
-    <div class="fb">
-      <div class="ffi"><label>📅 التاريخ</label><input type="date" id="df-date"/></div>
+  const today=toDay();
+  const curMonth=today.slice(0,7);
+  return`
+  <!-- FILTERS -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="fb" style="flex-wrap:wrap">
+      <div class="ffi"><label>📅 من</label><input type="date" id="df-from" value="${curMonth}-01"/></div>
+      <div class="ffi"><label>📅 إلى</label><input type="date" id="df-to" value="${today}"/></div>
       <div class="ffi"><label>⛵ المركب</label>
-        <select id="df-boat"><option value="">الكل</option>${BOATS.map(b=>`<option>${b}</option>`).join("")}</select>
+        <select id="df-boat"><option value="">كل المراكب</option>${BOATS.map(b=>`<option>${b}</option>`).join("")}</select>
       </div>
-      <button class="btn bg sm" onclick="renderPage('dash')">↺</button>
+      <div style="display:flex;gap:6px;align-items:flex-end">
+        <button class="btn bp sm" onclick="updateDash()">🔍 تطبيق</button>
+        <button class="btn bg sm" onclick="resetDash()">↺</button>
+      </div>
     </div>
   </div>
-  <div id="dash-stats"></div>
-  <div id="dash-boats"></div>
-  <div id="dash-exp"></div>`;
+  <!-- KPI CARDS -->
+  <div id="d-kpi"></div>
+  <!-- CHARTS ROW -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="d-charts-row">
+    <div id="d-boats-chart"></div>
+    <div id="d-exp-chart"></div>
+  </div>
+  <!-- BOATS TABLE -->
+  <div id="d-boats-table"></div>
+  <!-- TRENDS -->
+  <div id="d-trends"></div>
+  <!-- RECENT -->
+  <div id="d-recent"></div>`;
 }
+
 function attachDash(){
-  document.getElementById("df-date").addEventListener("change",()=>updateDash());
-  document.getElementById("df-boat").addEventListener("change",()=>updateDash());
+  ["df-from","df-to","df-boat"].forEach(id=>
+    document.getElementById(id)?.addEventListener("change",updateDash)
+  );
   updateDash();
 }
+
+function resetDash(){
+  const today=toDay(),m=today.slice(0,7);
+  document.getElementById("df-from").value=m+"-01";
+  document.getElementById("df-to").value=today;
+  document.getElementById("df-boat").value="";
+  updateDash();
+}
+
+function barChart(data,colorVar){
+  // Simple CSS bar chart
+  const max=Math.max(...data.map(x=>x.v),1);
+  return data.map(x=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="width:80px;font-size:12px;font-weight:600;color:var(--t1);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.l}</div>
+      <div style="flex:1;height:22px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;position:relative">
+        <div style="height:100%;width:${max>0?Math.round(x.v/max*100):0}%;background:${colorVar};border-radius:4px;transition:width .5s ease;display:flex;align-items:center;padding-right:8px">
+        </div>
+      </div>
+      <div style="width:90px;font-size:12px;font-weight:700;color:${colorVar};text-align:left">${fmt(x.v)}</div>
+    </div>`).join("");
+}
+
+function miniLine(points,color){
+  if(!points.length)return`<div style="color:var(--t3);font-size:12px;text-align:center;padding:20px">لا بيانات</div>`;
+  const vals=points.map(p=>p.v);
+  const max=Math.max(...vals,1),min=Math.min(...vals,0);
+  const range=max-min||1;
+  const W=300,H=80,pad=10;
+  const pts=points.map((p,i)=>{
+    const x=pad+(i/(points.length-1||1))*(W-pad*2);
+    const y=H-pad-((p.v-min)/range)*(H-pad*2);
+    return`${x},${y}`;
+  });
+  return`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:80px">
+    <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <polyline points="${pts.join(" ")}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+    ${points.length>1?`<polygon points="${pts[0]},${H} ${pts.join(" ")} ${pts[pts.length-1].split(",")[0]},${H}" fill="url(#lg)"/>`:""}
+    ${points.map((p,i)=>{
+      const x=pad+(i/(points.length-1||1))*(W-pad*2);
+      const y=H-pad-((p.v-min)/range)*(H-pad*2);
+      return`<circle cx="${x}" cy="${y}" r="3" fill="${color}"/>
+        <title>${p.l}: ${fmt(p.v)}</title>`;
+    }).join("")}
+  </svg>`;
+}
+
 function updateDash(){
-  const fd=document.getElementById("df-date")?.value||"";
+  const fd=document.getElementById("df-from")?.value||"";
+  const ft=document.getElementById("df-to")?.value||"";
   const fb=document.getElementById("df-boat")?.value||"";
-  const sales=ld(K.S,[]);const exps=ld(K.E,[]);
-  const fs=sales.filter(s=>(!fd||s.date===fd)&&(!fb||s.boat===fb));
-  const fe=exps.filter(e=>(!fd||e.date===fd)&&(!fb||e.boat===fb));
+
+  const sales=ld(K.S,[]);
+  const exps=ld(K.E,[]);
+  const pay=ld(K.P,[]);
+
+  const inRange=d=>(!fd||d>=fd)&&(!ft||d<=ft);
+  const fs=sales.filter(s=>inRange(s.date)&&(!fb||s.boat===fb));
+  const fe=exps.filter(e=>inRange(e.date)&&(!fb||e.boat===fb));
+  const fp=pay.filter(p=>inRange(p.date)&&(!fb||p.boat===fb));
+
   const rev=fs.reduce((a,s)=>a+(+s.total||0),0);
   const exp=fe.reduce((a,e)=>a+(+e.total||0),0);
-  const net=rev-exp;
-  const kit=fe.filter(e=>e.exp_type==="المطابخ"||e.expType==="المطابخ").reduce((a,e)=>a+(+e.total||0),0);
-  const op=fe.filter(e=>e.exp_type==="مصاريف التشغيل"||e.expType==="مصاريف التشغيل").reduce((a,e)=>a+(+e.total||0),0);
-  const adm=fe.filter(e=>e.exp_type==="المصاريف الإدارية"||e.expType==="المصاريف الإدارية").reduce((a,e)=>a+(+e.total||0),0);
+  const payTotal=fp.reduce((a,p)=>a+(+p.amount||0),0);
+  const net=rev-exp-payTotal;
+  const kit=fe.filter(e=>e.exp_type==="المطابخ").reduce((a,e)=>a+(+e.total||0),0);
+  const op=fe.filter(e=>e.exp_type==="مصاريف التشغيل").reduce((a,e)=>a+(+e.total||0),0);
+  const adm=fe.filter(e=>e.exp_type==="المصاريف الإدارية").reduce((a,e)=>a+(+e.total||0),0);
 
-  const statsEl=document.getElementById("dash-stats");
-  if(statsEl)statsEl.innerHTML=`<div class="sg">
-    <div class="sc c"><div class="sl">الإيرادات (ج.م)</div><div class="sv" style="color:var(--cy)">${fmt(rev)}</div></div>
-    <div class="sc r"><div class="sl">المصاريف (ج.م)</div><div class="sv" style="color:var(--re)">${fmt(exp)}</div></div>
-    <div class="sc e"><div class="sl">الصافي (ج.م)</div><div class="sv" style="color:${net>=0?"var(--gr)":"var(--re)"}">${fmt(net)}</div></div>
-    <div class="sc g"><div class="sl">عدد الرحلات</div><div class="sv" style="color:var(--go)">${fs.length}</div></div>
-  </div>`;
+  // ── KPI Cards ──
+  const kpiEl=document.getElementById("d-kpi");
+  if(kpiEl) kpiEl.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px">
+      ${[
+        {ic:"💰",l:"إجمالي الإيرادات",v:rev,c:"var(--cy)",sub:`${fs.length} رحلة`},
+        {ic:"📊",l:"إجمالي المصاريف",v:exp+payTotal,c:"var(--re)",sub:`مطابخ: ${fmt(kit)}`},
+        {ic:"📈",l:"صافي الربح",v:net,c:net>=0?"var(--gr)":"var(--re)",sub:net>=0?"✅ ربح":"⚠️ خسارة"},
+        {ic:"👥",l:"إجمالي المرتبات",v:payTotal,c:"var(--go)",sub:`${fp.length} سجل`},
+      ].map(x=>`
+        <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${x.c}"></div>
+          <div style="font-size:24px;margin-bottom:8px">${x.ic}</div>
+          <div style="font-size:11px;color:var(--t2);margin-bottom:4px">${x.l}</div>
+          <div style="font-size:22px;font-weight:800;color:${x.c}">${fmt(x.v)}</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:4px">${x.sub}</div>
+        </div>`).join("")}
+    </div>`;
 
-  const boatsEl=document.getElementById("dash-boats");
-  if(boatsEl)boatsEl.innerHTML=`<div class="card"><div class="ch"><span class="ct">⛵ تفصيل المراكب</span></div>
-    <div class="tw"><table><thead><tr><th>المركب</th><th>إيرادات</th><th>مصاريف</th><th>صافي</th></tr></thead>
-    <tbody>${BOATS.map(b=>{
+  // ── Boats bar chart ──
+  const boatsChartEl=document.getElementById("d-boats-chart");
+  if(boatsChartEl){
+    const boatData=BOATS.map(b=>({
+      l:b,
+      v:fs.filter(s=>s.boat===b).reduce((a,s)=>a+(+s.total||0),0)
+    })).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+    boatsChartEl.innerHTML=`
+      <div class="card">
+        <div class="ch"><span class="ct">⛵ إيرادات المراكب</span></div>
+        <div class="cb">
+          ${boatData.length?barChart(boatData,"var(--cy)"):`<div class="empty">لا بيانات</div>`}
+        </div>
+      </div>`;
+  }
+
+  // ── Expenses pie-like bar chart ──
+  const expChartEl=document.getElementById("d-exp-chart");
+  if(expChartEl){
+    const expData=[
+      {l:"المطابخ",v:kit},
+      {l:"التشغيل",v:op},
+      {l:"الإدارية",v:adm},
+      {l:"المرتبات",v:payTotal},
+    ].filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+    const totalExp=expData.reduce((a,x)=>a+x.v,0);
+    expChartEl.innerHTML=`
+      <div class="card">
+        <div class="ch"><span class="ct">📊 توزيع المصاريف</span></div>
+        <div class="cb">
+          ${expData.length?expData.map((x,i)=>{
+            const colors=["var(--go)","#60a5fa","var(--re)","var(--cy)"];
+            const pct=totalExp>0?Math.round(x.v/totalExp*100):0;
+            return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <div style="width:10px;height:10px;border-radius:50%;background:${colors[i]};flex-shrink:0"></div>
+              <div style="flex:1;font-size:12px;color:var(--t1)">${x.l}</div>
+              <div style="width:120px;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:${colors[i]};border-radius:4px"></div>
+              </div>
+              <div style="width:32px;font-size:11px;color:var(--t3)">${pct}%</div>
+              <div style="width:80px;font-size:12px;font-weight:700;color:${colors[i]};text-align:left">${fmt(x.v)}</div>
+            </div>`;
+          }).join(""):`<div class="empty">لا بيانات</div>`}
+        </div>
+      </div>`;
+  }
+
+  // ── Boats table ──
+  const boatsTblEl=document.getElementById("d-boats-table");
+  if(boatsTblEl){
+    const rows=BOATS.map(b=>{
       const br=fs.filter(s=>s.boat===b).reduce((a,s)=>a+(+s.total||0),0);
       const be=fe.filter(e=>e.boat===b).reduce((a,e)=>a+(+e.total||0),0);
-      const bn=br-be;
-      return`<tr><td>${bj("bc",b)}</td>
-        <td style="color:var(--gr);font-weight:700">${fmt(br)}</td>
-        <td style="color:var(--re);font-weight:700">${fmt(be)}</td>
-        <td style="color:${bn>=0?"var(--gr)":"var(--re)"};font-weight:700">${fmt(bn)}</td></tr>`;
-    }).join("")}</tbody></table></div></div>`;
+      const bp2=fp.filter(p=>p.boat===b).reduce((a,p)=>a+(+p.amount||0),0);
+      const bn=br-be-bp2;
+      const trips=fs.filter(s=>s.boat===b).length;
+      return{b,br,be,bp2,bn,trips};
+    }).filter(r=>r.br>0||r.be>0);
 
-  const expEl=document.getElementById("dash-exp");
-  if(expEl)expEl.innerHTML=`<div class="card"><div class="ch"><span class="ct">📋 تفصيل المصاريف</span></div>
-    <div class="cb"><div class="sg">${[
-      {l:"مصاريف المطابخ",v:kit,c:"var(--go)"},
-      {l:"مصاريف التشغيل",v:op,c:"#93c5fd"},
-      {l:"المصاريف الإدارية",v:adm,c:"var(--re)"},
-      {l:"الصافي بعد المطابخ",v:rev-kit,c:"var(--gr)"}
-    ].map(x=>`<div style="background:rgba(29,78,216,.07);padding:14px;border-radius:8px;border:1px solid var(--bd)">
-      <div style="font-size:11px;color:var(--t2);margin-bottom:4px">${x.l}</div>
-      <div style="font-size:20px;font-weight:800;color:${x.c}">${fmt(x.v)}</div>
-    </div>`).join("")}</div></div></div>`;
+    boatsTblEl.innerHTML=`<div class="card" style="margin-bottom:16px">
+      <div class="ch"><span class="ct">⛵ ملخص المراكب</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>المركب</th><th>الرحلات</th><th>الإيرادات</th><th>المصاريف</th><th>المرتبات</th><th>الصافي</th><th>الأداء</th></tr></thead>
+        <tbody>${rows.length===0?`<tr><td colspan="7"><div class="empty">لا بيانات</div></td></tr>`:
+          rows.map(r=>{
+            const pct=r.br>0?Math.round(r.bn/r.br*100):0;
+            const barColor=pct>=0?"var(--gr)":"var(--re)";
+            return`<tr>
+              <td>${bj("bc",r.b)}</td>
+              <td style="text-align:center">${r.trips}</td>
+              <td style="color:var(--gr);font-weight:700">${fmt(r.br)}</td>
+              <td style="color:var(--re)">${fmt(r.be)}</td>
+              <td style="color:var(--go)">${fmt(r.bp2)}</td>
+              <td style="color:${r.bn>=0?"var(--gr)":"var(--re)"};font-weight:800">${fmt(r.bn)}</td>
+              <td style="min-width:100px">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden">
+                    <div style="height:100%;width:${Math.abs(pct)}%;max-width:100%;background:${barColor};border-radius:4px"></div>
+                  </div>
+                  <span style="font-size:11px;color:${barColor};font-weight:700;min-width:36px">${pct}%</span>
+                </div>
+              </td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table></div>
+    </div>`;
+  }
+
+  // ── Daily trend (last 14 days) ──
+  const trendsEl=document.getElementById("d-trends");
+  if(trendsEl){
+    // Get all dates in range
+    const allDates=[...new Set([...fs.map(s=>s.date),...fe.map(e=>e.date)])].sort();
+    const last=allDates.slice(-14);
+    const revTrend=last.map(d=>({l:d.slice(5),v:fs.filter(s=>s.date===d).reduce((a,s)=>a+(+s.total||0),0)}));
+    const expTrend=last.map(d=>({l:d.slice(5),v:fe.filter(e=>e.date===d).reduce((a,e)=>a+(+e.total||0),0)}));
+
+    trendsEl.innerHTML=last.length<2?"":
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card">
+        <div class="ch"><span class="ct">📈 اتجاه الإيرادات</span><span style="font-size:11px;color:var(--t3)">(آخر ${last.length} يوم)</span></div>
+        <div class="cb">
+          ${miniLine(revTrend,"var(--cy)")}
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px">
+            <span>${last[0]?.slice(5)||""}</span><span>${last[last.length-1]?.slice(5)||""}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">📉 اتجاه المصاريف</span><span style="font-size:11px;color:var(--t3)">(آخر ${last.length} يوم)</span></div>
+        <div class="cb">
+          ${miniLine(expTrend,"var(--re)")}
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px">
+            <span>${last[0]?.slice(5)||""}</span><span>${last[last.length-1]?.slice(5)||""}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ── Recent 5 sales ──
+  const recentEl=document.getElementById("d-recent");
+  if(recentEl){
+    const recent=[...fs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+    recentEl.innerHTML=`<div class="card">
+      <div class="ch"><span class="ct">🕐 آخر المبيعات</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>التاريخ</th><th>المركب</th><th>السنتر</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th></tr></thead>
+        <tbody>${recent.length===0?`<tr><td colspan="6"><div class="empty">لا بيانات</div></td></tr>`:
+          recent.map(s=>`<tr>
+            <td>${s.date}</td>
+            <td>${bj("bc",s.boat||"")}</td>
+            <td>${s.center||"-"}</td>
+            <td style="color:var(--cy)">${fmt(s.trip)}</td>
+            <td style="color:var(--go)">${fmt(s.kitchen)}</td>
+            <td style="color:var(--gr);font-weight:700">${fmt(s.total)}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>`;
+  }
 }
 
 // ─── USERS ───

@@ -520,7 +520,22 @@ async function sbFetch(table,method="GET",body=null,filter=""){
   return t?JSON.parse(t):[];
 }
 const sbGet=(t)=>sbFetch(t,"GET",null,"?order=id.asc");
-const sbUpsert=(t,row)=>sbFetch(t,"POST",row,"?on_conflict=id");
+async function sbUpsert(t,row){
+  // Use POST with on_conflict for upsert (insert or update)
+  const r=await fetch(SB_URL+"/rest/v1/"+t+"?on_conflict=id",{
+    method:"POST",
+    headers:{
+      "apikey":SB_KEY,
+      "Authorization":"Bearer "+SB_KEY,
+      "Content-Type":"application/json",
+      "Prefer":"return=representation,resolution=merge-duplicates"
+    },
+    body:JSON.stringify(row)
+  });
+  const txt=await r.text();
+  if(!r.ok){console.error("Upsert error:",r.status,txt);return null;}
+  return txt?JSON.parse(txt):null;
+}
 const sbDel=(t,id)=>sbFetch(t,"DELETE",null,"?id=eq."+id);
 
 // ═══════════════════════════════════════
@@ -579,55 +594,91 @@ async function pull(){
   for(const[k,t] of Object.entries(TBL)){
     try{
       const rows=await sbGet(t);
-      if(k===K.U&&rows.length===0)continue;
+      // NEVER overwrite local data with empty array from Supabase
+      // This prevents data disappearing when Supabase returns empty
+      if(!Array.isArray(rows)||rows.length===0){
+        console.log("Pull: skipping empty response for",t);
+        continue;
+      }
       sv(k,rows);
-    }catch{}
+      console.log("Pull: updated",t,"with",rows.length,"rows");
+    }catch(e){
+      console.warn("Pull error for",t,":",e.message);
+      // Keep existing local data on error
+    }
   }
 }
 
 let draining=false;
 async function drain(){
-  if(draining)return; // prevent parallel drains
+  if(draining)return;
   draining=true;
   syncMsg="syncing";updateSyncUI();
   try{
     const q=ld(K.Q,[]);
-    // Push pending ops first
+    let pushed=0;
+    // Step 1: Push all pending ops to Supabase
     for(const item of q){
       const t=TBL[item.t];if(!t)continue;
       if(item.op==="u"){
         const row=Object.assign({},item.p);
         if(row.desc!==undefined){row.description=row.desc;delete row.desc;}
-        await sbUpsert(t,[row]);
+        const res=await sbUpsert(t,[row]);
+        // Confirm: update local with what Supabase returned
+        if(Array.isArray(res)&&res.length>0){
+          const local=ld(item.t,[]);
+          const idx=local.findIndex(function(x){return x.id===res[0].id;});
+          if(idx>=0)local[idx]=res[0];else local.push(res[0]);
+          sv(item.t,local);
+          console.log("Upsert confirmed:",t,res[0].id);
+        }
+        pushed++;
       } else {
         await sbDel(t,item.p.id);
+        pushed++;
       }
     }
-    // ALWAYS pull fresh data from Supabase (even if queue was empty)
+    // Step 2: Only pull if there were pending ops (to get server-confirmed data)
+    // For background sync (no pending ops), pull to get other devices' changes
+    if(pushed>0){
+      // Small delay to let Supabase process
+      await new Promise(function(r){setTimeout(r,300);});
+    }
     await pull();
+    // Step 3: Clear queue and update timestamp
     sv(K.Q,[]);
     sv(K.LS,new Date().toISOString());
     syncMsg="✅ تمت المزامنة";
     updateSyncUI();
-    // Refresh current page with new data
-    if(currentUser&&currentPage)renderPage(currentPage);
+    // Step 4: Refresh page ONLY if modal is closed
+    var modalOpen=document.getElementById("modal")?.classList.contains("show");
+    if(currentUser&&currentPage&&!modalOpen){
+      renderPage(currentPage);
+    }
     setTimeout(function(){syncMsg="";updateSyncUI();},3000);
   }catch(e){
     console.error("Sync error:",e);
-    syncMsg="⚠️ فشلت المزامنة";
+    // On error: keep local data, don't clear queue
+    syncMsg="⚠️ فشلت المزامنة — البيانات محفوظة محلياً";
     updateSyncUI();
-    setTimeout(function(){syncMsg="";updateSyncUI();},4000);
+    setTimeout(function(){syncMsg="";updateSyncUI();},5000);
   }finally{
     draining=false;
   }
 }
 
 function enq(t,op,p){
+  // 1. Always save to local queue first (offline-safe)
   const q=ld(K.Q,[]);
-  const i=q.findIndex(x=>x.t===t&&x.p?.id===p?.id&&op==="u");
-  i>=0?q[i]={t,op,p}:q.push({t,op,p});
-  sv(K.Q,q);updateSyncUI();
-  if(isOnline)drain();
+  const i=q.findIndex(function(x){return x.t===t&&x.p&&x.p.id===p.id&&op==="u";});
+  if(i>=0)q[i]={t,op,p,ts:Date.now()};
+  else q.push({t,op,p,ts:Date.now()});
+  sv(K.Q,q);
+  updateSyncUI();
+  // 2. Try to sync if online (non-blocking)
+  if(isOnline){
+    setTimeout(function(){drain();},100); // small delay so UI updates first
+  }
 }
 
 function manualSync(){if(isOnline)drain();}

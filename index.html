@@ -16,7 +16,8 @@
 }
 html,body{background:var(--bg);color:var(--t1);direction:rtl;min-height:100vh;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  font-size:16px;-webkit-font-smoothing:antialiased}
+  font-size:16px;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;max-width:100vw;}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--bl);border-radius:2px}
 
@@ -274,45 +275,63 @@ select option{background:#ffffff;color:#0f2a4a}
 
 /* MOBILE */
 @media(max-width:900px){
-  html,body{font-size:14px}
-  .side{width:260px;transform:translateX(100%)}
+  html,body{font-size:14px;overflow-x:hidden}
+  .side{width:270px;transform:translateX(100%);max-width:85vw}
   .side.open{transform:translateX(0)}
-  .main{margin-right:0 !important}
+  .main{margin-right:0 !important;width:100%;max-width:100vw;overflow-x:hidden}
+  .app{overflow-x:hidden;max-width:100vw}
   .hmb{display:block}
   .sclose-btn{display:block}
-  .sg{grid-template-columns:1fr 1fr;gap:10px}
-  .top{height:52px;padding:0 12px}
-  .tpt{font-size:14px}
-  .cnt{padding:10px}
-  table{font-size:12px}
-  thead th{padding:7px 9px;font-size:10px}
-  tbody td{padding:7px 9px}
-  .fr3{grid-template-columns:1fr 1fr}
-  .fr4{grid-template-columns:1fr 1fr}
-  .ch{padding:10px 12px}
-  .cb{padding:12px}
-  .ct{font-size:13px}
-  .btn{font-size:12px;padding:6px 11px}
-  .sm{padding:4px 8px;font-size:11px}
-  .fb{padding:10px 12px;gap:8px}
-  .ffi input,.ffi select{min-width:110px;font-size:12px;background:#fdf8f0;color:#0f2a4a;border-color:#d4c5a9}
-  #d-kpi{grid-template-columns:1fr 1fr !important}
-  .modal{margin:8px}
-  .mbody{padding:14px}
-  .mh{padding:12px 14px}
-  .card{margin-bottom:12px}
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+  table{font-size:12px;min-width:500px}
+  thead th{padding:7px 8px;font-size:10px;white-space:nowrap}
+  tbody td{padding:7px 8px;white-space:nowrap}
+  .sg{grid-template-columns:1fr 1fr;gap:8px}
+  .top{height:52px;padding:0 10px}
+  .tpt{font-size:13px}
+  .cnt{padding:8px;overflow-x:hidden}
+  .card{margin-bottom:10px}
+  .ch{padding:9px 10px;flex-wrap:wrap;gap:6px}
+  .cb{padding:10px}
+  .ct{font-size:12px}
+  .fr2{grid-template-columns:1fr 1fr;gap:8px}
+  .fr3{grid-template-columns:1fr 1fr;gap:8px}
+  .fr4{grid-template-columns:1fr 1fr;gap:8px}
+  input,select,textarea{font-size:14px;padding:8px 10px}
+  .fb{padding:8px 10px;gap:6px;flex-wrap:wrap}
+  .ffi{min-width:0;flex:1}
+  .ffi label{font-size:10px}
+  .ffi input,.ffi select{min-width:0;width:100%;font-size:12px;background:#fdf8f0;color:#0f2a4a;border-color:#d4c5a9}
+  .btn{font-size:12px;padding:6px 10px}
+  .sm{padding:4px 7px;font-size:11px}
+  #d-kpi{grid-template-columns:1fr 1fr !important;gap:8px}
+  #d-charts-row{grid-template-columns:1fr !important}
+  .modal{margin:6px;max-height:95vh}
+  .mbody{padding:12px}
+  .mh{padding:10px 12px}
+  .mf{padding:8px 12px;gap:6px}
+  .sfoot{padding:8px}
+  .suc{padding:6px 8px;gap:6px}
+  .sybar{padding:5px 10px;font-size:10px}
+  .tda{gap:3px}
+  .tda .btn{padding:4px 6px;font-size:11px}
 }
 @media(max-width:480px){
   html,body{font-size:13px}
-  .sg{grid-template-columns:1fr 1fr}
-  .fr2,.fr3,.fr4{grid-template-columns:1fr 1fr}
-  .lc{padding:20px 16px;margin:10px}
-  .cnt{padding:8px}
-  .top{padding:0 10px}
-  table{font-size:11px}
-  thead th{padding:6px 7px;font-size:9px}
-  tbody td{padding:6px 7px}
-  .btn{font-size:11px;padding:5px 9px}
+  .top{padding:0 8px}
+  .tpt{font-size:12px}
+  .cnt{padding:6px}
+  .sg{grid-template-columns:1fr 1fr;gap:6px}
+  .sv{font-size:18px}
+  table{font-size:11px;min-width:380px}
+  thead th{padding:5px 6px;font-size:9px}
+  tbody td{padding:5px 6px}
+  .fr2{grid-template-columns:1fr}
+  .fr3{grid-template-columns:1fr 1fr}
+  .lc{padding:18px 14px;margin:8px}
+  .btn{font-size:11px;padding:5px 8px}
+  .ch{padding:8px}
+  .cb{padding:8px}
 }
 /* Readonly inputs */
 input[readonly]{
@@ -521,28 +540,58 @@ async function sbFetch(table,method="GET",body=null,filter=""){
 }
 const sbGet=(t)=>sbFetch(t,"GET",null,"?order=id.asc");
 async function sbUpsert(t,row){
-  // Use POST with on_conflict for upsert (insert or update)
-  const r=await fetch(SB_URL+"/rest/v1/"+t+"?on_conflict=id",{
-    method:"POST",
-    headers:{
-      "apikey":SB_KEY,
-      "Authorization":"Bearer "+SB_KEY,
-      "Content-Type":"application/json",
-      "Prefer":"return=representation,resolution=merge-duplicates"
-    },
-    body:JSON.stringify(row)
-  });
-  const txt=await r.text();
-  if(!r.ok){console.error("Upsert error:",r.status,txt);return null;}
-  return txt?JSON.parse(txt):null;
+  try{
+    const r=await fetch(SB_URL+"/rest/v1/"+t+"?on_conflict=id",{
+      method:"POST",
+      headers:{
+        "apikey":SB_KEY,
+        "Authorization":"Bearer "+SB_KEY,
+        "Content-Type":"application/json",
+        "Prefer":"return=representation,resolution=merge-duplicates"
+      },
+      body:JSON.stringify(row)
+    });
+    const txt=await r.text();
+    if(!r.ok){console.error("Upsert error:",r.status,txt);return null;}
+    return txt?JSON.parse(txt):null;
+  }catch(e){console.error("sbUpsert failed:",e);return null;}
 }
 const sbDel=(t,id)=>sbFetch(t,"DELETE",null,"?id=eq."+id);
 
 // ═══════════════════════════════════════
 // STORAGE
 // ═══════════════════════════════════════
-const K={U:"erp_u",C:"erp_c",S:"erp_s",E:"erp_e",P:"erp_p",X:"erp_x",Q:"erp_q",LS:"erp_ls"};
+const K={U:"erp_u",C:"erp_c",
+  S:"erp_s",   // approved sales (admin only)
+  SP:"erp_sp", // pending sales (user entry)
+  E:"erp_e",   // approved expenses
+  EP:"erp_ep", // pending expenses
+  P:"erp_p",   // approved payroll
+  PP:"erp_pp", // pending payroll
+  X:"erp_x",Q:"erp_q",LS:"erp_ls"};
 const TBL={erp_u:"users",erp_c:"clients",erp_s:"sales",erp_e:"expenses",erp_p:"payroll"};
+
+// ── Excel Export Helper ──
+function exportExcel(data,cols,filename){
+  if(!data||data.length===0){alert("لا توجد بيانات للتصدير");return;}
+  var BOM="﻿";
+  var NL="\n";
+  var header=cols.map(function(c){return c.label;}).join(",");
+  var rows=data.map(function(row){
+    return cols.map(function(c){
+      var v=String(row[c.key]||"");
+      if(v.indexOf(",")>=0||v.indexOf(NL)>=0)v='"'+v.replace(/"/g,'""')+'"';
+      return v;
+    }).join(",");
+  });
+  var csv=BOM+header+NL+rows.join(NL);
+  var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download=filename+"_"+toDay()+".csv";
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
 const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 const gid=a=>Math.max(0,...a.map(x=>x.id))+1;
@@ -594,17 +643,22 @@ async function pull(){
   for(const[k,t] of Object.entries(TBL)){
     try{
       const rows=await sbGet(t);
-      // NEVER overwrite local data with empty array from Supabase
-      // This prevents data disappearing when Supabase returns empty
-      if(!Array.isArray(rows)||rows.length===0){
-        console.log("Pull: skipping empty response for",t);
-        continue;
+      if(!Array.isArray(rows)){continue;}
+      // For users table, never overwrite with empty
+      if(k===K.U&&rows.length===0){continue;}
+      // For data tables: if Supabase returns data, always use it (fresh from server)
+      // If empty, only skip if we have local data (prevent accidental wipe)
+      if(rows.length===0){
+        var local=ld(k,[]);
+        if(local.length>0){
+          console.log("Pull: Supabase empty for",t,"keeping",local.length,"local rows");
+          continue;
+        }
       }
       sv(k,rows);
-      console.log("Pull: updated",t,"with",rows.length,"rows");
+      console.log("Pull:",t,"→",rows.length,"rows");
     }catch(e){
-      console.warn("Pull error for",t,":",e.message);
-      // Keep existing local data on error
+      console.warn("Pull error",t,":",e.message);
     }
   }
 }
@@ -714,7 +768,16 @@ async function doLogin(){
     navigate(startPage);
     // Always pull fresh data from Supabase after login
     if(isOnline){
-      drain(); // this will pull all tables and refresh page
+      // Show syncing indicator
+      var barTxt=document.getElementById("bar-txt");
+      if(barTxt)barTxt.textContent="🔄 جاري تحميل البيانات...";
+      // Pull fresh data immediately (bypass queue check)
+      pull().then(function(){
+        sv(K.Q,[]);
+        sv(K.LS,new Date().toISOString());
+        if(currentUser&&currentPage)renderPage(currentPage);
+        updateSyncUI();
+      }).catch(function(){drain();});
     }
     if(found.username==="admin"&&found.password==="admin123"){
       setTimeout(()=>alert("⚠️ تنبيه: يرجى تغيير كلمة السر الافتراضية من صفحة المستخدمين!"),1500);
@@ -1106,27 +1169,18 @@ function updateDash(){
 
 // ─── USERS ───
 function renderUsers(){
-  const users=ld(K.U,INIT_USERS);
-  const isAdmin=currentUser?.role==="admin";
-  return`<div class="card">
-    <div class="ch"><span class="ct">👥 المستخدمون</span>
-      ${isAdmin?`<button class="btn bp sm" onclick="userForm()">+ إضافة</button>`:""}
-    </div>
-    <div class="tw"><table>
-      <thead><tr><th>#</th><th>الاسم</th><th>المستخدم</th><th>الدور</th><th></th></tr></thead>
-      <tbody>${users.map(u=>`<tr>
-        <td>${u.id}</td>
-        <td style="font-weight:600">${u.name}</td>
-        <td>${bj("bb",u.username)}</td>
-        <td>${{admin:bj("bg2","مدير"),user:bj("bc","مستخدم"),hr:bj("be","HR"),viewer:bj("br","مشاهد")}[u.role]||bj("bc",u.role)}</td>
-        <td><div class="tda">
-          ${(!isReadOnly()&&(isAdmin||u.id===currentUser?.id))?`<button class="btn bg sm" onclick="userForm(${u.id})">✏️</button>`:""}
-          ${(!isReadOnly()&&isAdmin&&u.id!==currentUser?.id)?`<button class="btn bd2 sm" onclick="delUser(${u.id})">🗑</button>`:""}
-        </div></td>
-      </tr>`).join("")}
-      </tbody>
-    </table></div>
-  </div>`;
+  var users=ld(K.U,INIT_USERS);
+  var isAdmin=currentUser&&currentUser.role==="admin";
+  var ro=isReadOnly();
+  var roleBadges={admin:bj("bg2","مدير"),user:bj("bc","مستخدم"),hr:bj("be","HR"),viewer:bj("br","مشاهد")};
+  var rows=users.map(function(u){
+    var editBtn=(!ro&&(isAdmin||u.id===currentUser.id))?'<button class="btn bg sm" onclick="userForm('+u.id+')">✏️</button>':"";
+    var delBtn=(!ro&&isAdmin&&u.id!==currentUser.id)?'<button class="btn bd2 sm" onclick="delUser('+u.id+')">🗑</button>':"";
+    return'<tr><td>'+u.id+'</td><td style="font-weight:600">'+u.name+'</td><td>'+bj("bb",u.username)+'</td><td>'+(roleBadges[u.role]||bj("bc",u.role||""))+'</td><td><div class="tda">'+editBtn+delBtn+'</div></td></tr>';
+  }).join("");
+  return'<div class="card"><div class="ch"><span class="ct">👥 المستخدمون</span>'+(isAdmin?'<button class="btn bp sm" onclick="userForm()">+ إضافة</button>':"")+
+    '</div><div class="tw"><table><thead><tr><th>#</th><th>الاسم</th><th>المستخدم</th><th>الدور</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan="5"><div class="empty">لا يوجد مستخدمون</div></td></tr>')+'</tbody></table></div></div>';
 }
 function attachUsers(){}
 function userForm(id){
@@ -1166,27 +1220,17 @@ function delUser(id){
 
 // ─── CLIENTS ───
 function renderClients(){
-  const cls=ld(K.C,[]);
-  const isAdmin=currentUser?.role==="admin";
-  return`<div class="card">
-    <div class="ch"><span class="ct">👤 العملاء</span>
-      <button class="btn bp sm" onclick="clientForm()">+ إضافة</button>
-    </div>
-    <div class="tw"><table>
-      <thead><tr><th>#</th><th>الاسم</th><th>التليفون</th><th>العنوان</th><th>السعر</th><th></th></tr></thead>
-      <tbody>${cls.length===0?`<tr><td colspan="6"><div class="empty">لا يوجد عملاء</div></td></tr>`:
-        cls.map(c=>`<tr>
-          <td>${c.id}</td><td style="font-weight:600">${c.name}</td>
-          <td>${c.phone||""}</td><td>${c.address||""}</td>
-          <td style="color:var(--go);font-weight:700">${fmt(c.price)}</td>
-          <td><div class="tda">
-            ${(isAdmin||c.by_user===currentUser?.id)?`<button class="btn bg sm" onclick="clientForm(${c.id})">✏️</button>`:""}
-            ${isAdmin?`<button class="btn bd2 sm" onclick="delClient(${c.id})">🗑</button>`:""}
-          </div></td>
-        </tr>`).join("")}
-      </tbody>
-    </table></div>
-  </div>`;
+  var cls=ld(K.C,[]);
+  var isAdmin=currentUser&&currentUser.role==="admin";
+  var rows=cls.map(function(c){
+    var editBtn=(isAdmin||c.by_user===currentUser.id)?'<button class="btn bg sm" onclick="clientForm('+c.id+')">✏️</button>':"";
+    var delBtn=isAdmin?'<button class="btn bd2 sm" onclick="delClient('+c.id+')">🗑</button>':"";
+    return'<tr><td>'+c.id+'</td><td style="font-weight:600">'+c.name+'</td><td>'+(c.phone||"")+'</td><td>'+(c.address||"")+'</td><td style="color:var(--go);font-weight:700">'+fmt(c.price)+'</td><td><div class="tda">'+editBtn+delBtn+'</div></td></tr>';
+  }).join("");
+  return'<div class="card"><div class="ch"><span class="ct">👤 العملاء</span>'+
+    '<button class="btn bp sm" onclick="clientForm()">+ إضافة</button></div>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>الاسم</th><th>التليفون</th><th>العنوان</th><th>السعر</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan="6"><div class="empty">لا يوجد عملاء</div></td></tr>')+'</tbody></table></div></div>';
 }
 function attachClients(){}
 function clientForm(id){
@@ -1219,193 +1263,251 @@ function delClient(id){
 // ─── LISTS ───
 let listsTab="b";
 function renderLists(){
-  const role=currentUser?.role||"user";
-  const isHR=role==="hr";
-  // HR sees only مرتبات العاملين list
-  if(isHR) return renderHRList();
-  return`<div style="display:flex;gap:8px;margin-bottom:14px">
-    <button class="btn ${listsTab==="b"?"bp":"bg"}" onclick="listsTab='b';renderPage('lists')">⛵ المراكب</button>
-    <button class="btn ${listsTab==="e"?"bp":"bg"}" onclick="listsTab='e';renderPage('lists')">📋 المصاريف</button>
-  </div>
-  ${listsTab==="b"?renderBoatsList():renderExpLists()}`;
+  var role=currentUser&&currentUser.role||"user";
+  var isHR=role==="hr";
+  if(isHR)return renderHRList();
+  var tabs='<div style="display:flex;gap:8px;margin-bottom:14px">'+
+    '<button class="btn '+(listsTab==="b"?"bp":"bg")+'" onclick="switchListTab(\"b\")">⛵ المراكب</button>'+
+    '<button class="btn '+(listsTab==="e"?"bp":"bg")+'" onclick="switchListTab(\"e\")">📋 المصاريف</button>'+
+  '</div>';
+  return tabs+(listsTab==="b"?renderBoatsList():renderExpLists());
 }
-
-// HR only sees مرتبات العاملين
 function renderHRList(){
-  const cat="مرتبات العاملين";
-  const items=EXP_CATS[cat]||[];
-  return`<div class="card">
-    <div class="ch"><span class="ct">👥 مرتبات العاملين</span></div>
-    <div class="cb">
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-        ${items.map((it,i)=>`<div style="display:flex;align-items:center;gap:4px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);border-radius:7px;padding:6px 12px;font-size:13px;font-weight:600">
-          👤 ${it}
-          <button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:12px" onclick="rmItem('${cat}',${i})">✕</button>
-        </div>`).join("")}
-      </div>
-      <div style="display:flex;gap:8px">
-        <input id="ni-hr-emp" placeholder="إضافة موظف جديد..." style="flex:1"/>
-        <button class="btn bp sm" onclick="addHREmp()">+ إضافة</button>
-      </div>
-    </div>
-  </div>`;
+  var cat="مرتبات العاملين";
+  var items=EXP_CATS[cat]||[];
+  var chips=items.map(function(it,i){
+    return'<div style="display:flex;align-items:center;gap:4px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);border-radius:7px;padding:6px 12px;font-size:13px;font-weight:600">👤 '+it+
+      '<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:12px" onclick="rmItem(this)">✕</button></div>';
+  }).join("");
+  return'<div class="card"><div class="ch"><span class="ct">👥 مرتبات العاملين</span></div><div class="cb">'+
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">'+chips+'</div>'+
+    '<div style="display:flex;gap:8px"><input id="ni-hr-emp" placeholder="إضافة موظف جديد..." style="flex:1"/>'+
+    '<button class="btn bp sm" onclick="addHREmp()">+ إضافة</button></div>'+
+  '</div></div>';
 }
-function addHREmp(){
-  const v=document.getElementById("ni-hr-emp")?.value.trim();
-  if(v){EXP_CATS["مرتبات العاملين"].push(v);EMPLOYEES.push(v);renderPage("lists");}
-}
-
 function renderBoatsList(){
-  return`<div class="card"><div class="ch"><span class="ct">⛵ المراكب</span></div>
-    <div class="cb">
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <input id="new-boat" placeholder="اسم مركب جديد" style="flex:1"/>
-        <button class="btn bp sm" onclick="addBoat()">+</button>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">
-        ${BOATS.map((b,i)=>`<div style="display:flex;align-items:center;gap:4px;background:rgba(8,145,178,.12);border:1px solid var(--bd);border-radius:7px;padding:5px 10px;font-size:13px">
-          ⛵ ${b}
-          <button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:12px" onclick="rmBoat(${i})">✕</button>
-        </div>`).join("")}
-      </div>
-    </div>
-  </div>`;
+  var chips=BOATS.map(function(b,i){
+    return'<div style="display:flex;align-items:center;gap:4px;background:rgba(8,145,178,.12);border:1px solid var(--bd);border-radius:7px;padding:5px 10px;font-size:13px">⛵ '+b+
+      '<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:12px" onclick="rmBoat(this)">✕</button></div>';
+  }).join("");
+  return'<div class="card"><div class="ch"><span class="ct">⛵ المراكب</span></div><div class="cb">'+
+    '<div style="display:flex;gap:8px;margin-bottom:12px"><input id="new-boat" placeholder="اسم مركب جديد" style="flex:1"/>'+
+    '<button class="btn bp sm" onclick="addBoat()">+</button></div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:6px">'+chips+'</div>'+
+  '</div></div>';
 }
 function renderExpLists(){
-  return`<div class="card"><div class="ch"><span class="ct">📋 فئات المصاريف</span></div>
-    <div class="cb">
-      <div style="display:flex;gap:8px;margin-bottom:14px">
-        <input id="new-cat" placeholder="فئة جديدة" style="flex:1"/>
-        <button class="btn bp sm" onclick="addCat()">+ فئة</button>
-      </div>
-      ${Object.entries(EXP_CATS).map(([cat,items])=>`
-        <div style="margin-bottom:12px;background:rgba(29,78,216,.06);border-radius:9px;border:1px solid var(--bd);overflow:hidden">
-          <div style="padding:8px 14px;background:rgba(29,78,216,.12);display:flex;justify-content:space-between;align-items:center">
-            <span style="font-weight:700;font-size:13px">${cat}</span>
-            <button class="btn bd2 sm" onclick="rmCat('${cat}')">حذف</button>
-          </div>
-          <div style="padding:10px">
-            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
-              ${items.map((it,i)=>`<div style="display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:12px">
-                ${it}<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:11px" onclick="rmItem('${cat}',${i})">✕</button>
-              </div>`).join("")}
-            </div>
-            <div style="display:flex;gap:6px">
-              <input id="ni-${cat.replace(/\s/g,'_')}" placeholder="بند جديد..." style="flex:1;font-size:12px;padding:5px 8px"/>
-              <button class="btn bs sm" onclick="addItem('${cat}')">+</button>
-            </div>
-          </div>
-        </div>`).join("")}
-    </div>
-  </div>`;
+  var newCatRow='<div style="display:flex;gap:8px;margin-bottom:14px">'+
+    '<input id="new-cat" placeholder="فئة جديدة" style="flex:1"/>'+
+    '<button class="btn bp sm" onclick="addCat()">+ فئة</button></div>';
+  var cats=Object.entries(EXP_CATS).map(function(entry){
+    var cat=entry[0]; var items=entry[1];
+    var chips=items.map(function(it,i){
+      return'<div style="display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:12px">'+it+
+        '<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:11px" onclick="rmItem(this)">✕</button></div>';
+    }).join("");
+    var safeId="ni_"+cat.replace(/\s/g,"_");
+    return'<div style="margin-bottom:12px;background:rgba(29,78,216,.06);border-radius:9px;border:1px solid var(--bd);overflow:hidden">'+
+      '<div style="padding:8px 14px;background:rgba(29,78,216,.12);display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-weight:700;font-size:13px">'+cat+'</span>'+
+        '<button class="btn bd2 sm" onclick=\"rmCat(this)\">حذف</button>'+
+      '</div>'+
+      '<div style="padding:10px">'+
+        '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">'+chips+'</div>'+
+        '<div style="display:flex;gap:6px">'+
+          '<input id="'+safeId+'" data-cat="'+cat+'" placeholder="بند جديد..." style="flex:1;font-size:12px;padding:5px 8px"/>'+
+          '<button class="btn bs sm" onclick=\"addItemCurrent(this)\">+</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+  return'<div class="card"><div class="ch"><span class="ct">📋 فئات المصاريف</span></div><div class="cb">'+newCatRow+cats+'</div></div>';
 }
 function attachLists(){}
+function switchListTab(tab){listsTab=tab;renderPage('lists');}
+function addItemCurrent(btn){
+  var input=btn.previousElementSibling;
+  if(!input)return;
+  var v=input.value.trim();
+  if(!v)return;
+  // Find category from container
+  var container=btn.closest('[data-cat]');
+  var cat=container?container.dataset.cat:'';
+  if(cat&&EXP_CATS[cat]){EXP_CATS[cat].push(v);input.value='';renderPage('lists');}
+}
 function addBoat(){const v=document.getElementById("new-boat").value.trim();if(v){BOATS.push(v);renderPage("lists");}}
-function rmBoat(i){BOATS.splice(i,1);renderPage("lists");}
+function rmBoat(btn){
+  var div=btn.parentElement;
+  var txt=div.textContent.trim().replace('⛵','').trim();
+  var idx=BOATS.indexOf(txt);
+  if(idx>=0){BOATS.splice(idx,1);renderPage("lists");}
+}
 function addCat(){const v=document.getElementById("new-cat").value.trim();if(v){EXP_CATS[v]=[];renderPage("lists");}}
-function rmCat(cat){delete EXP_CATS[cat];renderPage("lists");}
+function rmCat(btn){
+  var header=btn.closest('[data-cat]')||btn.parentElement;
+  var cat=header?header.dataset.cat:'';
+  if(!cat){
+    // fallback: find from siblings
+    var h=btn.parentElement;
+    if(h){var s=h.querySelector('[data-cat-name]');if(s)cat=s.dataset.catName;}
+  }
+  if(cat&&EXP_CATS[cat]!==undefined){delete EXP_CATS[cat];renderPage("lists");}
+}
 function addItem(cat){const id="ni-"+cat.replace(/\s/g,"_");const v=document.getElementById(id)?.value.trim();if(v){EXP_CATS[cat].push(v);renderPage("lists");}}
-function rmItem(cat,i){EXP_CATS[cat].splice(i,1);renderPage("lists");}
+function rmItem(btn){
+  var div=btn.parentElement;
+  var txt=div.textContent.trim().replace('✕','').trim();
+  // Find which category and item
+  Object.keys(EXP_CATS).forEach(function(cat){
+    var idx=EXP_CATS[cat].indexOf(txt);
+    if(idx>=0)EXP_CATS[cat].splice(idx,1);
+  });
+  renderPage("lists");
+}
 
 // ─── SALES ENTRY ───
 function renderSE(){
-  const data=ld(K.S,[]);
-  const isAdmin=currentUser?.role==="admin";
-  return`<div class="card">
-    <div class="ch"><span class="ct">💼 تسجيل المبيعات اليومية</span>
-      <div style="display:flex;gap:6px">
-        <label class="btn bg sm" style="cursor:pointer">📤 Excel<input type="file" accept=".csv" style="display:none" onchange="impSales(this)"/></label>
-        ${!isReadOnly()?'<button class="btn bp sm" onclick="saleForm()">+ إضافة</button>':''} 
-      </div>
-    </div>
-    <div class="tw"><table>
-      <thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th><th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>ملاحظات</th><th></th></tr></thead>
-      <tbody>${data.length===0?`<tr><td colspan="11"><div class="empty">لا توجد مبيعات</div></td></tr>`:
-        data.map(s=>`<tr>
-          <td>${s.id}</td><td style="white-space:nowrap">${s.date}</td>
-          <td>${bj("bb",s.rtype||"")}</td><td>${s.center||""}</td>
-          <td>${bj("bc",s.boat||"")}</td><td>${s.count||""}</td>
-          <td style="color:var(--cy)">${fmt(s.trip)}</td>
-          <td style="color:var(--go)">${fmt(s.kitchen)}</td>
-          <td style="color:var(--gr);font-weight:700">${fmt(s.total)}</td>
-          <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.notes||""}</td>
-          <td><div class="tda">
-            ${(isAdmin||s.by_user===currentUser?.id)?`<button class="btn bg sm" onclick="saleForm(${s.id})">✏️</button>`:""}
-            ${isAdmin?`<button class="btn bd2 sm" onclick="delSale(${s.id})">🗑</button>`:""}
-          </div></td>
-        </tr>`).join("")}
-      </tbody>
-    </table></div>
-  </div>`;
+  var isAdmin=currentUser&&currentUser.role==="admin";
+  var pending=ld(K.SP,[]);
+  var approved=ld(K.S,[]);
+  var data=isAdmin?pending.concat(approved.filter(function(a){return!pending.find(function(p){return p.id===a.id;});})):pending.slice();
+  var pendingBadge=pending.length>0&&isAdmin
+    ?'<span style="background:rgba(245,158,11,.15);color:var(--go);border:1px solid rgba(245,158,11,.3);border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700">⏳ '+pending.length+' بانتظار الموافقة</span>'
+    :"";
+  var rows="";
+  data.forEach(function(s){
+    var isPend=!!s._pending;
+    var editBtn=(isAdmin||s.by_user===currentUser.id)
+      ?'<button class="btn bg sm" onclick="saleForm('+s.id+','+(isPend?1:0)+')" style="padding:4px 8px">✏️</button>':"";
+    var approveBtn=(isAdmin&&isPend)
+      ?'<button class="btn bs sm" onclick="approveSale('+s.id+')" style="padding:4px 8px;font-size:11px">✅</button>':"";
+    var delBtn=(isAdmin||s.by_user===currentUser.id)
+      ?'<button class="btn bd2 sm" onclick="delSale('+s.id+','+(isPend?1:0)+')" style="padding:4px 8px">🗑</button>':"";
+    var statusBadge=isPend?bj("bg2","⏳ مؤقت"):bj("be","✅ معتمد");
+    rows+='<tr style="'+(isPend?"background:rgba(245,158,11,.04)":"")+'">'+
+      '<td>'+s.id+'</td>'+
+      '<td style="white-space:nowrap">'+s.date+'</td>'+
+      '<td>'+bj("bb",s.rtype||"")+'</td>'+
+      '<td>'+(s.center||"")+'</td>'+
+      '<td>'+bj("bc",s.boat||"")+'</td>'+
+      '<td>'+(s.count||"")+'</td>'+
+      '<td style="color:var(--cy)">'+fmt(s.trip)+'</td>'+
+      '<td style="color:var(--go)">'+fmt(s.kitchen)+'</td>'+
+      '<td style="color:var(--gr);font-weight:700">'+fmt(s.total)+'</td>'+
+      '<td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(s.notes||"")+'</td>'+
+      '<td>'+statusBadge+'</td>'+
+      '<td><div class="tda">'+editBtn+approveBtn+delBtn+'</div></td>'+
+    '</tr>';
+  });
+  return'<div class="card">'+
+    '<div class="ch"><span class="ct">💼 تسجيل المبيعات اليومية</span>'+
+      '<div style="display:flex;gap:6px;align-items:center">'+pendingBadge+
+        '<label class="btn bg sm" style="cursor:pointer">📤 Excel<input type="file" accept=".csv" style="display:none" onchange="impSales(this)"/></label>'+
+        '<button class="btn bp sm" onclick="saleForm()">+ إضافة</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="tw"><table>'+
+      '<thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th><th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>ملاحظات</th><th>الحالة</th><th></th></tr></thead>'+
+      '<tbody>'+(rows||'<tr><td colspan="12"><div class="empty">لا توجد مبيعات</div></td></tr>')+'</tbody>'+
+    '</table></div>'+
+  '</div>';
 }
-function attachSE(){}
-function saleForm(id){
-  const data=ld(K.S,[]);
-  const s=id?data.find(x=>x.id===id):{date:toDay(),rtype:"إيرادات عامة",center:"",boat:BOATS[0],count:"",trip:"",kitchen:"",notes:""};
-  openModal(id?"تعديل المبيعة":"إضافة مبيعة جديدة",`
-    <div class="fgrid">
-      <div class="fr3">
-        <div class="ff"><label>التاريخ</label><input id="s-date" type="date" value="${s.date||toDay()}"/></div>
-        <div class="ff"><label>نوع الإيراد</label>
-          <select id="s-rtype">${REV_TYPES.map(t=>`<option ${s.rtype===t?"selected":""}>${t}</option>`).join("")}</select>
-        </div>
-        <div class="ff"><label>اسم السنتر</label><input id="s-center" value="${s.center||""}"/></div>
-        <div class="ff"><label>المركب</label>
-          <select id="s-boat">${BOATS.map(b=>`<option ${s.boat===b?"selected":""}>${b}</option>`).join("")}</select>
-        </div>
-        <div class="ff"><label>العدد</label><input id="s-count" type="number" value="${s.count||""}"/></div>
-      </div>
-      <div class="fr3">
-        <div class="ff"><label>الطلعة (ج.م)</label><input id="s-trip" type="number" value="${s.trip||""}" oninput="calcSaleTotal()"/></div>
-        <div class="ff"><label>المطبخ (ج.م)</label><input id="s-kitchen" type="number" value="${s.kitchen||""}" oninput="calcSaleTotal()"/></div>
-        <div class="ff"><label>الإجمالي</label><input id="s-total" readonly value="${fmt(s.total||0)}" style="color:var(--gr);font-weight:700"/></div>
-      </div>
-      <div class="ff"><label>ملاحظات</label><textarea id="s-notes" rows="2">${s.notes||""}</textarea></div>
-    </div>`,"حفظ",()=>{
-    const data=ld(K.S,[]);
-    const trip=+document.getElementById("s-trip").value||0;
-    const kitchen=+document.getElementById("s-kitchen").value||0;
-    const rec={
-      id:id||gid(data),
+function attachSE(){
+  // If no local data, pull from Supabase
+  var local=ld(K.S,[]);
+  if(local.length===0&&isOnline){
+    pull().then(function(){renderPage("se");}).catch(function(){});
+  }
+}
+
+function saleForm(id,isPending){
+  var isAdmin=currentUser&&currentUser.role==="admin";
+  var pendingEdit=isPending===true||isPending==="true";
+  var allData=ld(K.SP,[]).concat(ld(K.S,[]));
+  var s=id?allData.find(function(x){return x.id==id;})||{}:{date:toDay(),rtype:"إيرادات عامة",center:"",boat:BOATS[0],count:"",trip:"",kitchen:"",notes:""};
+  var rtypeOpts=REV_TYPES.map(function(t){return'<option '+(s.rtype===t?"selected":"")+'>'+t+'</option>';}).join("");
+  var boatOpts=BOATS.map(function(b){return'<option '+(s.boat===b?"selected":"")+'>'+b+'</option>';}).join("");
+  openModal(id?"تعديل المبيعة":"إضافة مبيعة جديدة",
+    '<div class="fgrid">'+
+      '<div class="fr3">'+
+        '<div class="ff"><label>التاريخ</label><input id="s-date" type="date" value="'+(s.date||toDay())+'"/></div>'+
+        '<div class="ff"><label>نوع الإيراد</label><select id="s-rtype">'+rtypeOpts+'</select></div>'+
+        '<div class="ff"><label>اسم السنتر</label><input id="s-center" value="'+(s.center||"")+'"/></div>'+
+        '<div class="ff"><label>المركب</label><select id="s-boat">'+boatOpts+'</select></div>'+
+        '<div class="ff"><label>العدد</label><input id="s-count" type="number" value="'+(s.count||"")+'"/></div>'+
+      '</div>'+
+      '<div class="fr3">'+
+        '<div class="ff"><label>الطلعة (ج.م)</label><input id="s-trip" type="number" value="'+(s.trip||"")+'" oninput="calcSaleTotal()"/></div>'+
+        '<div class="ff"><label>المطبخ (ج.م)</label><input id="s-kitchen" type="number" value="'+(s.kitchen||"")+'" oninput="calcSaleTotal()"/></div>'+
+        '<div class="ff"><label>الإجمالي</label><input id="s-total" readonly value="'+fmt(s.total||0)+'" style="color:var(--gr);font-weight:700"/></div>'+
+      '</div>'+
+      '<div class="ff"><label>ملاحظات</label><textarea id="s-notes" rows="2">'+(s.notes||"")+'</textarea></div>'+
+    '</div>'
+  ,"حفظ",function(){
+    var trip=+document.getElementById("s-trip").value||0;
+    var kitchen=+document.getElementById("s-kitchen").value||0;
+    var isPendingS=!isAdmin||pendingEdit;
+    var storeKey=isPendingS?K.SP:K.S;
+    var data=ld(storeKey,[]);
+    var rec={
+      id:id?+id:gid(ld(K.S,[]).concat(ld(K.SP,[]))),
       date:document.getElementById("s-date").value,
       rtype:document.getElementById("s-rtype").value,
       center:document.getElementById("s-center").value,
       boat:document.getElementById("s-boat").value,
       count:document.getElementById("s-count").value,
-      trip,kitchen,total:trip+kitchen,
+      trip:trip,kitchen:kitchen,total:trip+kitchen,
       notes:document.getElementById("s-notes").value,
-      by_user:currentUser?.id
+      by_user:currentUser.id,_pending:isPendingS
     };
-    const newD=id?data.map(x=>x.id===id?rec:x):[...data,rec];
-    sv(K.S,newD);enq(K.S,"u",rec);closeModal();renderPage("se");
+    var newD=id?data.map(function(x){return x.id==id?rec:x;}):[...data,rec];
+    sv(storeKey,newD);
+    if(!isPendingS)enq(K.S,"u",rec);
+    closeModal();renderPage("se");
   });
 }
 function calcSaleTotal(){
-  const t=+document.getElementById("s-trip")?.value||0;
-  const k=+document.getElementById("s-kitchen")?.value||0;
-  const el=document.getElementById("s-total");if(el)el.value=fmt(t+k);
+  var t=+(document.getElementById("s-trip")||{value:0}).value||0;
+  var k=+(document.getElementById("s-kitchen")||{value:0}).value||0;
+  var el=document.getElementById("s-total");if(el)el.value=fmt(t+k);
 }
-function delSale(id){
+function delSale(id,isPending){
   if(!confirm("حذف؟"))return;
-  const d=ld(K.S,[]);const rec=d.find(x=>x.id===id);
-  sv(K.S,d.filter(x=>x.id!==id));enq(K.S,"d",rec);renderPage("se");
+  var pk=(isPending===true||isPending==="true")?K.SP:K.S;
+  var d=ld(pk,[]);var rec=d.find(function(x){return x.id==id;});
+  sv(pk,d.filter(function(x){return x.id!=id;}));
+  if(pk===K.S&&rec)enq(K.S,"d",rec);
+  renderPage("se");
+}
+function approveSale(id){
+  var pending=ld(K.SP,[]);
+  var rec=pending.find(function(x){return x.id==id;});
+  if(!rec)return alert("السجل غير موجود");
+  rec._pending=false;
+  var approved=ld(K.S,[]).concat([rec]);
+  sv(K.S,approved);sv(K.SP,pending.filter(function(x){return x.id!=id;}));
+  enq(K.S,"u",rec);renderPage("se");
+  alert("✅ تمت الموافقة — المبيعة في البيان النهائي");
 }
 function impSales(inp){
-  const f=inp.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{
+  var f=inp.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(ev){
     try{
-      const rows=e.target.result.split("\n").slice(1).filter(Boolean).map((row,i)=>{
-        const c=row.split(",");
-        return{id:gid([...ld(K.S,[]),{id:i}]),date:c[0]?.trim()||toDay(),rtype:c[1]?.trim()||"",
-          center:c[2]?.trim()||"",boat:c[3]?.trim()||"",count:c[4]?.trim()||"",
+      var rows=ev.target.result.split("\n").slice(1).filter(Boolean).map(function(row,i){
+        var c=row.split(",");
+        var isPendingS=currentUser.role!=="admin";
+        return{id:gid(ld(K.S,[]).concat(ld(K.SP,[]))),date:c[0]&&c[0].trim()||toDay(),rtype:c[1]&&c[1].trim()||"",
+          center:c[2]&&c[2].trim()||"",boat:c[3]&&c[3].trim()||"",count:c[4]&&c[4].trim()||"",
           trip:+c[5]||0,kitchen:+c[6]||0,total:(+c[5]||0)+(+c[6]||0),
-          notes:c[7]?.trim()||"",by_user:currentUser?.id};
+          notes:c[7]&&c[7].trim()||"",by_user:currentUser.id,_pending:isPendingS};
       });
-      const d=[...ld(K.S,[]),...rows];sv(K.S,d);
-      rows.forEach(r2=>enq(K.S,"u",r2));
-      alert(`تم استيراد ${rows.length} سجل`);renderPage("se");
-    }catch{alert("خطأ في القراءة");}
+      var storeKey=currentUser.role==="admin"?K.S:K.SP;
+      var existing=ld(storeKey,[]);
+      sv(storeKey,existing.concat(rows));
+      if(storeKey===K.S)rows.forEach(function(r2){enq(K.S,"u",r2);});
+      alert("تم استيراد "+rows.length+" سجل");renderPage("se");
+    }catch(e){alert("خطأ في القراءة: "+e.message);}
   };
   r.readAsText(f);inp.value="";
 }
@@ -1417,7 +1519,7 @@ function renderSV(){
       <div class="ffi"><label>📅 التاريخ</label><input type="date" id="sv-date"/></div>
       <div class="ffi"><label>🏢 السنتر</label><input id="sv-center" placeholder="بحث..."/></div>
       <div class="ffi"><label>⛵ المركب</label>
-        <select id="sv-boat"><option value="">الكل</option>${BOATS.map(b=>`<option>${b}</option>`).join("")}</select>
+        <select id="sv-boat"><option value="">الكل</option>'+BOATS.map(function(b){return'<option>'+b+'</option>';}).join('')+'</select>
       </div>
       <button class="btn bg sm" onclick="filterSV()">↺ مسح</button>
     </div>
@@ -1428,399 +1530,86 @@ function attachSV(){
   ["sv-date","sv-center","sv-boat"].forEach(id=>document.getElementById(id)?.addEventListener("input",filterSV));
   filterSV();
 }
+function exportSalesExcel(){
+  var fd=document.getElementById("sv-date")?.value||"";
+  var fc=document.getElementById("sv-center")?.value||"";
+  var fb=document.getElementById("sv-boat")?.value||"";
+  var rows=ld(K.S,[]).filter(function(s){return(!fd||s.date>=fd)&&(!fc||(s.center||"").includes(fc))&&(!fb||s.boat===fb);});
+  if(!rows.length)return alert("لا توجد بيانات معتمدة للتصدير");
+  exportExcel(rows,[
+    {key:"id",label:"#"},{key:"date",label:"التاريخ"},{key:"rtype",label:"نوع الإيراد"},
+    {key:"center",label:"السنتر"},{key:"boat",label:"المركب"},{key:"count",label:"العدد"},
+    {key:"trip",label:"الطلعة"},{key:"kitchen",label:"المطبخ"},{key:"total",label:"الإجمالي"},
+    {key:"notes",label:"ملاحظات"}
+  ],"بيان_المبيعات");
+}
 function filterSV(){
-  const fd=document.getElementById("sv-date")?.value||"";
-  const fc=document.getElementById("sv-center")?.value||"";
-  const fb=document.getElementById("sv-boat")?.value||"";
-  const data=ld(K.S,[]).filter(s=>(!fd||s.date===fd)&&(!fc||(s.center||"").includes(fc))&&(!fb||s.boat===fb));
-  const el=document.getElementById("sv-table");if(!el)return;
-  el.innerHTML=`<div class="card">
-    <div class="ch"><span class="ct">📈 بيان المبيعات</span>${bj("bc",data.length+" سجل")}</div>
-    <div class="tw"><table>
-      <thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th><th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>ملاحظات</th></tr></thead>
-      <tbody>${data.length===0?`<tr><td colspan="10"><div class="empty">لا نتائج</div></td></tr>`:
-        data.map(s=>`<tr><td>${s.id}</td><td>${s.date}</td><td>${bj("bb",s.rtype||"")}</td>
-          <td>${s.center||""}</td><td>${bj("bc",s.boat||"")}</td><td>${s.count||""}</td>
-          <td style="color:var(--cy)">${fmt(s.trip)}</td><td style="color:var(--go)">${fmt(s.kitchen)}</td>
-          <td style="color:var(--gr);font-weight:700">${fmt(s.total)}</td><td>${s.notes||""}</td></tr>`).join("")}
-      </tbody>
-    </table></div>
-    ${data.length>0?`<div style="padding:9px 14px;border-top:1px solid var(--bd);font-size:13px">
-      الإجمالي: <strong style="color:var(--gr)">${fmt(data.reduce((a,s)=>a+(+s.total||0),0))} ج.م</strong>
-    </div>`:""}
-  </div>`;
-}
-
-// ─── EXPENSE ENTRY ───
-function renderEE(){
-  const data=ld(K.E,[]);
-  const xr=ld(K.X,{usd:50,eur:55});
-  const isAdmin=currentUser?.role==="admin";
-  return`
-  <div class="card">
-    <div class="ch"><span class="ct">💱 سعر الصرف اليومي</span></div>
-    <div class="cb"><div class="fr2">
-      <div class="ff"><label>دولار ($) → ج.م</label>
-        <input id="xr-usd" type="number" value="${xr.usd}" onchange="saveXR()"/>
-      </div>
-      <div class="ff"><label>يورو (€) → ج.م</label>
-        <input id="xr-eur" type="number" value="${xr.eur}" onchange="saveXR()"/>
-      </div>
-    </div></div>
-  </div>
-  <div class="card">
-    <div class="ch"><span class="ct">🧾 تسجيل مصاريف الخزنة</span>
-      <div style="display:flex;gap:6px">
-        <label class="btn bg sm" style="cursor:pointer">📤 Excel<input type="file" accept=".csv" style="display:none" onchange="impExp(this)"/></label>
-        ${!isReadOnly()?'<button class="btn bp sm" onclick="expForm()">+ إضافة</button>':''} 
-      </div>
-    </div>
-    <div class="tw"><table>
-      <thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th><th></th></tr></thead>
-      <tbody>${data.length===0?`<tr><td colspan="10"><div class="empty">لا توجد مصاريف</div></td></tr>`:
-        data.map(e=>`<tr>
-          <td>${e.id}</td><td style="white-space:nowrap">${e.date}</td>
-          <td>${bj("bg2",e.exp_type||e.expType||"")}</td>
-          <td style="font-weight:600">${e.name||""}</td>
-          <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.description||e.desc||""}</td>
-          <td>${fmt(e.egp)}</td>
-          <td>${+e.usd>0?`$${(+e.usd).toFixed(0)}`:"-"}</td>
-          <td>${+e.eur>0?`€${(+e.eur).toFixed(0)}`:"-"}</td>
-          <td style="color:var(--re);font-weight:700">${fmt(e.total)}</td>
-          <td><div class="tda">
-            ${(isAdmin||e.by_user===currentUser?.id)?`<button class="btn bg sm" onclick="expForm(${e.id})">✏️</button>`:""}
-            ${isAdmin?`<button class="btn bd2 sm" onclick="delExp(${e.id})">🗑</button>`:""}
-          </div></td>
-        </tr>`).join("")}
-      </tbody>
-    </table></div>
-  </div>`;
-}
-function attachEE(){}
-function saveXR(){
-  const v={usd:+document.getElementById("xr-usd").value||50,eur:+document.getElementById("xr-eur").value||55};
-  sv(K.X,v);
-}
-function expForm(id){
-  const data=ld(K.E,[]);
-  const xr=ld(K.X,{usd:50,eur:55});
-  const e=id?data.find(x=>x.id===id):{date:toDay(),exp_type:"المطابخ",name:"",description:"",egp:"",usd:"",eur:""};
-  const curCat=e.exp_type||e.expType||"المطابخ";
-  const catOpts=Object.keys(EXP_CATS).map(k=>`<option ${curCat===k?"selected":""}>${k}</option>`).join("");
-  const nameOpts=(EXP_CATS[curCat]||[]).map(n=>`<option ${(e.name||"")==n?"selected":""}>${n}</option>`).join("");
-  openModal(id?"تعديل المصروف":"إضافة مصروف",`
-    <div class="fgrid">
-      <div class="fr3">
-        <div class="ff"><label>التاريخ</label><input id="e-date" type="date" value="${e.date||toDay()}"/></div>
-        <div class="ff"><label>نوع المصاريف</label>
-          <select id="e-type" onchange="updateExpNames()">
-            ${catOpts}
-          </select>
-        </div>
-        <div class="ff"><label>الاسم / البند</label>
-          <select id="e-name"><option value="">-- اختر --</option>${nameOpts}</select>
-        </div>
-      </div>
-      <div class="ff"><label>البيان (تفاصيل)</label><textarea id="e-desc" rows="3">${e.description||e.desc||""}</textarea></div>
-      <div class="fr4">
-        <div class="ff"><label>مصري (ج.م)</label><input id="e-egp" type="number" value="${e.egp||""}" oninput="calcExpTotal()"/></div>
-        <div class="ff"><label>دولار ($)</label><input id="e-usd" type="number" value="${e.usd||""}" oninput="calcExpTotal()"/></div>
-        <div class="ff"><label>يورو (€)</label><input id="e-eur" type="number" value="${e.eur||""}" oninput="calcExpTotal()"/></div>
-        <div class="ff"><label>الإجمالي</label><input id="e-total" readonly value="${fmt(e.total||0)}" style="color:var(--re);font-weight:700"/></div>
-      </div>
-    </div>`,"حفظ",()=>{
-    const data=ld(K.E,[]);
-    const xr=ld(K.X,{usd:50,eur:55});
-    const egp=+document.getElementById("e-egp").value||0;
-    const usd=+document.getElementById("e-usd").value||0;
-    const eur=+document.getElementById("e-eur").value||0;
-    const rec={
-      id:id||gid(data),
-      date:document.getElementById("e-date").value,
-      exp_type:document.getElementById("e-type").value,
-      name:document.getElementById("e-name").value,
-      description:document.getElementById("e-desc").value,
-      egp,usd,eur,total:egp+usd*xr.usd+eur*xr.eur,
-      by_user:currentUser?.id
-    };
-    const newD=id?data.map(x=>x.id===id?rec:x):[...data,rec];
-    sv(K.E,newD);enq(K.E,"u",rec);closeModal();renderPage("ee");
-  });
-}
-function updateExpNames(){
-  const cat=document.getElementById("e-type")?.value||"";
-  const sel=document.getElementById("e-name");
-  if(!sel)return;
-  sel.innerHTML=`<option value="">-- اختر --</option>${(EXP_CATS[cat]||[]).map(n=>`<option>${n}</option>`).join("")}`;
-}
-function calcExpTotal(){
-  const xr=ld(K.X,{usd:50,eur:55});
-  const egp=+document.getElementById("e-egp")?.value||0;
-  const usd=+document.getElementById("e-usd")?.value||0;
-  const eur=+document.getElementById("e-eur")?.value||0;
-  const el=document.getElementById("e-total");if(el)el.value=fmt(egp+usd*xr.usd+eur*xr.eur);
-}
-function delExp(id){
-  if(!confirm("حذف؟"))return;
-  const d=ld(K.E,[]);const rec=d.find(x=>x.id===id);
-  sv(K.E,d.filter(x=>x.id!==id));enq(K.E,"d",rec);renderPage("ee");
-}
-function impExp(inp){
-  const f=inp.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{
-    try{
-      const rows=e.target.result.split("\n").slice(1).filter(Boolean).map((row,i)=>{
-        const c=row.split(",");
-        return{id:gid([...ld(K.E,[]),{id:i}]),date:c[0]?.trim()||toDay(),
-          exp_type:c[1]?.trim()||"",name:c[2]?.trim()||"",
-          description:c[3]?.trim()||"",egp:+c[4]||0,usd:0,eur:0,total:+c[4]||0,
-          by_user:currentUser?.id};
-      });
-      const d=[...ld(K.E,[]),...rows];sv(K.E,d);
-      rows.forEach(r2=>enq(K.E,"u",r2));
-      alert(`تم استيراد ${rows.length} سجل`);renderPage("ee");
-    }catch{alert("خطأ");}
-  };
-  r.readAsText(f);inp.value="";
-}
-
-// ─── EXPENSE VIEW ───
-function renderEV(){
-  return`<div class="card">
-    <div class="fb">
-      <div class="ffi"><label>📅 التاريخ</label><input type="date" id="ev-date"/></div>
-      <div class="ffi"><label>📋 النوع</label>
-        <select id="ev-type"><option value="">الكل</option>${Object.keys(EXP_CATS).map(k=>`<option>${k}</option>`).join("")}</select>
-      </div>
-      <div class="ffi"><label>🔍 الاسم</label><input id="ev-name" placeholder="بحث..."/></div>
-      <button class="btn bg sm" onclick="filterEV()">↺ مسح</button>
-    </div>
-  </div>
-  <div id="ev-table"></div>`;
-}
-function attachEV(){
-  ["ev-date","ev-type","ev-name"].forEach(id=>document.getElementById(id)?.addEventListener("input",filterEV));
-  filterEV();
+  var fd=document.getElementById("sv-date")?.value||"";
+  var fc=document.getElementById("sv-center")?.value||"";
+  var fb=document.getElementById("sv-boat")?.value||"";
+  var data=ld(K.S,[]).filter(function(s){return(!fd||s.date===fd)&&(!fc||(s.center||"").includes(fc))&&(!fb||s.boat===fb);});
+  var el=document.getElementById("sv-table");if(!el)return;
+  var tot=data.reduce(function(a,s){return a+(+s.total||0);},0);
+  var rows=data.length===0?
+    '<tr><td colspan="10"><div class="empty">لا نتائج</div></td></tr>':
+    data.map(function(s){
+      return '<tr><td>'+s.id+'</td><td>'+s.date+'</td><td>'+bj("bb",s.rtype||"")+'</td>'+
+        '<td>'+(s.center||"")+'</td><td>'+bj("bc",s.boat||"")+'</td><td>'+(s.count||"")+'</td>'+
+        '<td style="color:var(--cy)">'+fmt(s.trip)+'</td>'+
+        '<td style="color:var(--go)">'+fmt(s.kitchen)+'</td>'+
+        '<td style="color:var(--gr);font-weight:700">'+fmt(s.total)+'</td>'+
+        '<td>'+(s.notes||"")+'</td></tr>';
+    }).join("");
+  el.innerHTML=
+    '<div class="card">'+
+    '<div class="ch"><span class="ct">📈 بيان المبيعات</span>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+
+    bj("bc",data.length+" سجل")+
+    '<button class="btn bs sm" onclick="exportSalesExcel()">📥 Excel</button>'+
+    '</div></div>'+
+    '<div class="tw"><table>'+
+    '<thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th>'+
+    '<th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>ملاحظات</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table></div>'+
+    (data.length>0?'<div style="padding:9px 14px;border-top:1px solid var(--bd);font-size:13px">'+
+    'الإجمالي: <strong style="color:var(--gr)">'+fmt(tot)+' ج.م</strong></div>':"")+
+    '</div>';
 }
 function filterEV(){
-  const fd=document.getElementById("ev-date")?.value||"";
-  const ft=document.getElementById("ev-type")?.value||"";
-  const fn=document.getElementById("ev-name")?.value||"";
-  const data=ld(K.E,[]).filter(e=>
-    (!fd||e.date===fd)&&
-    (!ft||(e.exp_type===ft||e.expType===ft))&&
-    (!fn||(e.name||"").includes(fn))
-  );
-  const el=document.getElementById("ev-table");if(!el)return;
-  el.innerHTML=`<div class="card">
-    <div class="ch"><span class="ct">📉 بيان المصاريف</span>${bj("br",data.length+" سجل")}</div>
-    <div class="tw"><table>
-      <thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th></tr></thead>
-      <tbody>${data.length===0?`<tr><td colspan="9"><div class="empty">لا نتائج</div></td></tr>`:
-        data.map(e=>`<tr><td>${e.id}</td><td>${e.date}</td>
-          <td>${bj("bg2",e.exp_type||e.expType||"")}</td>
-          <td style="font-weight:600">${e.name||""}</td>
-          <td>${e.description||e.desc||""}</td>
-          <td>${fmt(e.egp)}</td>
-          <td>${+e.usd>0?`$${(+e.usd).toFixed(0)}`:"-"}</td>
-          <td>${+e.eur>0?`€${(+e.eur).toFixed(0)}`:"-"}</td>
-          <td style="color:var(--re);font-weight:700">${fmt(e.total)}</td>
-        </tr>`).join("")}
-      </tbody>
-    </table></div>
-    ${data.length>0?`<div style="padding:9px 14px;border-top:1px solid var(--bd);font-size:13px">
-      الإجمالي: <strong style="color:var(--re)">${fmt(data.reduce((a,e)=>a+(+e.total||0),0))} ج.م</strong>
-    </div>`:""}
-  </div>`;
-}
-
-// ─── REPORTS ───
-function renderRep(){
-  return`<div class="card">
-    <div class="fb">
-      <div class="ffi"><label>📅 التاريخ</label><input type="date" id="rp-date"/></div>
-      <div class="ffi"><label>⛵ المركب</label>
-        <select id="rp-boat"><option value="">الكل</option>${BOATS.map(b=>`<option>${b}</option>`).join("")}</select>
-      </div>
-      <button class="btn bg sm" onclick="filterRep()">↺ مسح</button>
-    </div>
-  </div>
-  <div id="rep-table"></div>`;
-}
-function attachRep(){
-  ["rp-date","rp-boat"].forEach(id=>document.getElementById(id)?.addEventListener("change",filterRep));
-  filterRep();
-}
-function filterRep(){
-  const fd=document.getElementById("rp-date")?.value||"";
-  const fb=document.getElementById("rp-boat")?.value||"";
-  const sales=ld(K.S,[]);const exps=ld(K.E,[]);
-  const dates=[...new Set([...sales.map(s=>s.date),...exps.map(e=>e.date)])].sort().reverse();
-  const filtered=dates.filter(d=>!fd||d===fd);
-  const gS=d=>sales.filter(s=>s.date===d&&(!fb||s.boat===fb)).reduce((a,s)=>a+(+s.total||0),0);
-  const gE=(d,t)=>exps.filter(e=>e.date===d&&(e.exp_type===t||e.expType===t)).reduce((a,e)=>a+(+e.total||0),0);
-
-  const el=document.getElementById("rep-table");if(!el)return;
-  el.innerHTML=`<div class="card">
-    <div class="ch"><span class="ct">📊 التقارير اليومية التفصيلية</span></div>
-    <div class="tw"><table>
-      <thead><tr><th>التاريخ</th><th>الإيرادات</th><th>مصاريف مطابخ</th><th>صافي 1</th><th>مصاريف تشغيل</th><th>صافي 2</th><th>مصاريف إدارية</th><th>الصافي النهائي</th></tr></thead>
-      <tbody>${filtered.length===0?`<tr><td colspan="8"><div class="empty">لا بيانات</div></td></tr>`:
-        filtered.map(d=>{
-          const rev=gS(d),k=gE(d,"المطابخ"),op=gE(d,"مصاريف التشغيل"),adm=gE(d,"المصاريف الإدارية");
-          const s1=rev-k,s2=s1-op,fn=s2-adm;
-          return`<tr>
-            <td style="font-weight:700;white-space:nowrap">${d}</td>
-            <td style="color:var(--gr);font-weight:700">${fmt(rev)}</td>
-            <td style="color:var(--re)">${fmt(k)}</td>
-            <td style="color:${s1>=0?"var(--cy)":"var(--re)"};font-weight:600">${fmt(s1)}</td>
-            <td style="color:var(--re)">${fmt(op)}</td>
-            <td style="color:${s2>=0?"var(--cy)":"var(--re)"};font-weight:600">${fmt(s2)}</td>
-            <td style="color:var(--re)">${fmt(adm)}</td>
-            <td style="color:${fn>=0?"var(--gr)":"var(--re)"};font-weight:800;font-size:15px">${fmt(fn)}</td>
-          </tr>`;
-        }).join("")}
-      </tbody>
-    </table></div>
-  </div>`;
-}
-
-// ═══════════════════════════════════════
-// PAYROLL PAGE
-// ═══════════════════════════════════════
-function renderPayroll(){
-  const data=ld(K.P,[]);
-  const ro=isReadOnly();
-  return`<div class="card">
-    <div class="ch"><span class="ct">💰 تسجيل المرتبات</span>
-      ${!ro?`<button class="btn bp sm" onclick="payrollForm()">+ إضافة</button>`:""}
-    </div>
-    <div class="tw"><table>
-      <thead><tr><th>#</th><th>التاريخ</th><th>نوع الإيراد</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th>${!ro?"<th></th>":""}</tr></thead>
-      <tbody>${data.length===0?`<tr><td colspan="${ro?8:9}"><div class="empty">لا توجد مرتبات مسجلة</div></td></tr>`:
-        data.map(p=>`<tr>
-          <td>${p.id}</td>
-          <td style="white-space:nowrap">${p.date}</td>
-          <td>${bj("bb",p.rtype||"")}</td>
-          <td>${bj("bc",p.boat||"")}</td>
-          <td style="font-weight:700;color:var(--cy)">${p.employee||""}</td>
-          <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.description||""}</td>
-          <td style="color:var(--go);font-weight:700">${fmt(p.amount)}</td>
-          <td>${p.notes||""}</td>
-          ${!ro?`<td><div class="tda">
-            <button class="btn bg sm" onclick="payrollForm(${p.id})">✏️</button>
-            <button class="btn bd2 sm" onclick="delPayroll(${p.id})">🗑</button>
-          </div></td>`:""}
-        </tr>`).join("")}
-      </tbody>
-    </table></div>
-    ${data.length>0?`<div style="padding:9px 14px;border-top:1px solid var(--bd);font-size:13px">
-      إجمالي المرتبات: <strong style="color:var(--go)">${fmt(data.reduce((a,p)=>a+(+p.amount||0),0))} ج.م</strong>
-    </div>`:""}
-  </div>`;
-}
-function attachPayroll(){}
-
-function renderPayrollView(){
-  return`<div class="card">
-    <div class="fb">
-      <div class="ffi"><label>📅 التاريخ</label><input type="date" id="pv-date"/></div>
-      <div class="ffi"><label>⛵ المركب</label>
-        <select id="pv-boat"><option value="">الكل</option>${BOATS.map(b=>`<option>${b}</option>`).join("")}</select>
-      </div>
-      <div class="ffi"><label>👤 الموظف</label>
-        <select id="pv-emp"><option value="">الكل</option>${EMPLOYEES.map(e=>`<option>${e}</option>`).join("")}</select>
-      </div>
-      <button class="btn bg sm" onclick="filterPayrollView()">↺</button>
-    </div>
-  </div>
-  <div id="pv-table"></div>`;
-}
-function attachPayrollView(){
-  ["pv-date","pv-boat","pv-emp"].forEach(id=>document.getElementById(id)?.addEventListener("change",filterPayrollView));
-  filterPayrollView();
-}
-function filterPayrollView(){
-  const fd=document.getElementById("pv-date")?.value||"";
-  const fb=document.getElementById("pv-boat")?.value||"";
-  const fe=document.getElementById("pv-emp")?.value||"";
-  const data=ld(K.P,[]).filter(p=>
-    (!fd||p.date===fd)&&(!fb||p.boat===fb)&&(!fe||p.employee===fe)
-  );
-  const el=document.getElementById("pv-table");if(!el)return;
-  el.innerHTML=`<div class="card">
-    <div class="ch"><span class="ct">📋 بيان المرتبات</span>${bj("bg2",data.length+" سجل")}</div>
-    <div class="tw"><table>
-      <thead><tr><th>#</th><th>التاريخ</th><th>نوع الإيراد</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th></tr></thead>
-      <tbody>${data.length===0?`<tr><td colspan="8"><div class="empty">لا نتائج</div></td></tr>`:
-        data.map(p=>`<tr>
-          <td>${p.id}</td><td>${p.date}</td>
-          <td>${bj("bb",p.rtype||"")}</td>
-          <td>${bj("bc",p.boat||"")}</td>
-          <td style="font-weight:700;color:var(--cy)">${p.employee||""}</td>
-          <td>${p.description||""}</td>
-          <td style="color:var(--go);font-weight:700">${fmt(p.amount)}</td>
-          <td>${p.notes||""}</td>
-        </tr>`).join("")}
-      </tbody>
-    </table></div>
-    ${data.length>0?`<div style="padding:9px 14px;border-top:1px solid var(--bd);font-size:13px">
-      إجمالي: <strong style="color:var(--go)">${fmt(data.reduce((a,p)=>a+(+p.amount||0),0))} ج.م</strong>
-    </div>`:""}
-  </div>`;
-}
-
-function payrollForm(id){
-  const data=ld(K.P,[]);
-  const p=id?data.find(x=>x.id===id):{date:toDay(),rtype:"إيرادات عامة",boat:BOATS[0],employee:"",description:"",amount:"",notes:""};
-  openModal(id?"تعديل المرتب":"إضافة مرتب جديد",`
-    <div class="fgrid">
-      <div class="fr3">
-        <div class="ff"><label>التاريخ</label><input id="p-date" type="date" value="${p.date||toDay()}"/></div>
-        <div class="ff"><label>نوع الإيراد</label>
-          <select id="p-rtype">${REV_TYPES.map(t=>`<option ${(p.rtype||"")==t?"selected":""}>${t}</option>`).join("")}</select>
-        </div>
-        <div class="ff"><label>⛵ المركب</label>
-          <select id="p-boat">${BOATS.map(b=>`<option ${(p.boat||"")==b?"selected":""}>${b}</option>`).join("")}</select>
-        </div>
-      </div>
-      <div class="fr2">
-        <div class="ff"><label>👤 اسم الموظف</label>
-          <select id="p-emp">
-            <option value="">-- اختر --</option>
-            ${EMPLOYEES.map(e=>`<option ${(p.employee||"")==e?"selected":""}>${e}</option>`).join("")}
-          </select>
-        </div>
-        <div class="ff"><label>المبلغ (ج.م)</label><input id="p-amount" type="number" value="${p.amount||""}"/></div>
-      </div>
-      <div class="ff"><label>البيان</label><textarea id="p-desc" rows="2">${p.description||""}</textarea></div>
-      <div class="ff"><label>ملاحظات</label><input id="p-notes" value="${p.notes||""}"/></div>
-    </div>`,"حفظ",()=>{
-    const data=ld(K.P,[]);
-    const emp=document.getElementById("p-emp").value;
-    if(!emp)return alert("يرجى اختيار الموظف");
-    const rec={
-      id:id||gid(data),
-      date:document.getElementById("p-date").value,
-      rtype:document.getElementById("p-rtype").value,
-      boat:document.getElementById("p-boat").value,
-      employee:emp,
-      description:document.getElementById("p-desc").value,
-      amount:+document.getElementById("p-amount").value||0,
-      notes:document.getElementById("p-notes").value,
-      by_user:currentUser?.id
-    };
-    const newD=id?data.map(x=>x.id===id?rec:x):[...data,rec];
-    sv(K.P,newD);enq(K.P,"u",rec);closeModal();renderPage("payroll");
+  var fd=document.getElementById("ev-date")?.value||"";
+  var ft=document.getElementById("ev-type")?.value||"";
+  var fn2=document.getElementById("ev-name")?.value||"";
+  var data=ld(K.E,[]).filter(function(e){
+    return(!fd||e.date===fd)&&(!ft||(e.exp_type===ft||e.expType===ft))&&(!fn2||(e.name||"").includes(fn2));
   });
+  var el=document.getElementById("ev-table");if(!el)return;
+  var tot=data.reduce(function(a,e){return a+(+e.total||0);},0);
+  var rows=data.length===0?
+    '<tr><td colspan="9"><div class="empty">لا نتائج</div></td></tr>':
+    data.map(function(e){
+      return '<tr><td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bg2",e.exp_type||e.expType||"")+'</td>'+
+        '<td style="font-weight:600">'+(e.name||"")+'</td>'+
+        '<td>'+(e.description||e.desc||"")+'</td>'+
+        '<td>'+fmt(e.egp)+'</td>'+
+        '<td>'+(+e.usd>0?"$"+(+e.usd).toFixed(0):"-")+'</td>'+
+        '<td>'+(+e.eur>0?"€"+(+e.eur).toFixed(0):"-")+'</td>'+
+        '<td style="color:var(--re);font-weight:700">'+fmt(e.total)+'</td></tr>';
+    }).join("");
+  el.innerHTML=
+    '<div class="card">'+
+    '<div class="ch"><span class="ct">📉 بيان المصاريف</span>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+
+    bj("br",data.length+" سجل")+
+    '<button class="btn bs sm" onclick="exportExpExcel()">📥 Excel</button>'+
+    '</div></div>'+
+    '<div class="tw"><table>'+
+    '<thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th>'+
+    '<th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table></div>'+
+    (data.length>0?'<div style="padding:9px 14px;border-top:1px solid var(--bd);font-size:13px">'+
+    'الإجمالي: <strong style="color:var(--re)">'+fmt(tot)+' ج.م</strong></div>':"")+
+    '</div>';
 }
-function delPayroll(id){
-  if(!confirm("حذف؟"))return;
-  const d=ld(K.P,[]);const rec=d.find(x=>x.id===id);
-  sv(K.P,d.filter(x=>x.id!==id));enq(K.P,"d",rec);renderPage("payroll");
-}
-
 // ─── PAYROLL REPORT ───
 function renderPayrollRep(){
   return`
@@ -1834,14 +1623,14 @@ function renderPayrollRep(){
         <label>⛵ المركب</label>
         <select id="pr-boat" style="min-width:140px">
           <option value="">كل المراكب</option>
-          ${BOATS.map(b=>`<option>${b}</option>`).join("")}
+          '+BOATS.map(function(b){return'<option>'+b+'</option>';}).join('')+'
         </select>
       </div>
       <div class="ffi">
         <label>👤 الموظف</label>
         <select id="pr-emp" style="min-width:150px">
           <option value="">كل الموظفين</option>
-          ${EMPLOYEES.map(e=>`<option>${e}</option>`).join("")}
+          '+EMPLOYEES.map(function(e){return'<option>'+e+'</option>';}).join('')+'
         </select>
       </div>
       <button class="btn bg sm" onclick="filterPayrollRep()">↺ مسح</button>
@@ -1857,156 +1646,101 @@ function attachPayrollRep(){
   filterPayrollRep();
 }
 function filterPayrollRep(){
-  const fm=document.getElementById("pr-month")?.value||"";
-  const fb=document.getElementById("pr-boat")?.value||"";
-  const fe=document.getElementById("pr-emp")?.value||"";
+  var fm=document.getElementById("pr-month")?.value||"";
+  var fb=document.getElementById("pr-boat")?.value||"";
+  var fe=document.getElementById("pr-emp")?.value||"";
 
-  const data=ld(K.P,[]).filter(p=>{
-    const matchMonth=!fm||p.date?.startsWith(fm);
-    const matchBoat=!fb||p.boat===fb;
-    const matchEmp=!fe||p.employee===fe;
-    return matchMonth&&matchBoat&&matchEmp;
+  var data=ld(K.P,[]).filter(function(p){
+    var matchM=!fm||p.date&&p.date.startsWith(fm);
+    var matchB=!fb||p.boat===fb;
+    var matchE=!fe||p.employee===fe;
+    return matchM&&matchB&&matchE;
   });
 
-  const total=data.reduce((a,p)=>a+(+p.amount||0),0);
+  var total=data.reduce(function(a,p){return a+(+p.amount||0);},0);
 
-  // Per-employee summary
-  const empMap={};
-  data.forEach(p=>{
-    const k=p.employee||"غير محدد";
+  // Per-employee
+  var empMap={};
+  data.forEach(function(p){
+    var k=p.employee||"غير محدد";
     empMap[k]=(empMap[k]||0)+(+p.amount||0);
   });
 
-  // Per-boat summary
-  const boatMap={};
-  data.forEach(p=>{
-    const k=p.boat||"غير محدد";
+  // Per-boat
+  var boatMap={};
+  data.forEach(function(p){
+    var k=p.boat||"غير محدد";
     boatMap[k]=(boatMap[k]||0)+(+p.amount||0);
   });
 
-  // Summary cards
-  const sumEl=document.getElementById("pr-summary");
-  if(sumEl) sumEl.innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px">
-      <!-- Total card -->
-      <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:20px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--go)"></div>
-        <div style="font-size:12px;color:var(--t2);margin-bottom:6px">💰 إجمالي المرتبات</div>
-        <div style="font-size:26px;font-weight:800;color:var(--go)">${fmt(total)}</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:4px">ج.م • ${data.length} سجل</div>
-      </div>
-      <!-- Per employee -->
-      ${Object.entries(empMap).map(([emp,amt])=>`
-        <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:20px;position:relative;overflow:hidden">
-          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--cy)"></div>
-          <div style="font-size:12px;color:var(--t2);margin-bottom:6px">👤 ${emp}</div>
-          <div style="font-size:22px;font-weight:800;color:var(--cy)">${fmt(amt)}</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:4px">ج.م</div>
-        </div>`).join("")}
-    </div>
-    <!-- Per boat breakdown -->
-    ${Object.keys(boatMap).length>1?`<div class="card" style="margin-bottom:16px">
-      <div class="ch"><span class="ct">⛵ توزيع حسب المركب</span></div>
-      <div class="tw"><table>
-        <thead><tr><th>المركب</th><th>إجمالي المرتبات</th><th>النسبة</th></tr></thead>
-        <tbody>${Object.entries(boatMap).map(([b,amt])=>`<tr>
-          <td>${bj("bc",b)}</td>
-          <td style="color:var(--go);font-weight:700">${fmt(amt)} ج.م</td>
-          <td>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden">
-                <div style="height:100%;width:${total>0?Math.round(amt/total*100):0}%;background:var(--cy);border-radius:4px"></div>
-              </div>
-              <span style="font-size:12px;color:var(--t2);min-width:36px">${total>0?Math.round(amt/total*100):0}%</span>
-            </div>
-          </td>
-        </tr>`).join("")}</tbody>
-      </table></div>
-    </div>`:""}`;
+  // Summary section
+  var sumEl=document.getElementById("pr-summary");
+  if(sumEl){
+    var empCards=Object.entries(empMap).map(function(e){
+      var emp=e[0],amt=e[1];
+      return '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;position:relative;overflow:hidden">'+
+        '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--cy)"></div>'+
+        '<div style="font-size:12px;color:var(--t2);margin-bottom:6px">👤 '+emp+'</div>'+
+        '<div style="font-size:22px;font-weight:800;color:var(--cy)">'+fmt(amt)+'</div>'+
+        '<div style="font-size:11px;color:var(--t3);margin-top:4px">ج.م</div></div>';
+    }).join("");
+
+    var boatRows=Object.entries(boatMap).map(function(e){
+      var b=e[0],amt=e[1];
+      var pct=total>0?Math.round(amt/total*100):0;
+      return '<tr>'+
+        '<td>'+bj("bc",b)+'</td>'+
+        '<td style="color:var(--go);font-weight:700">'+fmt(amt)+' ج.م</td>'+
+        '<td><div style="display:flex;align-items:center;gap:8px">'+
+        '<div style="flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden">'+
+        '<div style="height:100%;width:'+pct+'%;background:var(--cy);border-radius:4px"></div></div>'+
+        '<span style="font-size:12px;color:var(--t2)">'+pct+'%</span></div></td></tr>';
+    }).join("");
+
+    var boatTable=Object.keys(boatMap).length>1?
+      '<div class="card" style="margin-bottom:16px">'+
+      '<div class="ch"><span class="ct">⛵ توزيع حسب المركب</span></div>'+
+      '<div class="tw"><table><thead><tr><th>المركب</th><th>إجمالي المرتبات</th><th>النسبة</th></tr></thead>'+
+      '<tbody>'+boatRows+'</tbody></table></div></div>':
+      "";
+
+    sumEl.innerHTML=
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px">'+
+      '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;position:relative;overflow:hidden">'+
+      '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--go)"></div>'+
+      '<div style="font-size:12px;color:var(--t2);margin-bottom:6px">💰 إجمالي المرتبات</div>'+
+      '<div style="font-size:26px;font-weight:800;color:var(--go)">'+fmt(total)+'</div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:4px">ج.م • '+data.length+' سجل</div></div>'+
+      empCards+'</div>'+boatTable;
+  }
 
   // Detail table
-  const tblEl=document.getElementById("pr-table");
-  if(tblEl) tblEl.innerHTML=`<div class="card">
-    <div class="ch">
-      <span class="ct">📋 تفاصيل المرتبات</span>
-      ${bj("bg2",data.length+" سجل")}
-    </div>
-    <div class="tw"><table>
-      <thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th></tr></thead>
-      <tbody>${data.length===0?`<tr><td colspan="7"><div class="empty">لا توجد بيانات بهذه الفلاتر</div></td></tr>`:
-        data.map(p=>`<tr>
-          <td>${p.id}</td>
-          <td style="white-space:nowrap">${p.date}</td>
-          <td>${bj("bc",p.boat||"")}</td>
-          <td style="font-weight:700;color:var(--cy)">${p.employee||""}</td>
-          <td>${p.description||""}</td>
-          <td style="color:var(--go);font-weight:700">${fmt(p.amount)} ج.م</td>
-          <td style="color:var(--t2)">${p.notes||""}</td>
-        </tr>`).join("")}
-      </tbody>
-    </table></div>
-    ${data.length>0?`<div style="padding:10px 16px;border-top:1px solid var(--bd);font-size:13px;display:flex;justify-content:space-between">
-      <span>إجمالي: <strong style="color:var(--go)">${fmt(total)} ج.م</strong></span>
-      <span style="color:var(--t3)">${data.length} سجل</span>
-    </div>`:""}
-  </div>`;
-}
-
-// ═══════════════════════════════════════
-// SLIDESHOW
-// ═══════════════════════════════════════
-const SLIDE_CAPTIONS=[
-  "مراكب سياحية • شرم الشيخ",
-  "الشعاب المرجانية • البحر الأحمر",
-  "رحلات بحرية فاخرة",
-  "شروق الشمس على البحر الأحمر",
-  "رحلات الغطس والسنوركل"
-];
-let curSlide=0;
-let slideTimer=null;
-
-function initSlideshow(){
-  const dotsEl=document.getElementById("ls-dots");
-  const capEl=document.getElementById("ls-caption");
-  if(!dotsEl)return;
-  // Build dots
-  dotsEl.innerHTML="";
-  SLIDE_CAPTIONS.forEach((cap,i)=>{
-    const d=document.createElement("button");
-    d.className="ls-dot"+(i===0?" act":"");
-    d.onclick=()=>goSlide(i);
-    dotsEl.appendChild(d);
-  });
-  // Start auto-advance
-  if(slideTimer)clearInterval(slideTimer);
-  slideTimer=setInterval(()=>goSlide((curSlide+1)%SLIDE_CAPTIONS.length),5000);
-}
-
-function goSlide(n){
-  const dotsEl=document.getElementById("ls-dots");
-  const capEl=document.getElementById("ls-caption");
-  document.getElementById("slide-"+curSlide)?.classList.remove("act");
-  if(dotsEl)dotsEl.children[curSlide]?.classList.remove("act");
-  curSlide=n;
-  document.getElementById("slide-"+curSlide)?.classList.add("act");
-  if(dotsEl)dotsEl.children[curSlide]?.classList.add("act");
-  if(capEl)capEl.textContent=SLIDE_CAPTIONS[curSlide];
-}
-
-// ═══════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════
-if(!localStorage.getItem(K.U))sv(K.U,INIT_USERS);
-updateSyncUI();
-setInterval(updateSyncUI,5000);
-// Auto-sync every 3 minutes to catch changes from other devices
-setInterval(function(){
-  if(isOnline&&currentUser){
-    console.log("Auto-sync...");
-    drain();
+  var tblEl=document.getElementById("pr-table");
+  if(tblEl){
+    var tblRows=data.length===0?
+      '<tr><td colspan="7"><div class="empty">لا توجد بيانات بهذه الفلاتر</div></td></tr>':
+      data.map(function(p){
+        return '<tr><td>'+p.id+'</td>'+
+          '<td style="white-space:nowrap">'+p.date+'</td>'+
+          '<td>'+bj("bc",p.boat||"")+'</td>'+
+          '<td style="font-weight:700;color:var(--cy)">'+(p.employee||"")+'</td>'+
+          '<td>'+(p.description||"")+'</td>'+
+          '<td style="color:var(--go);font-weight:700">'+fmt(p.amount)+' ج.م</td>'+
+          '<td style="color:var(--t2)">'+(p.notes||"")+'</td></tr>';
+      }).join("");
+    tblEl.innerHTML=
+      '<div class="card">'+
+      '<div class="ch"><span class="ct">📋 تفاصيل المرتبات</span>'+
+      bj("bg2",data.length+" سجل")+
+      '</div>'+
+      '<div class="tw"><table>'+
+      '<thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>الموظف</th>'+
+      '<th>البيان</th><th>المبلغ</th><th>ملاحظات</th></tr></thead>'+
+      '<tbody>'+tblRows+'</tbody></table></div>'+
+      (data.length>0?
+        '<div style="padding:10px 16px;border-top:1px solid var(--bd);font-size:13px;display:flex;justify-content:space-between">'+
+        '<span>إجمالي: <strong style="color:var(--go)">'+fmt(total)+' ج.م</strong> • '+data.length+' سجل</span>'+
+        '<button class="btn bs sm" onclick="exportPayrollExcel()">📥 تصدير Excel</button>'+
+        '</div>':"")+'</div>';
   }
-},3*60*1000);
-initSlideshow();
-</script>
-</body>
-</html>
+}>

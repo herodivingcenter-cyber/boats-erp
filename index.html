@@ -230,6 +230,12 @@ select option{background:var(--bg2)}
 .ls-brand-sub{color:rgba(255,255,255,.55);font-size:11px;margin-top:1px;}
 
 
+/* SUB NAV */
+.sni-sub{padding:7px 10px 7px 14px;font-size:13px;color:var(--t3);margin-right:8px;
+  border-right:2px solid rgba(8,145,178,.2);}
+.sni-sub:hover{color:var(--t1);background:rgba(29,78,216,.1);}
+.sni-sub.act{color:var(--cy);background:rgba(8,145,178,.1);}
+
 /* SYNC BAR */
 .sybar{position:fixed;bottom:0;left:0;right:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;
@@ -243,28 +249,56 @@ select option{background:var(--bg2)}
   border-radius:var(--r2);padding:9px 12px;font-size:12px;color:#fca5a5;
   display:flex;align-items:center;gap:7px;margin-bottom:12px}
 
+/* SUB NAV ITEMS */
+.sni-sub{
+  padding-right:28px !important;
+  font-size:13px !important;
+  opacity:.85;
+}
+.sni-sub:hover{opacity:1}
+.nav-sub{border-right:2px solid rgba(8,145,178,.25);margin-right:14px;}
+
 /* MOBILE */
 @media(max-width:900px){
-  .side{width:250px;transform:translateX(100%)}
+  html,body{font-size:14px}
+  .side{width:260px;transform:translateX(100%)}
   .side.open{transform:translateX(0)}
-  .main{margin-right:0}
+  .main{margin-right:0 !important}
   .hmb{display:block}
   .sclose-btn{display:block}
   .sg{grid-template-columns:1fr 1fr;gap:10px}
-  .top{height:52px;padding:0 14px}
-  .tpt{font-size:15px}
+  .top{height:52px;padding:0 12px}
+  .tpt{font-size:14px}
   .cnt{padding:10px}
   table{font-size:12px}
-  thead th{padding:8px 10px;font-size:10px}
-  tbody td{padding:8px 10px}
+  thead th{padding:7px 9px;font-size:10px}
+  tbody td{padding:7px 9px}
   .fr3{grid-template-columns:1fr 1fr}
   .fr4{grid-template-columns:1fr 1fr}
+  .ch{padding:10px 12px}
+  .cb{padding:12px}
+  .ct{font-size:13px}
+  .btn{font-size:12px;padding:6px 11px}
+  .sm{padding:4px 8px;font-size:11px}
+  .fb{padding:10px 12px;gap:8px}
+  .ffi input,.ffi select{min-width:110px;font-size:12px}
+  #d-kpi{grid-template-columns:1fr 1fr !important}
+  .modal{margin:8px}
+  .mbody{padding:14px}
+  .mh{padding:12px 14px}
+  .card{margin-bottom:12px}
 }
 @media(max-width:480px){
+  html,body{font-size:13px}
   .sg{grid-template-columns:1fr 1fr}
-  .fr2{grid-template-columns:1fr}
-  .lc{padding:24px 18px;margin:12px}
+  .fr2,.fr3,.fr4{grid-template-columns:1fr 1fr}
+  .lc{padding:20px 16px;margin:10px}
   .cnt{padding:8px}
+  .top{padding:0 10px}
+  table{font-size:11px}
+  thead th{padding:6px 7px;font-size:9px}
+  tbody td{padding:6px 7px}
+  .btn{font-size:11px;padding:5px 9px}
 }
 </style>
 </head>
@@ -346,38 +380,7 @@ select option{background:var(--bg2)}
   </div>
 </div>
 
-<script>
-// ── SLIDESHOW ──
-const SLIDES=[
-  {id:0,caption:"مراكب سياحية • شرم الشيخ"},
-  {id:1,caption:"الشعاب المرجانية • البحر الأحمر"},
-  {id:2,caption:"رحلات بحرية فاخرة"},
-  {id:3,caption:"شروق الشمس على البحر الأحمر"},
-  {id:4,caption:"رحلات الغطس والسنوركل"},
-];
-let curSlide=0;
-const dotsEl=document.getElementById("ls-dots");
-const capEl=document.getElementById("ls-caption");
 
-// Build dots
-SLIDES.forEach((s,i)=>{
-  const d=document.createElement("button");
-  d.className="ls-dot"+(i===0?" act":"");
-  d.onclick=()=>goSlide(i);
-  dotsEl.appendChild(d);
-});
-
-function goSlide(n){
-  document.getElementById("slide-"+curSlide)?.classList.remove("act");
-  dotsEl.children[curSlide]?.classList.remove("act");
-  curSlide=n;
-  document.getElementById("slide-"+curSlide)?.classList.add("act");
-  dotsEl.children[curSlide]?.classList.add("act");
-  if(capEl)capEl.textContent=SLIDES[curSlide].caption;
-}
-
-setInterval(()=>goSlide((curSlide+1)%SLIDES.length),5000);
-</script>
 
 <!-- MAIN APP -->
 <div id="main-app" style="display:none">
@@ -554,26 +557,40 @@ async function pull(){
   }
 }
 
+let draining=false;
 async function drain(){
-  const q=ld(K.Q,[]);
+  if(draining)return; // prevent parallel drains
+  draining=true;
   syncMsg="syncing";updateSyncUI();
   try{
+    const q=ld(K.Q,[]);
+    // Push pending ops first
     for(const item of q){
       const t=TBL[item.t];if(!t)continue;
       if(item.op==="u"){
-        const row={...item.p};
+        const row=Object.assign({},item.p);
         if(row.desc!==undefined){row.description=row.desc;delete row.desc;}
         await sbUpsert(t,[row]);
-      } else await sbDel(t,item.p.id);
+      } else {
+        await sbDel(t,item.p.id);
+      }
     }
+    // ALWAYS pull fresh data from Supabase (even if queue was empty)
     await pull();
-    sv(K.Q,[]);sv(K.LS,new Date().toISOString());
-    syncMsg="✅ تمت المزامنة";updateSyncUI();
-    setTimeout(()=>{syncMsg="";updateSyncUI();},3000);
-    if(currentPage)renderPage(currentPage);
-  } catch{
-    syncMsg="⚠️ فشلت المزامنة";updateSyncUI();
-    setTimeout(()=>{syncMsg="";updateSyncUI();},4000);
+    sv(K.Q,[]);
+    sv(K.LS,new Date().toISOString());
+    syncMsg="✅ تمت المزامنة";
+    updateSyncUI();
+    // Refresh current page with new data
+    if(currentUser&&currentPage)renderPage(currentPage);
+    setTimeout(function(){syncMsg="";updateSyncUI();},3000);
+  }catch(e){
+    console.error("Sync error:",e);
+    syncMsg="⚠️ فشلت المزامنة";
+    updateSyncUI();
+    setTimeout(function(){syncMsg="";updateSyncUI();},4000);
+  }finally{
+    draining=false;
   }
 }
 
@@ -613,10 +630,13 @@ async function doLogin(){
     document.getElementById("user-role").textContent=ROLE_LABELS[found.role]||"مستخدم";
     buildNav();
     updateSyncUI();
-    if(isOnline)drain();
     // HR starts on payroll page, not dash
     const startPage=found.role==="hr"?"payroll":"dash";
     navigate(startPage);
+    // Always pull fresh data from Supabase after login
+    if(isOnline){
+      drain(); // this will pull all tables and refresh page
+    }
     if(found.username==="admin"&&found.password==="admin123"){
       setTimeout(()=>alert("⚠️ تنبيه: يرجى تغيير كلمة السر الافتراضية من صفحة المستخدمين!"),1500);
     }
@@ -655,17 +675,20 @@ const NAV_DEF=[
     {id:"lists",ic:"📋",l:"القوائم",roles:["admin","user","hr"]}
   ]},
   {g:"الإيرادات",items:[
-    {id:"se",ic:"💼",l:"تسجيل المبيعات",roles:["admin","user"]},
-    {id:"sv",ic:"📈",l:"بيان المبيعات",roles:["admin","user","viewer"]}
+    {id:"se",ic:"💼",l:"تسجيل المبيعات",roles:["admin","user"],
+      sub:[{id:"sv",ic:"📈",l:"بيان المبيعات",roles:["admin","user","viewer"]}]},
   ]},
   {g:"المصاريف",items:[
-    {id:"ee",ic:"🧾",l:"تسجيل المصاريف",roles:["admin","user"]},
-    {id:"ev",ic:"📉",l:"بيان المصاريف",roles:["admin","user","viewer"]}
+    {id:"ee",ic:"🧾",l:"تسجيل المصاريف",roles:["admin","user"],
+      sub:[{id:"ev",ic:"📉",l:"بيان المصاريف",roles:["admin","user","viewer"]}]},
   ]},
   {g:"الموارد البشرية",items:[
-    {id:"payroll",ic:"💰",l:"تسجيل المرتبات",roles:["admin","hr"]},
-    {id:"payroll-view",ic:"📋",l:"بيان المرتبات",roles:["admin","hr","viewer"]},
-    {id:"payroll-rep",ic:"📊",l:"تقارير المرتبات",roles:["admin","hr","user","viewer"]}
+    {id:"payroll",ic:"💰",l:"تسجيل المرتبات",roles:["admin","hr"],
+      sub:[
+        {id:"payroll-view",ic:"📋",l:"بيان المرتبات",roles:["admin","hr","viewer"]},
+        {id:"payroll-rep",ic:"📊",l:"تقارير المرتبات",roles:["admin","hr","user","viewer"]}
+      ]},
+    {id:"payroll-rep",ic:"📊",l:"تقارير المرتبات",roles:["user","viewer"]},
   ]},
   {g:"التقارير",items:[
     {id:"rep",ic:"📊",l:"التقارير",roles:["admin","user","viewer"]}
@@ -679,8 +702,14 @@ function canAccess(id){
   const role=currentUser?.role||"viewer";
   if(role==="admin")return true;
   const allItems=NAV_DEF.flatMap(g=>g.items);
+  // Check top-level items
   const item=allItems.find(x=>x.id===id);
-  return !item||!item.roles||item.roles.includes(role);
+  if(item)return !item.roles||item.roles.includes(role);
+  // Check sub-items
+  const allSubs=allItems.flatMap(x=>x.sub||[]);
+  const sub=allSubs.find(x=>x.id===id);
+  if(sub)return !sub.roles||sub.roles.includes(role);
+  return true;
 }
 function isReadOnly(){return currentUser?.role==="viewer";}
 
@@ -688,18 +717,60 @@ function buildNav(){
   const role=currentUser?.role||"viewer";
   const nav=document.getElementById("nav-links");
   nav.innerHTML="";
+
   NAV_DEF.forEach(group=>{
     const items=group.items.filter(it=>!it.roles||it.roles.includes(role));
     if(!items.length)return;
+
     const g=document.createElement("div");g.className="sng";
     g.innerHTML=`<div class="sngt">${group.g}</div>`;
+
     items.forEach(it=>{
+      // Check if this item has sub-items visible to this role
+      const subs=(it.sub||[]).filter(s=>!s.roles||s.roles.includes(role));
+      const isParentActive=currentPage===it.id||subs.some(s=>s.id===currentPage);
+      const isOpen=isParentActive; // auto-open if child is active
+
+      // Parent item
       const d=document.createElement("div");
       d.className="sni"+(currentPage===it.id?" act":"");
-      d.dataset.id=it.id;
-      d.innerHTML=`<span style="font-size:15px;flex-shrink:0">${it.ic}</span>${it.l}`;
-      d.onclick=()=>navigate(it.id);
+      if(subs.length){
+        // Has children — show expand arrow
+        d.innerHTML=`<span style="font-size:15px;flex-shrink:0">${it.ic}</span>
+          <span style="flex:1">${it.l}</span>
+          <span class="nav-arrow" style="font-size:11px;color:var(--t3);transition:transform .2s;transform:${isOpen?"rotate(90deg)":"rotate(0deg)"}"">▶</span>`;
+        d.onclick=()=>{
+          // Toggle sub-menu
+          const sub=d.nextElementSibling;
+          if(sub&&sub.classList.contains("nav-sub")){
+            const open=sub.style.display!=="none";
+            sub.style.display=open?"none":"block";
+            const arrow=d.querySelector(".nav-arrow");
+            if(arrow)arrow.style.transform=open?"rotate(0deg)":"rotate(90deg)";
+          }
+          navigate(it.id);
+        };
+      } else {
+        d.innerHTML=`<span style="font-size:15px;flex-shrink:0">${it.ic}</span>${it.l}`;
+        d.onclick=()=>navigate(it.id);
+      }
       g.appendChild(d);
+
+      // Sub-items container
+      if(subs.length){
+        const subDiv=document.createElement("div");
+        subDiv.className="nav-sub";
+        subDiv.style.display=isOpen?"block":"none";
+        subs.forEach(s=>{
+          const sd=document.createElement("div");
+          sd.className="sni sni-sub"+(currentPage===s.id?" act":"");
+          sd.innerHTML=`<span style="font-size:11px;color:var(--t3);margin-right:4px">└</span>
+            <span style="font-size:13px;flex-shrink:0">${s.ic}</span>${s.l}`;
+          sd.onclick=()=>navigate(s.id);
+          subDiv.appendChild(sd);
+        });
+        g.appendChild(subDiv);
+      }
     });
     nav.appendChild(g);
   });
@@ -708,10 +779,10 @@ function buildNav(){
 function navigate(id){
   if(!canAccess(id))return;
   currentPage=id;
-  closeSide();
   document.getElementById("page-title").textContent=TITLES[id]||id;
-  buildNav();
+  buildNav(); // rebuild nav first so sub-items appear/hide
   renderPage(id);
+  closeSide();
 }
 
 function toggleSide(){
@@ -773,276 +844,184 @@ function renderPage(id){
 
 // ─── DASHBOARD ───
 function renderDash(){
-  const today=toDay();
-  const curMonth=today.slice(0,7);
-  return`
-  <!-- FILTERS -->
-  <div class="card" style="margin-bottom:16px">
-    <div class="fb" style="flex-wrap:wrap">
-      <div class="ffi"><label>📅 من</label><input type="date" id="df-from" value="${curMonth}-01"/></div>
-      <div class="ffi"><label>📅 إلى</label><input type="date" id="df-to" value="${today}"/></div>
-      <div class="ffi"><label>⛵ المركب</label>
-        <select id="df-boat"><option value="">كل المراكب</option>${BOATS.map(b=>`<option>${b}</option>`).join("")}</select>
-      </div>
-      <div style="display:flex;gap:6px;align-items:flex-end">
-        <button class="btn bp sm" onclick="updateDash()">🔍 تطبيق</button>
-        <button class="btn bg sm" onclick="resetDash()">↺</button>
-      </div>
-    </div>
-  </div>
-  <!-- KPI CARDS -->
-  <div id="d-kpi"></div>
-  <!-- CHARTS ROW -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="d-charts-row">
-    <div id="d-boats-chart"></div>
-    <div id="d-exp-chart"></div>
-  </div>
-  <!-- BOATS TABLE -->
-  <div id="d-boats-table"></div>
-  <!-- TRENDS -->
-  <div id="d-trends"></div>
-  <!-- RECENT -->
-  <div id="d-recent"></div>`;
+  const today=toDay(), m=today.slice(0,7);
+  return(
+    '<div class="card" style="margin-bottom:16px">'+
+      '<div class="fb" style="flex-wrap:wrap">'+
+        '<div class="ffi"><label>📅 من</label><input type="date" id="df-from" value="'+m+'-01"/></div>'+
+        '<div class="ffi"><label>📅 إلى</label><input type="date" id="df-to" value="'+today+'"/></div>'+
+        '<div class="ffi"><label>⛵ المركب</label>'+
+          '<select id="df-boat"><option value="">كل المراكب</option>'+
+          BOATS.map(function(b){return'<option>'+b+'</option>';}).join('')+
+          '</select>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;align-items:flex-end">'+
+          '<button class="btn bp sm" onclick="updateDash()">🔍 تطبيق</button>'+
+          '<button class="btn bg sm" onclick="resetDash()">↺</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div id="d-kpi" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px"></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">'+
+      '<div id="d-boats-chart"></div>'+
+      '<div id="d-exp-chart"></div>'+
+    '</div>'+
+    '<div id="d-boats-table" style="margin-bottom:16px"></div>'+
+    '<div id="d-recent"></div>'
+  );
 }
 
 function attachDash(){
-  ["df-from","df-to","df-boat"].forEach(id=>
-    document.getElementById(id)?.addEventListener("change",updateDash)
-  );
-  updateDash();
+  setTimeout(function(){
+    var els=["df-from","df-to","df-boat"];
+    els.forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.addEventListener("change",updateDash);
+    });
+    updateDash();
+  },30);
 }
 
 function resetDash(){
-  const today=toDay(),m=today.slice(0,7);
-  document.getElementById("df-from").value=m+"-01";
-  document.getElementById("df-to").value=today;
-  document.getElementById("df-boat").value="";
+  var today=toDay(),m=today.slice(0,7);
+  var f=document.getElementById("df-from");
+  var t=document.getElementById("df-to");
+  var b=document.getElementById("df-boat");
+  if(f)f.value=m+"-01";
+  if(t)t.value=today;
+  if(b)b.value="";
   updateDash();
 }
 
-function barChart(data,colorVar){
-  // Simple CSS bar chart
-  const max=Math.max(...data.map(x=>x.v),1);
-  return data.map(x=>`
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-      <div style="width:80px;font-size:12px;font-weight:600;color:var(--t1);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.l}</div>
-      <div style="flex:1;height:22px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;position:relative">
-        <div style="height:100%;width:${max>0?Math.round(x.v/max*100):0}%;background:${colorVar};border-radius:4px;transition:width .5s ease;display:flex;align-items:center;padding-right:8px">
-        </div>
-      </div>
-      <div style="width:90px;font-size:12px;font-weight:700;color:${colorVar};text-align:left">${fmt(x.v)}</div>
-    </div>`).join("");
-}
-
-function miniLine(points,color){
-  if(!points.length)return`<div style="color:var(--t3);font-size:12px;text-align:center;padding:20px">لا بيانات</div>`;
-  const vals=points.map(p=>p.v);
-  const max=Math.max(...vals,1),min=Math.min(...vals,0);
-  const range=max-min||1;
-  const W=300,H=80,pad=10;
-  const pts=points.map((p,i)=>{
-    const x=pad+(i/(points.length-1||1))*(W-pad*2);
-    const y=H-pad-((p.v-min)/range)*(H-pad*2);
-    return`${x},${y}`;
-  });
-  return`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:80px">
-    <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${color}" stop-opacity=".3"/>
-      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
-    </linearGradient></defs>
-    <polyline points="${pts.join(" ")}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
-    ${points.length>1?`<polygon points="${pts[0]},${H} ${pts.join(" ")} ${pts[pts.length-1].split(",")[0]},${H}" fill="url(#lg)"/>`:""}
-    ${points.map((p,i)=>{
-      const x=pad+(i/(points.length-1||1))*(W-pad*2);
-      const y=H-pad-((p.v-min)/range)*(H-pad*2);
-      return`<circle cx="${x}" cy="${y}" r="3" fill="${color}"/>
-        <title>${p.l}: ${fmt(p.v)}</title>`;
-    }).join("")}
-  </svg>`;
-}
-
 function updateDash(){
-  const fd=document.getElementById("df-from")?.value||"";
-  const ft=document.getElementById("df-to")?.value||"";
-  const fb=document.getElementById("df-boat")?.value||"";
+  var kpiEl=document.getElementById("d-kpi");
+  if(!kpiEl)return;
 
-  const sales=ld(K.S,[]);
-  const exps=ld(K.E,[]);
-  const pay=ld(K.P,[]);
+  var fd=document.getElementById("df-from")?.value||"";
+  var ft=document.getElementById("df-to")?.value||"";
+  var fb=document.getElementById("df-boat")?.value||"";
 
-  const inRange=d=>(!fd||d>=fd)&&(!ft||d<=ft);
-  const fs=sales.filter(s=>inRange(s.date)&&(!fb||s.boat===fb));
-  const fe=exps.filter(e=>inRange(e.date)&&(!fb||e.boat===fb));
-  const fp=pay.filter(p=>inRange(p.date)&&(!fb||p.boat===fb));
+  var sales=ld(K.S,[]);
+  var exps=ld(K.E,[]);
+  var pay=ld(K.P,[]);
 
-  const rev=fs.reduce((a,s)=>a+(+s.total||0),0);
-  const exp=fe.reduce((a,e)=>a+(+e.total||0),0);
-  const payTotal=fp.reduce((a,p)=>a+(+p.amount||0),0);
-  const net=rev-exp-payTotal;
-  const kit=fe.filter(e=>e.exp_type==="المطابخ").reduce((a,e)=>a+(+e.total||0),0);
-  const op=fe.filter(e=>e.exp_type==="مصاريف التشغيل").reduce((a,e)=>a+(+e.total||0),0);
-  const adm=fe.filter(e=>e.exp_type==="المصاريف الإدارية").reduce((a,e)=>a+(+e.total||0),0);
+  var fs=sales.filter(function(s){return(!fd||s.date>=fd)&&(!ft||s.date<=ft)&&(!fb||s.boat===fb);});
+  var fe=exps.filter(function(e){return(!fd||e.date>=fd)&&(!ft||e.date<=ft)&&(!fb||e.boat===fb);});
+  var fp=pay.filter(function(p){return(!fd||p.date>=fd)&&(!ft||p.date<=ft)&&(!fb||p.boat===fb);});
 
-  // ── KPI Cards ──
-  const kpiEl=document.getElementById("d-kpi");
-  if(kpiEl) kpiEl.innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px">
-      ${[
-        {ic:"💰",l:"إجمالي الإيرادات",v:rev,c:"var(--cy)",sub:`${fs.length} رحلة`},
-        {ic:"📊",l:"إجمالي المصاريف",v:exp+payTotal,c:"var(--re)",sub:`مطابخ: ${fmt(kit)}`},
-        {ic:"📈",l:"صافي الربح",v:net,c:net>=0?"var(--gr)":"var(--re)",sub:net>=0?"✅ ربح":"⚠️ خسارة"},
-        {ic:"👥",l:"إجمالي المرتبات",v:payTotal,c:"var(--go)",sub:`${fp.length} سجل`},
-      ].map(x=>`
-        <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;position:relative;overflow:hidden">
-          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${x.c}"></div>
-          <div style="font-size:24px;margin-bottom:8px">${x.ic}</div>
-          <div style="font-size:11px;color:var(--t2);margin-bottom:4px">${x.l}</div>
-          <div style="font-size:22px;font-weight:800;color:${x.c}">${fmt(x.v)}</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:4px">${x.sub}</div>
-        </div>`).join("")}
-    </div>`;
+  var rev=fs.reduce(function(a,s){return a+(+s.total||0);},0);
+  var exp=fe.reduce(function(a,e){return a+(+e.total||0);},0);
+  var payT=fp.reduce(function(a,p){return a+(+p.amount||0);},0);
+  var net=rev-exp-payT;
+  var kit=fe.filter(function(e){return e.exp_type==="المطابخ";}).reduce(function(a,e){return a+(+e.total||0);},0);
+  var opX=fe.filter(function(e){return e.exp_type==="مصاريف التشغيل";}).reduce(function(a,e){return a+(+e.total||0);},0);
+  var adm=fe.filter(function(e){return e.exp_type==="المصاريف الإدارية";}).reduce(function(a,e){return a+(+e.total||0);},0);
 
-  // ── Boats bar chart ──
-  const boatsChartEl=document.getElementById("d-boats-chart");
-  if(boatsChartEl){
-    const boatData=BOATS.map(b=>({
-      l:b,
-      v:fs.filter(s=>s.boat===b).reduce((a,s)=>a+(+s.total||0),0)
-    })).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
-    boatsChartEl.innerHTML=`
-      <div class="card">
-        <div class="ch"><span class="ct">⛵ إيرادات المراكب</span></div>
-        <div class="cb">
-          ${boatData.length?barChart(boatData,"var(--cy)"):`<div class="empty">لا بيانات</div>`}
-        </div>
-      </div>`;
+  // KPI cards
+  var kpis=[
+    {ic:"💰",l:"إجمالي الإيرادات",v:rev,c:"var(--cy)",sub:fs.length+" رحلة"},
+    {ic:"📊",l:"إجمالي المصاريف",v:exp+payT,c:"var(--re)",sub:"مطابخ: "+fmt(kit)},
+    {ic:"📈",l:"صافي الربح",v:net,c:net>=0?"var(--gr)":"var(--re)",sub:net>=0?"✅ ربح":"⚠️ خسارة"},
+    {ic:"👥",l:"إجمالي المرتبات",v:payT,c:"var(--go)",sub:fp.length+" سجل"},
+  ];
+  kpiEl.innerHTML=kpis.map(function(x){
+    return'<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;position:relative;overflow:hidden">'+
+      '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+x.c+'"></div>'+
+      '<div style="font-size:24px;margin-bottom:8px">'+x.ic+'</div>'+
+      '<div style="font-size:11px;color:var(--t2);margin-bottom:4px">'+x.l+'</div>'+
+      '<div style="font-size:22px;font-weight:800;color:'+x.c+'">'+fmt(x.v)+'</div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:4px">'+x.sub+'</div>'+
+    '</div>';
+  }).join("");
+
+  // Boats bar chart
+  var boatEl=document.getElementById("d-boats-chart");
+  if(boatEl){
+    var bdata=BOATS.map(function(b){
+      return{l:b,v:fs.filter(function(s){return s.boat===b;}).reduce(function(a,s){return a+(+s.total||0);},0)};
+    }).filter(function(x){return x.v>0;}).sort(function(a,b2){return b2.v-a.v;});
+    var bmax=Math.max.apply(null,bdata.map(function(x){return x.v;})||[1]);
+    boatEl.innerHTML='<div class="card"><div class="ch"><span class="ct">⛵ إيرادات المراكب</span></div><div class="cb">'+
+      (bdata.length===0?'<div class="empty">لا بيانات</div>':
+        bdata.map(function(x){
+          var pct=bmax>0?Math.round(x.v/bmax*100):0;
+          return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
+            '<div style="width:70px;font-size:12px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+x.l+'</div>'+
+            '<div style="flex:1;height:20px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden">'+
+              '<div style="height:100%;width:'+pct+'%;background:var(--cy);border-radius:4px;transition:width .5s"></div>'+
+            '</div>'+
+            '<div style="width:85px;font-size:12px;font-weight:700;color:var(--cy);text-align:left">'+fmt(x.v)+'</div>'+
+          '</div>';
+        }).join(""))+'</div></div>';
   }
 
-  // ── Expenses pie-like bar chart ──
-  const expChartEl=document.getElementById("d-exp-chart");
-  if(expChartEl){
-    const expData=[
-      {l:"المطابخ",v:kit},
-      {l:"التشغيل",v:op},
-      {l:"الإدارية",v:adm},
-      {l:"المرتبات",v:payTotal},
-    ].filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
-    const totalExp=expData.reduce((a,x)=>a+x.v,0);
-    expChartEl.innerHTML=`
-      <div class="card">
-        <div class="ch"><span class="ct">📊 توزيع المصاريف</span></div>
-        <div class="cb">
-          ${expData.length?expData.map((x,i)=>{
-            const colors=["var(--go)","#60a5fa","var(--re)","var(--cy)"];
-            const pct=totalExp>0?Math.round(x.v/totalExp*100):0;
-            return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-              <div style="width:10px;height:10px;border-radius:50%;background:${colors[i]};flex-shrink:0"></div>
-              <div style="flex:1;font-size:12px;color:var(--t1)">${x.l}</div>
-              <div style="width:120px;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden">
-                <div style="height:100%;width:${pct}%;background:${colors[i]};border-radius:4px"></div>
-              </div>
-              <div style="width:32px;font-size:11px;color:var(--t3)">${pct}%</div>
-              <div style="width:80px;font-size:12px;font-weight:700;color:${colors[i]};text-align:left">${fmt(x.v)}</div>
-            </div>`;
-          }).join(""):`<div class="empty">لا بيانات</div>`}
-        </div>
-      </div>`;
+  // Expense breakdown
+  var expEl=document.getElementById("d-exp-chart");
+  if(expEl){
+    var colors=["var(--go)","#60a5fa","var(--re)","var(--cy)"];
+    var edata=[
+      {l:"المطابخ",v:kit},{l:"التشغيل",v:opX},{l:"الإدارية",v:adm},{l:"المرتبات",v:payT}
+    ].filter(function(x){return x.v>0;}).sort(function(a,b2){return b2.v-a.v;});
+    var etot=edata.reduce(function(a,x){return a+x.v;},0);
+    expEl.innerHTML='<div class="card"><div class="ch"><span class="ct">📊 توزيع المصاريف</span></div><div class="cb">'+
+      (edata.length===0?'<div class="empty">لا بيانات</div>':
+        edata.map(function(x,i){
+          var pct=etot>0?Math.round(x.v/etot*100):0;
+          return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
+            '<div style="width:10px;height:10px;border-radius:50%;background:'+colors[i%4]+';flex-shrink:0"></div>'+
+            '<div style="flex:1;font-size:12px;color:var(--t1)">'+x.l+'</div>'+
+            '<div style="width:100px;height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden">'+
+              '<div style="height:100%;width:'+pct+'%;background:'+colors[i%4]+';border-radius:4px"></div>'+
+            '</div>'+
+            '<div style="width:28px;font-size:10px;color:var(--t3)">'+pct+'%</div>'+
+            '<div style="width:75px;font-size:12px;font-weight:700;color:'+colors[i%4]+';text-align:left">'+fmt(x.v)+'</div>'+
+          '</div>';
+        }).join(""))+'</div></div>';
   }
 
-  // ── Boats table ──
-  const boatsTblEl=document.getElementById("d-boats-table");
-  if(boatsTblEl){
-    const rows=BOATS.map(b=>{
-      const br=fs.filter(s=>s.boat===b).reduce((a,s)=>a+(+s.total||0),0);
-      const be=fe.filter(e=>e.boat===b).reduce((a,e)=>a+(+e.total||0),0);
-      const bp2=fp.filter(p=>p.boat===b).reduce((a,p)=>a+(+p.amount||0),0);
-      const bn=br-be-bp2;
-      const trips=fs.filter(s=>s.boat===b).length;
-      return{b,br,be,bp2,bn,trips};
-    }).filter(r=>r.br>0||r.be>0);
-
-    boatsTblEl.innerHTML=`<div class="card" style="margin-bottom:16px">
-      <div class="ch"><span class="ct">⛵ ملخص المراكب</span></div>
-      <div class="tw"><table>
-        <thead><tr><th>المركب</th><th>الرحلات</th><th>الإيرادات</th><th>المصاريف</th><th>المرتبات</th><th>الصافي</th><th>الأداء</th></tr></thead>
-        <tbody>${rows.length===0?`<tr><td colspan="7"><div class="empty">لا بيانات</div></td></tr>`:
-          rows.map(r=>{
-            const pct=r.br>0?Math.round(r.bn/r.br*100):0;
-            const barColor=pct>=0?"var(--gr)":"var(--re)";
-            return`<tr>
-              <td>${bj("bc",r.b)}</td>
-              <td style="text-align:center">${r.trips}</td>
-              <td style="color:var(--gr);font-weight:700">${fmt(r.br)}</td>
-              <td style="color:var(--re)">${fmt(r.be)}</td>
-              <td style="color:var(--go)">${fmt(r.bp2)}</td>
-              <td style="color:${r.bn>=0?"var(--gr)":"var(--re)"};font-weight:800">${fmt(r.bn)}</td>
-              <td style="min-width:100px">
-                <div style="display:flex;align-items:center;gap:6px">
-                  <div style="flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden">
-                    <div style="height:100%;width:${Math.abs(pct)}%;max-width:100%;background:${barColor};border-radius:4px"></div>
-                  </div>
-                  <span style="font-size:11px;color:${barColor};font-weight:700;min-width:36px">${pct}%</span>
-                </div>
-              </td>
-            </tr>`;
-          }).join("")}
-        </tbody>
-      </table></div>
-    </div>`;
+  // Boats summary table
+  var tblEl=document.getElementById("d-boats-table");
+  if(tblEl){
+    var rows=BOATS.map(function(b){
+      var br=fs.filter(function(s){return s.boat===b;}).reduce(function(a,s){return a+(+s.total||0);},0);
+      var be=fe.filter(function(e){return e.boat===b;}).reduce(function(a,e){return a+(+e.total||0);},0);
+      var bp=fp.filter(function(p){return p.boat===b;}).reduce(function(a,p){return a+(+p.amount||0);},0);
+      var bn=br-be-bp;
+      var trips=fs.filter(function(s){return s.boat===b;}).length;
+      return{b:b,br:br,be:be,bp:bp,bn:bn,trips:trips};
+    }).filter(function(r){return r.br>0||r.be>0;});
+    tblEl.innerHTML='<div class="card"><div class="ch"><span class="ct">⛵ ملخص المراكب</span></div>'+
+      '<div class="tw"><table><thead><tr><th>المركب</th><th>الرحلات</th><th>الإيرادات</th><th>المصاريف</th><th>المرتبات</th><th>الصافي</th></tr></thead>'+
+      '<tbody>'+(rows.length===0?'<tr><td colspan="6"><div class="empty">لا بيانات</div></td></tr>':
+        rows.map(function(r){
+          return'<tr>'+
+            '<td>'+bj("bc",r.b)+'</td>'+
+            '<td style="text-align:center">'+r.trips+'</td>'+
+            '<td style="color:var(--gr);font-weight:700">'+fmt(r.br)+'</td>'+
+            '<td style="color:var(--re)">'+fmt(r.be)+'</td>'+
+            '<td style="color:var(--go)">'+fmt(r.bp)+'</td>'+
+            '<td style="color:'+(r.bn>=0?"var(--gr)":"var(--re)")+';font-weight:800">'+fmt(r.bn)+'</td>'+
+          '</tr>';
+        }).join(""))+'</tbody></table></div></div>';
   }
 
-  // ── Daily trend (last 14 days) ──
-  const trendsEl=document.getElementById("d-trends");
-  if(trendsEl){
-    // Get all dates in range
-    const allDates=[...new Set([...fs.map(s=>s.date),...fe.map(e=>e.date)])].sort();
-    const last=allDates.slice(-14);
-    const revTrend=last.map(d=>({l:d.slice(5),v:fs.filter(s=>s.date===d).reduce((a,s)=>a+(+s.total||0),0)}));
-    const expTrend=last.map(d=>({l:d.slice(5),v:fe.filter(e=>e.date===d).reduce((a,e)=>a+(+e.total||0),0)}));
-
-    trendsEl.innerHTML=last.length<2?"":
-    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card">
-        <div class="ch"><span class="ct">📈 اتجاه الإيرادات</span><span style="font-size:11px;color:var(--t3)">(آخر ${last.length} يوم)</span></div>
-        <div class="cb">
-          ${miniLine(revTrend,"var(--cy)")}
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px">
-            <span>${last[0]?.slice(5)||""}</span><span>${last[last.length-1]?.slice(5)||""}</span>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ch"><span class="ct">📉 اتجاه المصاريف</span><span style="font-size:11px;color:var(--t3)">(آخر ${last.length} يوم)</span></div>
-        <div class="cb">
-          ${miniLine(expTrend,"var(--re)")}
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px">
-            <span>${last[0]?.slice(5)||""}</span><span>${last[last.length-1]?.slice(5)||""}</span>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }
-
-  // ── Recent 5 sales ──
-  const recentEl=document.getElementById("d-recent");
-  if(recentEl){
-    const recent=[...fs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
-    recentEl.innerHTML=`<div class="card">
-      <div class="ch"><span class="ct">🕐 آخر المبيعات</span></div>
-      <div class="tw"><table>
-        <thead><tr><th>التاريخ</th><th>المركب</th><th>السنتر</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th></tr></thead>
-        <tbody>${recent.length===0?`<tr><td colspan="6"><div class="empty">لا بيانات</div></td></tr>`:
-          recent.map(s=>`<tr>
-            <td>${s.date}</td>
-            <td>${bj("bc",s.boat||"")}</td>
-            <td>${s.center||"-"}</td>
-            <td style="color:var(--cy)">${fmt(s.trip)}</td>
-            <td style="color:var(--go)">${fmt(s.kitchen)}</td>
-            <td style="color:var(--gr);font-weight:700">${fmt(s.total)}</td>
-          </tr>`).join("")}
-        </tbody>
-      </table></div>
-    </div>`;
+  // Recent sales
+  var recEl=document.getElementById("d-recent");
+  if(recEl){
+    var recent=fs.slice().sort(function(a,b2){return b2.date.localeCompare(a.date);}).slice(0,5);
+    recEl.innerHTML='<div class="card"><div class="ch"><span class="ct">🕐 آخر المبيعات</span></div>'+
+      '<div class="tw"><table><thead><tr><th>التاريخ</th><th>المركب</th><th>السنتر</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th></tr></thead>'+
+      '<tbody>'+(recent.length===0?'<tr><td colspan="6"><div class="empty">لا بيانات بعد</div></td></tr>':
+        recent.map(function(s){
+          return'<tr>'+
+            '<td>'+s.date+'</td>'+
+            '<td>'+bj("bc",s.boat||"")+'</td>'+
+            '<td>'+(s.center||"-")+'</td>'+
+            '<td style="color:var(--cy)">'+fmt(s.trip)+'</td>'+
+            '<td style="color:var(--go)">'+fmt(s.kitchen)+'</td>'+
+            '<td style="color:var(--gr);font-weight:700">'+fmt(s.total)+'</td>'+
+          '</tr>';
+        }).join(""))+'</tbody></table></div></div>';
   }
 }
 
@@ -1895,11 +1874,60 @@ function filterPayrollRep(){
 }
 
 // ═══════════════════════════════════════
+// SLIDESHOW
+// ═══════════════════════════════════════
+const SLIDE_CAPTIONS=[
+  "مراكب سياحية • شرم الشيخ",
+  "الشعاب المرجانية • البحر الأحمر",
+  "رحلات بحرية فاخرة",
+  "شروق الشمس على البحر الأحمر",
+  "رحلات الغطس والسنوركل"
+];
+let curSlide=0;
+let slideTimer=null;
+
+function initSlideshow(){
+  const dotsEl=document.getElementById("ls-dots");
+  const capEl=document.getElementById("ls-caption");
+  if(!dotsEl)return;
+  // Build dots
+  dotsEl.innerHTML="";
+  SLIDE_CAPTIONS.forEach((cap,i)=>{
+    const d=document.createElement("button");
+    d.className="ls-dot"+(i===0?" act":"");
+    d.onclick=()=>goSlide(i);
+    dotsEl.appendChild(d);
+  });
+  // Start auto-advance
+  if(slideTimer)clearInterval(slideTimer);
+  slideTimer=setInterval(()=>goSlide((curSlide+1)%SLIDE_CAPTIONS.length),5000);
+}
+
+function goSlide(n){
+  const dotsEl=document.getElementById("ls-dots");
+  const capEl=document.getElementById("ls-caption");
+  document.getElementById("slide-"+curSlide)?.classList.remove("act");
+  if(dotsEl)dotsEl.children[curSlide]?.classList.remove("act");
+  curSlide=n;
+  document.getElementById("slide-"+curSlide)?.classList.add("act");
+  if(dotsEl)dotsEl.children[curSlide]?.classList.add("act");
+  if(capEl)capEl.textContent=SLIDE_CAPTIONS[curSlide];
+}
+
+// ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
 if(!localStorage.getItem(K.U))sv(K.U,INIT_USERS);
 updateSyncUI();
 setInterval(updateSyncUI,5000);
+// Auto-sync every 3 minutes to catch changes from other devices
+setInterval(function(){
+  if(isOnline&&currentUser){
+    console.log("Auto-sync...");
+    drain();
+  }
+},3*60*1000);
+initSlideshow();
 </script>
 </body>
 </html>

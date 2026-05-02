@@ -2,509 +2,381 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <meta name="theme-color" content="#0d1b2e"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
 <title>Daily Account Boats</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛵</text></svg>"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛵</text></svg>"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d1b2e;--bg2:#112240;--bl:#1d4ed8;--cy:#0891b2;
-  --go:#d97706;--gr:#059669;--re:#dc2626;
+  --bg:#0d1b2e;--bg2:#112240;--bg3:#1a3358;
+  --bl:#1d4ed8;--cy:#0891b2;--go:#d97706;
+  --gr:#059669;--re:#dc2626;--pu:#7c3aed;
   --t1:#e2e8f0;--t2:#94a3b8;--t3:#475569;
-  --bd:rgba(148,163,184,.15);--r:12px;--r2:8px;
+  --bd:rgba(148,163,184,.15);
+  --r:12px;--r2:8px;
 }
-html,body{background:var(--bg);color:var(--t1);direction:rtl;min-height:100vh;
+html,body{
+  background:var(--bg);color:var(--t1);direction:rtl;
+  min-height:100vh;overflow-x:hidden;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  font-size:16px;-webkit-font-smoothing:antialiased;
-  overflow-x:hidden;max-width:100vw;}
+  font-size:15px;-webkit-font-smoothing:antialiased;
+}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--bl);border-radius:2px}
 
-/* LAYOUT */
-.app{display:flex;min-height:100vh}
-.side{width:270px;min-height:100vh;background:var(--bg2);border-left:1px solid var(--bd);
-  display:flex;flex-direction:column;position:fixed;right:0;top:0;bottom:0;z-index:200;
-  transition:transform .25s ease}
-.side.hidden{transform:translateX(100%)}
+/* ── LAYOUT ── */
+.app{display:flex;min-height:100vh;overflow-x:hidden}
+.side{
+  width:260px;min-height:100vh;background:var(--bg2);
+  border-left:1px solid var(--bd);
+  display:flex;flex-direction:column;
+  position:fixed;right:0;top:0;bottom:0;z-index:200;
+  transition:transform .25s ease;
+}
+.main{margin-right:260px;flex:1;display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden}
 .sov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199}
 .sov.show{display:block}
-.main{margin-right:270px;flex:1;display:flex;flex-direction:column;padding-bottom:44px}
+.hmb{display:none;background:none;border:none;cursor:pointer;color:var(--t1);font-size:24px;padding:4px 8px;line-height:1}
+.sclose-btn{display:none;background:none;border:none;cursor:pointer;color:var(--t2);font-size:18px;padding:2px 6px}
 
-/* SIDEBAR */
-.slogo{padding:20px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
-.sic{width:40px;height:40px;background:linear-gradient(135deg,var(--cy),var(--bl));
+/* ── SIDEBAR ── */
+.slogo{padding:18px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.sic{width:38px;height:38px;background:linear-gradient(135deg,var(--cy),var(--bl));
   border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.slt{font-size:14px;font-weight:800;line-height:1.2}
+.slt{font-size:13px;font-weight:800;line-height:1.2}
 .sls{font-size:10px;color:var(--t2)}
 .snav{flex:1;padding:8px;overflow-y:auto}
 .sng{margin-bottom:4px}
-.sngt{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;
-  letter-spacing:1px;padding:6px 10px 3px}
-.sni{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--r2);
-  cursor:pointer;font-size:14px;font-weight:500;color:var(--t2);
+.sngt{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;padding:6px 10px 3px}
+.sni{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r2);
+  cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);
   transition:background .12s,color .12s;position:relative;margin-bottom:1px}
 .sni:hover{background:rgba(29,78,216,.15);color:var(--t1)}
 .sni.act{background:linear-gradient(135deg,rgba(29,78,216,.25),rgba(8,145,178,.15));color:var(--cy);font-weight:600}
-.sni.act::before{content:'';position:absolute;right:0;top:20%;bottom:20%;
-  width:3px;background:var(--cy);border-radius:2px 0 0 2px}
-.sfoot{padding:12px;border-top:1px solid var(--bd)}
+.sni.act::before{content:'';position:absolute;right:0;top:20%;bottom:20%;width:3px;background:var(--cy);border-radius:2px 0 0 2px}
+.sni-sub{padding-right:28px;font-size:12px;border-right:2px solid rgba(8,145,178,.2);margin-right:10px}
+.sfoot{padding:10px;border-top:1px solid var(--bd)}
+.suc{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:var(--r2);border:1px solid var(--bd)}
+.sua{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--go),var(--re));
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
 .sync-chip{margin-bottom:8px;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.04);
   border:1px solid var(--bd);font-size:10px;display:flex;align-items:center;gap:5px}
-.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.dot.g{background:var(--gr)}.dot.r{background:var(--re)}.dot.s{background:var(--cy);animation:ps .7s alternate infinite}
-@keyframes ps{from{opacity:.3}to{opacity:1}}
-.suc{display:flex;align-items:center;gap:8px;padding:8px 10px;
-  background:rgba(255,255,255,.04);border-radius:var(--r2);border:1px solid var(--bd)}
-.sua{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--go),var(--re));
-  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
 
-/* TOPBAR */
-.top{height:58px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;
+/* ── TOPBAR ── */
+.top{height:56px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;
   background:rgba(13,27,46,.95);border-bottom:1px solid var(--bd);
   position:sticky;top:0;z-index:40}
-.tpt{font-size:17px;font-weight:800;color:var(--cy)}
-.top-right{display:flex;gap:8px;align-items:center;font-size:11px}
-.hmb{display:none;background:none;border:none;cursor:pointer;color:var(--t1);font-size:24px;padding:4px}
-.sclose-btn{display:none;background:none;border:none;cursor:pointer;color:var(--t2);font-size:18px}
+.tpt{font-size:16px;font-weight:800;color:var(--cy)}
 
-/* CONTENT */
-.cnt{padding:20px 22px}
-.page{display:none}.page.act{display:block}
+/* ── CONTENT ── */
+.cnt{padding:18px 20px}
 
-/* CARDS */
-.card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);
-  overflow:hidden;margin-bottom:16px}
-.ch{padding:14px 20px;border-bottom:1px solid var(--bd);
-  display:flex;align-items:center;justify-content:space-between}
-.ct{font-size:15px;font-weight:700}
-.cb{padding:18px}
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.ch{padding:12px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.ct{font-size:14px;font-weight:700}
+.cb{padding:16px}
 
-/* STATS */
-.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
-.sc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+/* ── STATS ── */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.sc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:16px;position:relative;overflow:hidden}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .sc.c::before{background:var(--cy)}.sc.g::before{background:var(--go)}
 .sc.e::before{background:var(--gr)}.sc.r::before{background:var(--re)}
-.sv{font-size:24px;font-weight:800;margin:5px 0 3px}
-.sl{font-size:12px;color:var(--t2)}
+.sv{font-size:22px;font-weight:800;margin:5px 0 3px}
+.sl{font-size:11px;color:var(--t2)}
 
-/* TABLE */
-.tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:14px}
-thead th{background:rgba(29,78,216,.12);padding:11px 14px;text-align:right;
-  font-size:12px;font-weight:700;color:var(--t2);border-bottom:1px solid var(--bd);white-space:nowrap}
-tbody td{padding:10px 14px;border-bottom:1px solid rgba(148,163,184,.07);vertical-align:middle}
+/* ── TABLES ── */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:rgba(29,78,216,.12);padding:10px 13px;text-align:right;
+  font-size:11px;font-weight:700;color:var(--t2);border-bottom:1px solid var(--bd);white-space:nowrap}
+tbody td{padding:10px 13px;border-bottom:1px solid rgba(148,163,184,.07);vertical-align:middle}
 tbody tr:hover td{background:rgba(29,78,216,.05)}
 tbody tr:last-child td{border-bottom:none}
-.tda{display:flex;gap:5px}
-.empty{text-align:center;padding:32px;color:var(--t3);font-size:13px}
+.tda{display:flex;gap:4px;flex-wrap:nowrap}
+.empty{text-align:center;padding:28px;color:var(--t3);font-size:13px}
 
-/* FORMS */
-.fgrid{display:flex;flex-direction:column;gap:14px}
-.fr2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.fr3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.fr4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.ff{display:flex;flex-direction:column;gap:5px}
-.ff label{font-size:12px;font-weight:600;color:var(--t2)}
+/* ── FORMS ── */
+.fg{display:flex;flex-direction:column;gap:12px}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fr3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.fr4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.ff{display:flex;flex-direction:column;gap:4px}
+label{font-size:11px;font-weight:600;color:var(--t2)}
 input,select,textarea{
-  background:#ffffff;
-  border:1px solid #cbd5e1;
-  border-radius:var(--r2);padding:9px 12px;
-  font-family:inherit;font-size:14px;
-  color:#0f2a4a;width:100%;direction:rtl;
-  -webkit-appearance:none;
+  background:#fff;border:1px solid #cbd5e1;border-radius:var(--r2);
+  padding:9px 11px;font-family:inherit;font-size:14px;color:#0f2a4a;
+  width:100%;direction:rtl;-webkit-appearance:none;
   transition:border-color .15s,box-shadow .15s;
 }
-input:hover,select:hover,textarea:hover{
-  border-color:#94a3b8;
-}
-input:focus,select:focus,textarea:focus{
-  outline:none;
-  border-color:#0891b2;
-  box-shadow:0 0 0 3px rgba(8,145,178,.15);
-}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--cy);box-shadow:0 0 0 3px rgba(8,145,178,.15)}
 input::placeholder{color:#94a3b8}
-textarea{resize:vertical;min-height:68px}
-select option{background:#ffffff;color:#0f2a4a}
+input[readonly]{background:#f1f5f9;color:#64748b;cursor:default}
+textarea{resize:vertical;min-height:64px}
+select option{background:#fff;color:#0f2a4a}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
-/* FILTER */
-.fb{display:flex;gap:10px;align-items:flex-end;padding:12px 20px;
+/* ── FILTER BAR ── */
+.fb{display:flex;gap:10px;align-items:flex-end;padding:12px 18px;
   background:rgba(29,78,216,.06);border-bottom:1px solid var(--bd);flex-wrap:wrap}
-.ffi{display:flex;flex-direction:column;gap:4px}
-.ffi label{font-size:11px;font-weight:700;color:var(--t3)}
-.ffi input,.ffi select{min-width:140px;font-size:13px;background:#fdf8f0;border-color:#d4c5a9;color:#0f2a4a}
+.ffi{display:flex;flex-direction:column;gap:3px}
+.ffi label{font-size:10px;font-weight:700;color:var(--t3)}
+.ffi input,.ffi select{background:#fdf8f0;border-color:#d4c5a9;color:#0f2a4a;min-width:130px;font-size:12px}
 
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:var(--r2);
-  font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .12s}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r2);
+  font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .12s;white-space:nowrap}
 .bp{background:var(--bl);color:#fff}.bp:hover{background:#1e40af}
 .bg{background:rgba(255,255,255,.07);color:var(--t2);border:1px solid var(--bd)}.bg:hover{color:var(--t1);background:rgba(255,255,255,.12)}
-.bd2{background:rgba(220,38,38,.12);color:var(--re);border:1px solid rgba(220,38,38,.25)}
-.bs{background:rgba(5,150,105,.12);color:var(--gr);border:1px solid rgba(5,150,105,.25)}
-.sm{padding:5px 10px;font-size:12px}
+.bd2{background:rgba(220,38,38,.12);color:var(--re);border:1px solid rgba(220,38,38,.25)}.bd2:hover{background:rgba(220,38,38,.2)}
+.bs{background:rgba(5,150,105,.12);color:var(--gr);border:1px solid rgba(5,150,105,.25)}.bs:hover{background:rgba(5,150,105,.2)}
+.sm{padding:4px 9px;font-size:11px}
 
-/* BADGES */
-.bj{display:inline-flex;align-items:center;padding:3px 8px;border-radius:12px;font-size:12px;font-weight:600}
+/* ── BADGES ── */
+.bj{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
 .bb{background:rgba(29,78,216,.18);color:#93c5fd}
 .bc{background:rgba(8,145,178,.15);color:#67e8f9}
 .bg2{background:rgba(217,119,6,.15);color:#fcd34d}
 .be{background:rgba(5,150,105,.15);color:#6ee7b7}
 .br{background:rgba(220,38,38,.15);color:#fca5a5}
+.bpu{background:rgba(124,58,237,.15);color:#c4b5fd}
 
-/* MODAL */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
-  z-index:500;align-items:center;justify-content:center;padding:16px}
-.modal-bg.show{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);
-  width:100%;max-width:820px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5)}
-.mh{padding:16px 22px;border-bottom:1px solid var(--bd);display:flex;align-items:center;
+/* ── MODAL ── */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;align-items:center;justify-content:center;padding:14px}
+.mo.show{display:flex}
+.md{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);
+  width:100%;max-width:820px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.mh{padding:14px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;
   justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
-.mht{font-size:15px;font-weight:800}
-.mbody{padding:22px}
-.mf{padding:14px 22px;border-top:1px solid var(--bd);display:flex;gap:8px}
-.xb{background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer}
+.mht{font-size:14px;font-weight:800}
+.mb{padding:20px}
+.mf{padding:12px 20px;border-top:1px solid var(--bd);display:flex;gap:8px}
+.xb{background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;line-height:1;padding:2px}
 .xb:hover{color:var(--re)}
 
-/* LOGIN */
-/* ── LOGIN SLIDESHOW ── */
-.login-wrap{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
-  position:relative;overflow:hidden;background:#051628;
-}
-
-/* Slideshow slides */
-.ls-slide{
-  position:absolute;inset:0;
-  background-size:cover;background-position:center;
-  opacity:0;transition:opacity 1.8s ease;
-  animation:none;
-}
-.ls-slide.act{opacity:1;}
-
-/* Dark overlay gradient on all slides */
-.ls-slide::after{
-  content:'';position:absolute;inset:0;
-  background:
-    linear-gradient(to left, rgba(0,0,0,.15) 0%, transparent 40%),
-    linear-gradient(to top, rgba(0,10,30,.85) 0%, rgba(0,10,30,.3) 50%, rgba(0,10,30,.1) 100%);
-}
-
-/* Ken Burns zoom animation */
-@keyframes kb{from{transform:scale(1)}to{transform:scale(1.08)}}
-.ls-slide.act .ls-img{animation:kb 8s ease-out forwards;}
-.ls-img{
-  position:absolute;inset:0;
-  background-size:cover;background-position:center;
-  width:100%;height:100%;
-}
-
-/* Slide dots */
-.ls-dots{
-  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
-  display:flex;gap:8px;z-index:5;
-}
-.ls-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:rgba(255,255,255,.4);cursor:pointer;
-  transition:all .3s;border:none;padding:0;
-}
-.ls-dot.act{background:#fff;width:24px;border-radius:4px;}
-
-/* Caption */
-.ls-caption{
-  position:absolute;bottom:50px;right:40px;z-index:5;
-  color:rgba(255,255,255,.7);font-size:13px;font-weight:500;
-  text-shadow:0 1px 4px rgba(0,0,0,.5);
-}
-
-/* Login card */
-.lc{
-  width:100%;max-width:420px;margin:16px;
-  background:rgba(5,15,40,.82);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:22px;padding:40px;
-  backdrop-filter:blur(24px);
-  position:relative;z-index:10;
-  box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);
-}
-
-/* Sharm logo watermark */
-.ls-brand{
-  position:absolute;top:24px;right:32px;z-index:10;
-  display:flex;align-items:center;gap:10px;
-}
-.ls-brand-ic{
-  width:44px;height:44px;border-radius:50%;
-  background:rgba(255,255,255,.12);backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.2);
-  display:flex;align-items:center;justify-content:center;font-size:22px;
-}
-.ls-brand-txt{color:rgba(255,255,255,.9);font-size:15px;font-weight:800;
-  text-shadow:0 2px 8px rgba(0,0,0,.5)}
-.ls-brand-sub{color:rgba(255,255,255,.55);font-size:11px;margin-top:1px;}
-
-
-/* SUB NAV */
-.sni-sub{padding:7px 10px 7px 14px;font-size:13px;color:var(--t3);margin-right:8px;
-  border-right:2px solid rgba(8,145,178,.2);}
-.sni-sub:hover{color:var(--t1);background:rgba(29,78,216,.1);}
-.sni-sub.act{color:var(--cy);background:rgba(8,145,178,.1);}
-
-/* SYNC BAR */
+/* ── SYNC BAR ── */
 .sybar{position:fixed;bottom:0;left:0;right:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;
-  padding:6px 18px;font-size:11px;font-weight:600}
+  padding:5px 16px;font-size:11px;font-weight:600}
 .sybar.on{background:rgba(13,27,46,.95);border-top:1px solid var(--bd)}
 .sybar.off{background:rgba(127,29,29,.25);border-top:1px solid rgba(220,38,38,.3)}
 .sybar.sy{background:rgba(7,89,133,.25);border-top:1px solid rgba(8,145,178,.3)}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-left:4px;flex-shrink:0}
+.dg{background:var(--gr)}.dr{background:var(--re)}.ds{background:var(--cy);animation:ps .7s alternate infinite}
+@keyframes ps{from{opacity:.3}to{opacity:1}}
 
-/* OFFLINE BANNER */
+/* ── OFFLINE BANNER ── */
 .ob{background:rgba(127,29,29,.2);border:1px solid rgba(220,38,38,.25);
-  border-radius:var(--r2);padding:9px 12px;font-size:12px;color:#fca5a5;
-  display:flex;align-items:center;gap:7px;margin-bottom:12px}
+  border-radius:var(--r2);padding:8px 12px;font-size:12px;color:#fca5a5;
+  display:flex;align-items:center;gap:6px;margin-bottom:10px}
 
-/* SUB NAV ITEMS */
-.sni-sub{
-  padding-right:28px !important;
-  font-size:13px !important;
-  opacity:.85;
-}
-.sni-sub:hover{opacity:1}
-.nav-sub{border-right:2px solid rgba(8,145,178,.25);margin-right:14px;}
+/* ── LOGIN ── */
+.lw{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#0a1628,#0c2a4a 40%,#0a3d62 70%,#051e3e)}
+.lw::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 120% 60% at 50% 110%,rgba(0,150,255,.2) 0%,transparent 60%);
+  animation:wv 6s ease-in-out infinite alternate}
+@keyframes wv{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+.lc{width:100%;max-width:420px;margin:16px;
+  background:rgba(5,20,50,.82);border:1px solid rgba(0,180,255,.2);
+  border-radius:20px;padding:36px;backdrop-filter:blur(20px);
+  position:relative;z-index:1;box-shadow:0 28px 60px rgba(0,0,0,.5)}
+.lbrand{position:absolute;top:20px;right:24px;z-index:10;display:flex;align-items:center;gap:8px}
+.lbrand-ic{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px}
+.lbrand-t{font-size:13px;font-weight:800;color:rgba(255,255,255,.9)}
+.lbrand-s{font-size:10px;color:rgba(255,255,255,.5)}
 
-/* MOBILE */
+/* ── SLIDESHOW DOTS ── */
+.ls-dots{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:5}
+.ls-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);border:none;cursor:pointer;padding:0;transition:all .3s}
+.ls-dot.act{background:#fff;width:20px;border-radius:3px}
+.ls-cap{position:absolute;bottom:38px;right:28px;z-index:5;color:rgba(255,255,255,.6);font-size:12px}
+
+/* ── SLIDESHOW SLIDES ── */
+.ls-slide{position:absolute;inset:0;background-size:cover;background-position:center;
+  opacity:0;transition:opacity 1.8s ease}
+.ls-slide.act{opacity:1}
+
+/* ── PENDING BADGE ── */
+.pend-badge{background:rgba(245,158,11,.15);color:var(--go);border:1px solid rgba(245,158,11,.3);
+  border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700}
+
+/* ── MOBILE ── */
 @media(max-width:900px){
   html,body{font-size:14px;overflow-x:hidden}
-  .side{width:270px;transform:translateX(100%);max-width:85vw}
+  .side{width:270px;transform:translateX(100%);max-width:88vw}
   .side.open{transform:translateX(0)}
-  .main{margin-right:0 !important;width:100%;max-width:100vw;overflow-x:hidden}
-  .app{overflow-x:hidden;max-width:100vw}
+  .main{margin-right:0!important;overflow-x:hidden;max-width:100vw}
+  .app{overflow-x:hidden}
   .hmb{display:block}
   .sclose-btn{display:block}
-  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
-  table{font-size:12px;min-width:500px}
-  thead th{padding:7px 8px;font-size:10px;white-space:nowrap}
-  tbody td{padding:7px 8px;white-space:nowrap}
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:480px;font-size:12px}
+  thead th{padding:7px 8px;font-size:10px}
+  tbody td{padding:7px 8px}
   .sg{grid-template-columns:1fr 1fr;gap:8px}
-  .top{height:52px;padding:0 10px}
+  .sv{font-size:18px}
+  .top{height:50px;padding:0 10px}
   .tpt{font-size:13px}
   .cnt{padding:8px;overflow-x:hidden}
   .card{margin-bottom:10px}
-  .ch{padding:9px 10px;flex-wrap:wrap;gap:6px}
+  .ch{padding:9px 10px}
   .cb{padding:10px}
   .ct{font-size:12px}
   .fr2{grid-template-columns:1fr 1fr;gap:8px}
-  .fr3{grid-template-columns:1fr 1fr;gap:8px}
-  .fr4{grid-template-columns:1fr 1fr;gap:8px}
+  .fr3,.fr4{grid-template-columns:1fr 1fr;gap:8px}
   input,select,textarea{font-size:14px;padding:8px 10px}
-  .fb{padding:8px 10px;gap:6px;flex-wrap:wrap}
-  .ffi{min-width:0;flex:1}
-  .ffi label{font-size:10px}
-  .ffi input,.ffi select{min-width:0;width:100%;font-size:12px;background:#fdf8f0;color:#0f2a4a;border-color:#d4c5a9}
-  .btn{font-size:12px;padding:6px 10px}
-  .sm{padding:4px 7px;font-size:11px}
-  #d-kpi{grid-template-columns:1fr 1fr !important;gap:8px}
-  #d-charts-row{grid-template-columns:1fr !important}
-  .modal{margin:6px;max-height:95vh}
-  .mbody{padding:12px}
+  .fb{padding:8px 10px;gap:6px}
+  .ffi{flex:1;min-width:0}
+  .ffi input,.ffi select{min-width:0;width:100%;font-size:12px}
+  .btn{font-size:11px;padding:5px 9px}
+  .sm{padding:3px 7px;font-size:10px}
+  #d-kpi>div{grid-template-columns:1fr 1fr!important}
+  .mo{padding:6px}
+  .md{max-height:96vh}
+  .mb{padding:12px}
   .mh{padding:10px 12px}
   .mf{padding:8px 12px;gap:6px}
-  .sfoot{padding:8px}
-  .suc{padding:6px 8px;gap:6px}
-  .sybar{padding:5px 10px;font-size:10px}
-  .tda{gap:3px}
-  .tda .btn{padding:4px 6px;font-size:11px}
+  .lc{padding:26px 20px;margin:10px}
+  .sybar{padding:4px 10px;font-size:10px}
+  .tda .btn{padding:3px 6px;font-size:10px}
 }
 @media(max-width:480px){
-  html,body{font-size:13px}
-  .top{padding:0 8px}
-  .tpt{font-size:12px}
-  .cnt{padding:6px}
-  .sg{grid-template-columns:1fr 1fr;gap:6px}
-  .sv{font-size:18px}
-  table{font-size:11px;min-width:380px}
+  .fr2,.fr3,.fr4{grid-template-columns:1fr 1fr}
+  .sg{grid-template-columns:1fr 1fr}
+  table{min-width:380px;font-size:11px}
   thead th{padding:5px 6px;font-size:9px}
   tbody td{padding:5px 6px}
-  .fr2{grid-template-columns:1fr}
-  .fr3{grid-template-columns:1fr 1fr}
-  .lc{padding:18px 14px;margin:8px}
-  .btn{font-size:11px;padding:5px 8px}
-  .ch{padding:8px}
-  .cb{padding:8px}
-}
-/* Readonly inputs */
-input[readonly]{
-  background:#f1f5f9 !important;
-  border-color:#e2e8f0 !important;
-  color:#64748b !important;cursor:default;
-}
-/* Number inputs */
-input[type=number]{-moz-appearance:textfield}
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
-/* Date inputs */
-input[type=date]::-webkit-calendar-picker-indicator{
-  filter:invert(0.7);cursor:pointer;
+  .cnt{padding:6px}
+  .top{padding:0 8px}
+  .tpt{font-size:12px}
+  .lc{padding:20px 14px;margin:8px}
 }
 </style>
 </head>
 <body>
 
+<!-- SLIDESHOW BG (behind login) -->
+<div id="ls-container" style="position:fixed;inset:0;z-index:0;pointer-events:none">
+  <div class="ls-slide act" style="background-image:url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1400&q=80&auto=format')"></div>
+  <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1400&q=80&auto=format')"></div>
+  <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=1400&q=80&auto=format')"></div>
+  <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=1400&q=80&auto=format')"></div>
+  <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1540202404-a2f29016b523?w=1400&q=80&auto=format')"></div>
+</div>
+
 <!-- LOGIN PAGE -->
-<div id="login-page" class="login-wrap">
-
-  <!-- SLIDESHOW BACKGROUND -->
-  <div id="ls-container">
-    <!-- Slide 1: Sharm boats at sea — vivid blue water -->
-    <div class="ls-slide act" id="slide-0">
-      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1600&q=85&auto=format');"></div>
-    </div>
-    <!-- Slide 2: Coral reef / underwater Sharm -->
-    <div class="ls-slide" id="slide-1">
-      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1600&q=85&auto=format');"></div>
-    </div>
-    <!-- Slide 3: Luxury cruise yacht -->
-    <div class="ls-slide" id="slide-2">
-      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=1600&q=85&auto=format');"></div>
-    </div>
-    <!-- Slide 4: Red Sea sunrise golden hour -->
-    <div class="ls-slide" id="slide-3">
-      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=1600&q=85&auto=format');"></div>
-    </div>
-    <!-- Slide 5: Snorkeling boat trip -->
-    <div class="ls-slide" id="slide-4">
-      <div class="ls-img" style="background-image:url('https://images.unsplash.com/photo-1540202404-a2f29016b523?w=1600&q=85&auto=format');"></div>
-    </div>
+<div id="login-page" class="lw" style="position:relative;z-index:10">
+  <div class="lbrand">
+    <div class="lbrand-ic">⛵</div>
+    <div><div class="lbrand-t">Daily Account Boats</div><div class="lbrand-s">شرم الشيخ • البحر الأحمر</div></div>
   </div>
-
-  <!-- Brand watermark top right -->
-  <div class="ls-brand">
-    <div class="ls-brand-ic">⛵</div>
-    <div>
-      <div class="ls-brand-txt">Daily Account Boats</div>
-      <div class="ls-brand-sub">شرم الشيخ • البحر الأحمر</div>
-    </div>
-  </div>
-
-  <!-- Slide dots -->
   <div class="ls-dots" id="ls-dots"></div>
-
-  <!-- Slide caption -->
-  <div class="ls-caption" id="ls-caption">شرم الشيخ • البحر الأحمر</div>
-
-  <!-- LOGIN CARD -->
+  <div class="ls-cap" id="ls-cap">شرم الشيخ • البحر الأحمر</div>
   <div class="lc">
-    <div style="text-align:center;margin-bottom:28px">
-      <!-- Animated logo -->
-      <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,rgba(8,145,178,.3),rgba(29,78,216,.3));border:2px solid rgba(8,145,178,.4);display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 14px;box-shadow:0 0 30px rgba(8,145,178,.25)">⛵</div>
-      <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:.3px">Daily Account Boats</div>
-      <div style="font-size:12px;color:rgba(148,216,255,.65);margin-top:6px;display:flex;align-items:center;justify-content:center;gap:6px">
-        <span style="width:30px;height:1px;background:rgba(148,216,255,.3);display:inline-block"></span>
-        إدارة مالية متكاملة
-        <span style="width:30px;height:1px;background:rgba(148,216,255,.3);display:inline-block"></span>
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,rgba(8,145,178,.3),rgba(29,78,216,.3));border:2px solid rgba(8,145,178,.4);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px;box-shadow:0 0 28px rgba(8,145,178,.2)">⛵</div>
+      <div style="font-size:20px;font-weight:900;color:#fff">Daily Account Boats</div>
+      <div style="font-size:11px;color:rgba(148,216,255,.6);margin-top:5px;display:flex;align-items:center;justify-content:center;gap:8px">
+        <span style="flex:1;height:1px;background:rgba(148,216,255,.2)"></span>إدارة مالية متكاملة<span style="flex:1;height:1px;background:rgba(148,216,255,.2)"></span>
       </div>
     </div>
-    <div class="fgrid">
+    <div class="fg">
       <div class="ff">
         <label style="color:rgba(255,255,255,.6)">👤 اسم المستخدم</label>
-        <input id="l-user" placeholder="username" autocomplete="username"
-          style="background:#ffffff;border-color:#cbd5e1;color:#0f2a4a"/>
+        <input id="l-user" placeholder="username" autocomplete="username" style="background:#fff;border-color:#cbd5e1;color:#0f2a4a"/>
       </div>
       <div class="ff">
         <label style="color:rgba(255,255,255,.6)">🔑 كلمة المرور</label>
-        <input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"
-          style="background:#ffffff;border-color:#cbd5e1;color:#0f2a4a"/>
+        <input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password" style="background:#fff;border-color:#cbd5e1;color:#0f2a4a"/>
       </div>
       <div id="l-err" style="display:none;color:#fca5a5;font-size:12px;background:rgba(127,29,29,.3);padding:8px 12px;border-radius:8px;border:1px solid rgba(220,38,38,.3)"></div>
-      <button class="btn bp" style="justify-content:center;padding:13px;font-size:15px;font-weight:700;letter-spacing:.3px;border-radius:12px;background:linear-gradient(135deg,#0891b2,#1d4ed8);box-shadow:0 4px 20px rgba(8,145,178,.4)" onclick="doLogin()">
+      <button id="login-btn" class="btn bp" style="justify-content:center;padding:12px;font-size:14px;font-weight:700;border-radius:12px;background:linear-gradient(135deg,#0891b2,#1d4ed8);box-shadow:0 4px 20px rgba(8,145,178,.35)">
         🔓 تسجيل الدخول
       </button>
-      <div style="text-align:center;font-size:11px;color:rgba(148,163,184,.35);margin-top:4px">
-        🔒 نظام محمي بكلمة مرور
-      </div>
+      <div style="text-align:center;font-size:10px;color:rgba(148,163,184,.35)">🔒 نظام محمي بكلمة مرور</div>
     </div>
   </div>
 </div>
 
-
-
-<!-- MAIN APP -->
+<!-- MAIN APP (hidden until login) -->
 <div id="main-app" style="display:none">
 <div class="app">
-  <!-- Overlay -->
-  <div class="sov" id="sov" onclick="closeSide()"></div>
-
-  <!-- SIDEBAR -->
+  <div class="sov" id="sov"></div>
   <aside class="side" id="sidebar">
     <div class="slogo">
       <div class="sic">⛵</div>
-      <div style="flex:1">
+      <div style="flex:1;min-width:0">
         <div class="slt">Daily Account Boats</div>
         <div class="sls">إدارة مالية يومية</div>
       </div>
-      <button class="sclose-btn" onclick="closeSide()">✕</button>
+      <button class="sclose-btn" id="sclose">✕</button>
     </div>
     <nav class="snav" id="nav-links"></nav>
     <div class="sfoot">
-      <div class="sync-chip" id="sync-chip">
-        <span class="dot g" id="sync-dot"></span>
-        <span id="sync-txt" style="flex:1;color:var(--t2)">متصل</span>
-        <span id="sync-pending" style="display:none;color:var(--go);font-weight:700"></span>
+      <div class="sync-chip">
+        <span class="dot dg" id="sync-dot"></span>
+        <span id="sync-txt" style="flex:1;color:var(--t2);font-size:10px">متصل</span>
+        <span id="sync-pend" style="display:none;color:var(--go);font-weight:700;font-size:10px"></span>
       </div>
       <div class="suc">
-        <div class="sua" id="user-avatar">أ</div>
+        <div class="sua" id="user-av">أ</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="user-name">المستخدم</div>
-          <div style="font-size:10px;color:var(--t3)" id="user-role">-</div>
+          <div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="user-nm">-</div>
+          <div style="font-size:10px;color:var(--t3)" id="user-rl">-</div>
         </div>
-        <button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:16px" onclick="doLogout()" title="خروج">⏻</button>
+        <button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:15px" id="logout-btn" title="خروج">⏻</button>
       </div>
     </div>
   </aside>
-
-  <!-- MAIN -->
   <main class="main">
     <div class="top">
-      <button class="hmb" onclick="toggleSide()">☰</button>
+      <button class="hmb" id="hmb-btn">☰</button>
       <div class="tpt" id="page-title">لوحة التحكم</div>
-      <div class="top-right" id="top-right"></div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:11px" id="top-right"></div>
     </div>
     <div class="cnt" id="app-content"></div>
   </main>
 </div>
-
-<!-- SYNC BAR -->
 <div class="sybar on" id="sybar">
-  <div style="display:flex;align-items:center;gap:6px">
-    <span class="dot g" id="bar-dot"></span>
+  <div style="display:flex;align-items:center;gap:5px">
+    <span class="dot dg" id="bar-dot"></span>
     <span style="color:var(--t2)" id="bar-txt">متصل</span>
   </div>
-  <div style="display:flex;gap:6px;align-items:center">
-    <button class="btn bg sm" id="bar-sync-btn" style="display:none;font-size:10px" onclick="manualSync()">🔄 مزامنة</button>
-    <span style="font-size:10px;color:var(--t3)" id="bar-status">🟢</span>
+  <div style="display:flex;gap:5px;align-items:center">
+    <button class="btn bg sm" id="bar-sync-btn" style="display:none;font-size:10px" id="sync-btn-bar">🔄 مزامنة</button>
+    <span id="bar-status" style="font-size:10px">🟢</span>
   </div>
 </div>
 </div>
 
 <!-- MODAL -->
-<div class="modal-bg" id="modal">
-  <div class="modal">
+<div class="mo" id="modal">
+  <div class="md">
     <div class="mh">
       <span class="mht" id="modal-title">-</span>
-      <button class="xb" onclick="closeModal()">✕</button>
+      <button class="xb" id="modal-close">✕</button>
     </div>
-    <div class="mbody" id="modal-body"></div>
+    <div class="mb" id="modal-body"></div>
     <div class="mf" id="modal-footer"></div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════
-// DATA
-// ═══════════════════════════════════════
-const BOATS=["روما","آدم","سيريانا","ميس شيرى"];
-const EXP_CATS={
+// ═══════════════════════════
+// CONSTANTS & CONFIG
+// ═══════════════════════════
+var SB_URL = "https://qgqemasgnyfdsjmezjsh.supabase.co";
+var SB_KEY = "sb_publishable_Be_aAqJj_itUosit5wLiOA_M_4GSTck";
+var BOATS = ["روما","آدم","سيريانا","ميس شيرى"];
+var EMPLOYEES = ["صلاح إسماعيل","علي مرعى","ريكو","رامي شلبي"];
+var EXP_CATS = {
   "المطابخ":["سوبرماركت","أنبوبة","مياه","م أخرى"],
   "مصاريف التشغيل":["سولار","زيت","أخرى"],
   "المصاريف الإدارية":["مرتبات","مصاريف نثرية","خدمات","ضرائب عامة","علاج"],
@@ -512,305 +384,251 @@ const EXP_CATS={
   "مرتبات العاملين":["صلاح إسماعيل","علي مرعى","ريكو","رامي شلبي"],
   "الإيجارات":["إيجار شهري","مصاريف أذق"]
 };
-const EMPLOYEES=["صلاح إسماعيل","علي مرعى","ريكو","رامي شلبي"];
-const REV_TYPES=["إيرادات عامة","إيجارات خارجية",...Object.keys(EXP_CATS)];
-const INIT_USERS=[
+var REV_TYPES = ["إيرادات عامة","إيجارات خارجية"].concat(Object.keys(EXP_CATS));
+var INIT_USERS = [
   {id:1,username:"admin",password:"admin123",name:"أحمد الإدارة",role:"admin"},
   {id:2,username:"user1",password:"user123",name:"محمد المستخدم",role:"user"},
   {id:3,username:"hr1",password:"hr123",name:"مسؤول الموارد البشرية",role:"hr"},
   {id:4,username:"viewer1",password:"view123",name:"مشاهد",role:"viewer"}
 ];
-// Role labels
-const ROLE_LABELS={admin:"مدير النظام",user:"مستخدم",hr:"موارد بشرية",viewer:"مشاهد فقط"};
+var ROLE_LABELS = {admin:"مدير النظام",user:"مستخدم",hr:"موارد بشرية",viewer:"مشاهد فقط"};
+var K = {U:"erp_u",C:"erp_c",S:"erp_s",SP:"erp_sp",E:"erp_e",EP:"erp_ep",P:"erp_p",PP:"erp_pp",X:"erp_x",Q:"erp_q"};
+var TBL = {erp_u:"users",erp_c:"clients",erp_s:"sales",erp_e:"expenses",erp_p:"payroll"};
 
-// ═══════════════════════════════════════
+// ═══════════════════════════
+// HELPERS
+// ═══════════════════════════
+function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function gid(a){return Math.max.apply(null,[0].concat(a.map(function(x){return x.id||0;})))+1;}
+function toDay(){return new Date().toISOString().slice(0,10);}
+function fmt(n){return(+n||0).toLocaleString("ar-EG",{maximumFractionDigits:2});}
+function bj(cls,txt){return '<span class="bj '+cls+'">'+txt+'</span>';}
+function offl(){return !isOnline?'<div class="ob">📴 غير متصل — البيانات محفوظة محلياً</div>':'';}
+function el(id){return document.getElementById(id);}
+function escHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+// ═══════════════════════════
 // SUPABASE
-// ═══════════════════════════════════════
-const SB_URL="https://qgqemasgnyfdsjmezjsh.supabase.co";
-const SB_KEY="sb_publishable_Be_aAqJj_itUosit5wLiOA_M_4GSTck";
-async function sbFetch(table,method="GET",body=null,filter=""){
-  const r=await fetch(`${SB_URL}/rest/v1/${table}${filter}`,{
-    method,
-    headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,
-      "Content-Type":"application/json","Prefer":method==="POST"?"return=representation":""},
-    body:body?JSON.stringify(body):null
-  });
-  const t=await r.text();
-  return t?JSON.parse(t):[];
-}
-const sbGet=(t)=>sbFetch(t,"GET",null,"?order=id.asc");
-async function sbUpsert(t,row){
-  try{
-    const r=await fetch(SB_URL+"/rest/v1/"+t+"?on_conflict=id",{
-      method:"POST",
-      headers:{
-        "apikey":SB_KEY,
-        "Authorization":"Bearer "+SB_KEY,
-        "Content-Type":"application/json",
-        "Prefer":"return=representation,resolution=merge-duplicates"
-      },
-      body:JSON.stringify(row)
-    });
-    const txt=await r.text();
-    if(!r.ok){console.error("Upsert error:",r.status,txt);return null;}
-    return txt?JSON.parse(txt):null;
-  }catch(e){console.error("sbUpsert failed:",e);return null;}
-}
-const sbDel=(t,id)=>sbFetch(t,"DELETE",null,"?id=eq."+id);
-
-// ═══════════════════════════════════════
-// STORAGE
-// ═══════════════════════════════════════
-const K={U:"erp_u",C:"erp_c",
-  S:"erp_s",   // approved sales (admin only)
-  SP:"erp_sp", // pending sales (user entry)
-  E:"erp_e",   // approved expenses
-  EP:"erp_ep", // pending expenses
-  P:"erp_p",   // approved payroll
-  PP:"erp_pp", // pending payroll
-  X:"erp_x",Q:"erp_q",LS:"erp_ls"};
-const TBL={erp_u:"users",erp_c:"clients",erp_s:"sales",erp_e:"expenses",erp_p:"payroll"};
-
-// ── Excel Export Helper ──
-function exportExcel(data,cols,filename){
-  if(!data||data.length===0){alert("لا توجد بيانات للتصدير");return;}
-  var BOM="﻿";
-  var NL="\n";
-  var header=cols.map(function(c){return c.label;}).join(",");
-  var rows=data.map(function(row){
-    return cols.map(function(c){
-      var v=String(row[c.key]||"");
-      if(v.indexOf(",")>=0||v.indexOf(NL)>=0)v='"'+v.replace(/"/g,'""')+'"';
-      return v;
-    }).join(",");
-  });
-  var csv=BOM+header+NL+rows.join(NL);
-  var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");
-  a.href=url;a.download=filename+"_"+toDay()+".csv";
-  document.body.appendChild(a);a.click();
-  document.body.removeChild(a);URL.revokeObjectURL(url);
-}
-const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}};
-const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
-const gid=a=>Math.max(0,...a.map(x=>x.id))+1;
-const toDay=()=>new Date().toISOString().slice(0,10);
-const fmt=n=>(n||0).toLocaleString("ar-EG",{maximumFractionDigits:2});
-
-// ═══════════════════════════════════════
-// SYNC
-// ═══════════════════════════════════════
-let isOnline=navigator.onLine;
-let syncPending=0;
-let syncMsg="";
-
-function updateSyncUI(){
-  const dot1=document.getElementById("sync-dot");
-  const txt=document.getElementById("sync-txt");
-  const pend=document.getElementById("sync-pending");
-  const barDot=document.getElementById("bar-dot");
-  const barTxt=document.getElementById("bar-txt");
-  const barBtn=document.getElementById("bar-sync-btn");
-  const barStatus=document.getElementById("bar-status");
-  const barEl=document.getElementById("sybar");
-  const chip=document.getElementById("sync-chip");
-
-  const q=ld(K.Q,[]);
-  syncPending=q.length;
-
-  if(!isOnline){
-    if(dot1){dot1.className="dot r";txt.textContent="غير متصل";txt.style.color="var(--t2)"}
-    if(barEl){barEl.className="sybar off";barDot.className="dot r";barTxt.textContent="غير متصل — البيانات محفوظة محلياً";barStatus.textContent="🔴"}
-    if(pend)pend.style.display="none";
-    if(barBtn)barBtn.style.display="none";
-  } else if(syncMsg==="syncing"){
-    if(dot1){dot1.className="dot s";txt.textContent="جاري المزامنة..."}
-    if(barEl){barEl.className="sybar sy";barDot.className="dot s";barTxt.textContent="🔄 جاري المزامنة مع السحابة...";barStatus.textContent="🔄"}
-    if(pend)pend.style.display="none";
-    if(barBtn)barBtn.style.display="none";
-  } else {
-    if(dot1){dot1.className="dot g";txt.textContent=syncPending>0?`${syncPending} معلق`:"متصل"}
-    if(barEl){barEl.className="sybar on";barDot.className="dot g";
-      barTxt.textContent=syncMsg||( syncPending>0?`${syncPending} عملية معلقة`:"✅ متزامن");
-      barStatus.textContent="🟢"}
-    if(pend){pend.textContent=syncPending>0?`${syncPending}⏳`:"";pend.style.display=syncPending>0?"":"none"}
-    if(barBtn)barBtn.style.display=syncPending>0?"":"none";
-  }
+// ═══════════════════════════
+function sbFetch(tbl,method,body,filter){
+  method = method||"GET";
+  filter = filter||"?order=id.asc";
+  var headers = {"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"};
+  if(method==="POST") headers["Prefer"] = "return=representation,resolution=merge-duplicates";
+  return fetch(SB_URL+"/rest/v1/"+tbl+filter,{method:method,headers:headers,body:body?JSON.stringify(body):undefined})
+    .then(function(r){return r.text().then(function(t){return t?JSON.parse(t):[];});})
+    .catch(function(){return [];});
 }
 
-async function pull(){
-  for(const[k,t] of Object.entries(TBL)){
-    try{
-      const rows=await sbGet(t);
-      if(!Array.isArray(rows)){continue;}
-      // For users table, never overwrite with empty
-      if(k===K.U&&rows.length===0){continue;}
-      // For data tables: if Supabase returns data, always use it (fresh from server)
-      // If empty, only skip if we have local data (prevent accidental wipe)
-      if(rows.length===0){
-        var local=ld(k,[]);
-        if(local.length>0){
-          console.log("Pull: Supabase empty for",t,"keeping",local.length,"local rows");
-          continue;
-        }
-      }
+function sbGet(t){return sbFetch(t,"GET",null,"?order=id.asc");}
+function sbUpsert(t,row){return sbFetch(t,"POST",[row],"?on_conflict=id");}
+function sbDel(t,id){return sbFetch(t,"DELETE",null,"?id=eq."+id);}
+
+// ═══════════════════════════
+// SYNC ENGINE
+// ═══════════════════════════
+var isOnline = navigator.onLine;
+var draining = false;
+var syncMsg = "";
+
+function pull(){
+  var keys = Object.keys(TBL);
+  var promises = keys.map(function(k){
+    return sbGet(TBL[k]).then(function(rows){
+      if(!Array.isArray(rows)) return;
+      if(k===K.U && rows.length===0) return;
+      if(rows.length===0 && ld(k,[]).length>0) return;
       sv(k,rows);
-      console.log("Pull:",t,"→",rows.length,"rows");
-    }catch(e){
-      console.warn("Pull error",t,":",e.message);
-    }
-  }
+    }).catch(function(){});
+  });
+  return Promise.all(promises);
 }
 
-let draining=false;
-async function drain(){
-  if(draining)return;
-  draining=true;
-  syncMsg="syncing";updateSyncUI();
-  try{
-    const q=ld(K.Q,[]);
-    let pushed=0;
-    // Step 1: Push all pending ops to Supabase
-    for(const item of q){
-      const t=TBL[item.t];if(!t)continue;
-      if(item.op==="u"){
-        const row=Object.assign({},item.p);
-        if(row.desc!==undefined){row.description=row.desc;delete row.desc;}
-        const res=await sbUpsert(t,[row]);
-        // Confirm: update local with what Supabase returned
-        if(Array.isArray(res)&&res.length>0){
-          const local=ld(item.t,[]);
-          const idx=local.findIndex(function(x){return x.id===res[0].id;});
-          if(idx>=0)local[idx]=res[0];else local.push(res[0]);
-          sv(item.t,local);
-          console.log("Upsert confirmed:",t,res[0].id);
-        }
-        pushed++;
-      } else {
-        await sbDel(t,item.p.id);
-        pushed++;
-      }
-    }
-    // Step 2: Only pull if there were pending ops (to get server-confirmed data)
-    // For background sync (no pending ops), pull to get other devices' changes
-    if(pushed>0){
-      // Small delay to let Supabase process
-      await new Promise(function(r){setTimeout(r,300);});
-    }
-    await pull();
-    // Step 3: Clear queue and update timestamp
-    sv(K.Q,[]);
-    sv(K.LS,new Date().toISOString());
-    syncMsg="✅ تمت المزامنة";
-    updateSyncUI();
-    // Step 4: Refresh page ONLY if modal is closed
-    var modalOpen=document.getElementById("modal")?.classList.contains("show");
-    if(currentUser&&currentPage&&!modalOpen){
-      renderPage(currentPage);
-    }
-    setTimeout(function(){syncMsg="";updateSyncUI();},3000);
-  }catch(e){
-    console.error("Sync error:",e);
-    // On error: keep local data, don't clear queue
-    syncMsg="⚠️ فشلت المزامنة — البيانات محفوظة محلياً";
-    updateSyncUI();
-    setTimeout(function(){syncMsg="";updateSyncUI();},5000);
-  }finally{
-    draining=false;
-  }
+function drain(){
+  if(draining) return;
+  draining = true;
+  updateSyncUI("syncing");
+  var q = ld(K.Q,[]);
+  var p = Promise.resolve();
+  q.forEach(function(item){
+    p = p.then(function(){
+      var t = TBL[item.t];
+      if(!t) return;
+      if(item.op==="u") return sbUpsert(t,item.p);
+      else return sbDel(t,item.p.id);
+    });
+  });
+  p.then(function(){return pull();})
+   .then(function(){
+     sv(K.Q,[]);
+     updateSyncUI("ok");
+     if(currentUser && currentPage) renderPage(currentPage);
+   })
+   .catch(function(){updateSyncUI("err");})
+   .finally(function(){draining=false;});
 }
 
-function enq(t,op,p){
-  // 1. Always save to local queue first (offline-safe)
-  const q=ld(K.Q,[]);
-  const i=q.findIndex(function(x){return x.t===t&&x.p&&x.p.id===p.id&&op==="u";});
-  if(i>=0)q[i]={t,op,p,ts:Date.now()};
-  else q.push({t,op,p,ts:Date.now()});
+function enq(k,op,p){
+  var q = ld(K.Q,[]);
+  var i = -1;
+  if(op==="u") q.forEach(function(x,idx){if(x.t===k&&x.p&&x.p.id===p.id) i=idx;});
+  if(i>=0) q[i]={t:k,op:op,p:p};
+  else q.push({t:k,op:op,p:p});
   sv(K.Q,q);
-  updateSyncUI();
-  // 2. Try to sync if online (non-blocking)
-  if(isOnline){
-    setTimeout(function(){drain();},100); // small delay so UI updates first
-  }
+  updateSyncUI("ok");
+  if(isOnline) setTimeout(drain,200);
 }
 
 function manualSync(){if(isOnline)drain();}
 
-window.addEventListener("online",()=>{isOnline=true;updateSyncUI();drain();});
-window.addEventListener("offline",()=>{isOnline=false;updateSyncUI();});
+window.addEventListener("online",function(){isOnline=true;updateSyncUI("ok");drain();});
+window.addEventListener("offline",function(){isOnline=false;updateSyncUI("off");});
 
-// ═══════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════
-let currentUser=null;
-let currentPage="dash";
-
-async function doLogin(){
-  const u=document.getElementById("l-user").value.trim();
-  const p=document.getElementById("l-pass").value;
-  let users=ld(K.U,INIT_USERS);
-  if(navigator.onLine){
-    try{const fresh=await sbGet("users");if(fresh&&fresh.length>0){users=fresh;sv(K.U,fresh);}}catch{}
+function updateSyncUI(state){
+  var sd=el("sync-dot"),st=el("sync-txt"),sp=el("sync-pend");
+  var bd=el("bar-dot"),bt=el("bar-txt"),bs=el("bar-status"),be=el("sybar"),bb=el("bar-sync-btn");
+  var q=ld(K.Q,[]);
+  if(!isOnline||state==="off"){
+    if(sd){sd.className="dot dr";st.textContent="غير متصل";}
+    if(be) be.className="sybar off";
+    if(bd) bd.className="dot dr";
+    if(bt) bt.textContent="غير متصل — البيانات محلية";
+    if(bs) bs.textContent="🔴";
+    if(sp) sp.style.display="none";
+    if(bb) bb.style.display="none";
+    return;
   }
-  const found=users.find(x=>x.username===u&&x.password===p);
+  if(state==="syncing"){
+    if(sd){sd.className="dot ds";st.textContent="جاري المزامنة...";}
+    if(be) be.className="sybar sy";
+    if(bd) bd.className="dot ds";
+    if(bt) bt.textContent="🔄 جاري المزامنة...";
+    if(bs) bs.textContent="🔄";
+    if(bb) bb.style.display="none";
+    return;
+  }
+  if(state==="err"){
+    syncMsg="⚠️ فشلت المزامنة";
+    setTimeout(function(){syncMsg="";updateSyncUI("ok");},4000);
+  }
+  if(sd){sd.className="dot dg";st.textContent=q.length>0?(q.length+" معلق"):"متصل";}
+  if(sp){sp.textContent=q.length>0?(q.length+"⏳"):"";sp.style.display=q.length>0?"":"none";}
+  if(be) be.className="sybar on";
+  if(bd) bd.className="dot dg";
+  if(bt) bt.textContent=syncMsg||(q.length>0?q.length+" عملية معلقة":"✅ متزامن");
+  if(bs) bs.textContent="🟢";
+  if(bb) bb.style.display=q.length>0?"":"none";
+}
+
+// ═══════════════════════════
+// EXCEL EXPORT
+// ═══════════════════════════
+function exportExcel(data,cols,fname){
+  if(!data||!data.length){alert("لا توجد بيانات للتصدير");return;}
+  var NL="\r\n";
+  var BOM="\uFEFF";
+  var hdr=cols.map(function(c){return c.l;}).join(",");
+  var rows=data.map(function(row){
+    return cols.map(function(c){
+      var v=String(row[c.k]||"");
+      if(v.indexOf(",")>=0||v.indexOf("\n")>=0) v='"'+v.replace(/"/g,'""')+'"';
+      return v;
+    }).join(",");
+  });
+  var csv=BOM+hdr+NL+rows.join(NL);
+  var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download=fname+"_"+toDay()+".csv";
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════
+// AUTH
+// ═══════════════════════════
+var currentUser = null;
+var currentPage = "dash";
+
+function doLogin(){
+  var uname=el("l-user").value.trim();
+  var pass=el("l-pass").value;
+  var btn=el("login-btn");
+  if(!uname||!pass){showLoginErr("يرجى إدخال اسم المستخدم وكلمة المرور");return;}
+  btn.disabled=true;btn.textContent="⏳ جاري التحقق...";
+  var users=ld(K.U,INIT_USERS);
+  var found=null;
+  users.forEach(function(u){if(u.username===uname&&u.password===pass)found=u;});
   if(found){
     currentUser=found;
-    document.getElementById("login-page").style.display="none";
-    document.getElementById("main-app").style.display="";
-    document.getElementById("user-avatar").textContent=(found.name||"U")[0];
-    document.getElementById("user-name").textContent=found.name;
-    document.getElementById("user-role").textContent=ROLE_LABELS[found.role]||"مستخدم";
+    el("login-page").style.display="none";
+    el("main-app").style.display="";
+    el("user-av").textContent=(found.name||"U")[0];
+    el("user-nm").textContent=found.name;
+    el("user-rl").textContent=ROLE_LABELS[found.role]||found.role;
     buildNav();
-    updateSyncUI();
-    // HR starts on payroll page, not dash
-    const startPage=found.role==="hr"?"payroll":"dash";
+    updateSyncUI("ok");
+    var startPage=found.role==="hr"?"payroll":"dash";
     navigate(startPage);
-    // Always pull fresh data from Supabase after login
     if(isOnline){
-      // Show syncing indicator
-      var barTxt=document.getElementById("bar-txt");
-      if(barTxt)barTxt.textContent="🔄 جاري تحميل البيانات...";
-      // Pull fresh data immediately (bypass queue check)
-      pull().then(function(){
-        sv(K.Q,[]);
-        sv(K.LS,new Date().toISOString());
-        if(currentUser&&currentPage)renderPage(currentPage);
-        updateSyncUI();
-      }).catch(function(){drain();});
+      setTimeout(function(){
+        pull().then(function(){
+          sv(K.Q,[]);
+          if(currentUser&&currentPage) renderPage(currentPage);
+          updateSyncUI("ok");
+        });
+      },300);
     }
     if(found.username==="admin"&&found.password==="admin123"){
-      setTimeout(()=>alert("⚠️ تنبيه: يرجى تغيير كلمة السر الافتراضية من صفحة المستخدمين!"),1500);
+      setTimeout(function(){alert("⚠️ يرجى تغيير كلمة السر الافتراضية من صفحة المستخدمين!");},2000);
     }
-    // Auto logout after 8 hours
-    setTimeout(()=>{doLogout();alert("⏰ انتهت جلستك. يرجى تسجيل الدخول مجدداً");},8*3600*1000);
+    setTimeout(function(){if(currentUser){doLogout();alert("⏰ انتهت جلستك — يرجى تسجيل الدخول مجدداً");}},8*3600*1000);
   } else {
-    const err=document.getElementById("l-err");
-    err.textContent="اسم المستخدم أو كلمة المرور غير صحيحة";
-    err.style.display="";
+    // Try Supabase if not found locally
+    if(isOnline){
+      pull().then(function(){
+        var freshUsers=ld(K.U,INIT_USERS);
+        var u2=null;
+        freshUsers.forEach(function(u){if(u.username===uname&&u.password===pass)u2=u;});
+        btn.disabled=false;btn.textContent="🔓 تسجيل الدخول";
+        if(u2){
+          currentUser=u2;
+          // Re-trigger login flow
+          el("l-pass").dispatchEvent(new Event("input"));
+          doLogin();
+        } else {
+          showLoginErr("اسم المستخدم أو كلمة المرور غير صحيحة");
+        }
+      });
+    } else {
+      btn.disabled=false;btn.textContent="🔓 تسجيل الدخول";
+      showLoginErr("اسم المستخدم أو كلمة المرور غير صحيحة");
+    }
+    return;
   }
+  btn.disabled=false;btn.textContent="🔓 تسجيل الدخول";
+}
+
+function showLoginErr(msg){
+  var e=el("l-err");e.textContent=msg;e.style.display="";
+  setTimeout(function(){e.style.display="none";},4000);
 }
 
 function doLogout(){
   currentUser=null;
-  document.getElementById("main-app").style.display="none";
-  document.getElementById("login-page").style.display="";
-  document.getElementById("l-user").value="";
-  document.getElementById("l-pass").value="";
-  document.getElementById("l-err").style.display="none";
+  el("main-app").style.display="none";
+  el("login-page").style.display="";
+  el("l-user").value="";el("l-pass").value="";
+  el("l-err").style.display="none";
+  el("login-btn").disabled=false;el("login-btn").textContent="🔓 تسجيل الدخول";
 }
 
-document.getElementById("l-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
-document.getElementById("l-user").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("l-pass").focus();});
-
-// ═══════════════════════════════════════
+// ═══════════════════════════
 // NAVIGATION
-// ═══════════════════════════════════════
-// roles: admin=all | user=all except users page | hr=dash+users+clients+lists+payroll | viewer=all readonly
-const NAV_DEF=[
-  {g:"الرئيسية",items:[
-    {id:"dash",ic:"📊",l:"لوحة التحكم",roles:["admin","user","viewer"]}
-  ]},
+// ═══════════════════════════
+var NAV = [
+  {g:"الرئيسية",items:[{id:"dash",ic:"📊",l:"لوحة التحكم",roles:["admin","user","viewer"]}]},
   {g:"الإدارة",items:[
     {id:"users",ic:"👥",l:"المستخدمون",roles:["admin"]},
     {id:"clients",ic:"👤",l:"العملاء",roles:["admin","user","viewer"]},
@@ -818,239 +636,177 @@ const NAV_DEF=[
   ]},
   {g:"الإيرادات",items:[
     {id:"se",ic:"💼",l:"تسجيل المبيعات",roles:["admin","user"],
-      sub:[{id:"sv",ic:"📈",l:"بيان المبيعات",roles:["admin","user","viewer"]}]},
+     sub:[{id:"sv",ic:"📈",l:"بيان المبيعات",roles:["admin","user","viewer"]}]},
   ]},
   {g:"المصاريف",items:[
     {id:"ee",ic:"🧾",l:"تسجيل المصاريف",roles:["admin","user"],
-      sub:[{id:"ev",ic:"📉",l:"بيان المصاريف",roles:["admin","user","viewer"]}]},
+     sub:[{id:"ev",ic:"📉",l:"بيان المصاريف",roles:["admin","user","viewer"]}]},
   ]},
   {g:"الموارد البشرية",items:[
     {id:"payroll",ic:"💰",l:"تسجيل المرتبات",roles:["admin","hr"],
-      sub:[
-        {id:"payroll-view",ic:"📋",l:"بيان المرتبات",roles:["admin","hr","viewer"]},
-        {id:"payroll-rep",ic:"📊",l:"تقارير المرتبات",roles:["admin","hr","user","viewer"]}
-      ]},
-    {id:"payroll-rep",ic:"📊",l:"تقارير المرتبات",roles:["user","viewer"]},
+     sub:[
+       {id:"payroll-view",ic:"📋",l:"بيان المرتبات",roles:["admin","hr","viewer"]},
+       {id:"payroll-rep",ic:"📊",l:"تقارير المرتبات",roles:["admin","hr","user","viewer"]}
+     ]},
+    {id:"payroll-rep",ic:"📊",l:"تقارير المرتبات",roles:["user","viewer"]}
   ]},
-  {g:"التقارير",items:[
-    {id:"rep",ic:"📊",l:"التقارير",roles:["admin","user","viewer"]}
-  ]},
+  {g:"التقارير",items:[{id:"rep",ic:"📊",l:"التقارير",roles:["admin","user","viewer"]}]}
 ];
-const TITLES={dash:"لوحة التحكم",users:"المستخدمون",clients:"العملاء",lists:"القوائم",
+var TITLES = {dash:"لوحة التحكم",users:"المستخدمون",clients:"العملاء",lists:"القوائم",
   se:"تسجيل المبيعات",sv:"بيان المبيعات",ee:"تسجيل المصاريف",ev:"بيان المصاريف",
   payroll:"تسجيل المرتبات","payroll-view":"بيان المرتبات","payroll-rep":"تقارير المرتبات",rep:"التقارير"};
 
 function canAccess(id){
-  const role=currentUser?.role||"viewer";
-  if(role==="admin")return true;
-  const allItems=NAV_DEF.flatMap(g=>g.items);
-  // Check top-level items
-  const item=allItems.find(x=>x.id===id);
-  if(item)return !item.roles||item.roles.includes(role);
-  // Check sub-items
-  const allSubs=allItems.flatMap(x=>x.sub||[]);
-  const sub=allSubs.find(x=>x.id===id);
-  if(sub)return !sub.roles||sub.roles.includes(role);
-  return true;
+  var role=currentUser?currentUser.role:"viewer";
+  if(role==="admin") return true;
+  var allItems=[];
+  NAV.forEach(function(g){
+    g.items.forEach(function(it){
+      allItems.push(it);
+      if(it.sub) it.sub.forEach(function(s){allItems.push(s);});
+    });
+  });
+  var item=null;
+  allItems.forEach(function(x){if(x.id===id) item=x;});
+  if(!item) return true;
+  return !item.roles||item.roles.indexOf(role)>=0;
 }
-function isReadOnly(){return currentUser?.role==="viewer";}
 
 function buildNav(){
-  const role=currentUser?.role||"viewer";
-  const nav=document.getElementById("nav-links");
+  var role=currentUser?currentUser.role:"viewer";
+  var nav=el("nav-links");
   nav.innerHTML="";
-
-  NAV_DEF.forEach(group=>{
-    const items=group.items.filter(it=>!it.roles||it.roles.includes(role));
-    if(!items.length)return;
-
-    const g=document.createElement("div");g.className="sng";
-    g.innerHTML=`<div class="sngt">${group.g}</div>`;
-
-    items.forEach(it=>{
-      // Check if this item has sub-items visible to this role
-      const subs=(it.sub||[]).filter(s=>!s.roles||s.roles.includes(role));
-      const isParentActive=currentPage===it.id||subs.some(s=>s.id===currentPage);
-      const isOpen=isParentActive; // auto-open if child is active
-
-      // Parent item
-      const d=document.createElement("div");
-      d.className="sni"+(currentPage===it.id?" act":"");
-      if(subs.length){
-        // Has children — show expand arrow
-        d.innerHTML=`<span style="font-size:15px;flex-shrink:0">${it.ic}</span>
-          <span style="flex:1">${it.l}</span>
-          <span class="nav-arrow" style="font-size:11px;color:var(--t3);transition:transform .2s;transform:${isOpen?"rotate(90deg)":"rotate(0deg)"}"">▶</span>`;
-        d.onclick=()=>{
-          // Toggle sub-menu
-          const sub=d.nextElementSibling;
-          if(sub&&sub.classList.contains("nav-sub")){
-            const open=sub.style.display!=="none";
-            sub.style.display=open?"none":"block";
-            const arrow=d.querySelector(".nav-arrow");
-            if(arrow)arrow.style.transform=open?"rotate(0deg)":"rotate(90deg)";
+  NAV.forEach(function(grp){
+    var visItems=grp.items.filter(function(it){return !it.roles||it.roles.indexOf(role)>=0;});
+    if(!visItems.length) return;
+    var gDiv=document.createElement("div");gDiv.className="sng";
+    gDiv.innerHTML='<div class="sngt">'+grp.g+'</div>';
+    visItems.forEach(function(it){
+      var isSub=false;
+      var d=document.createElement("div");
+      d.className="sni"+(currentPage===it.id?" act":"")+(isSub?" sni-sub":"");
+      d.innerHTML='<span style="font-size:14px;flex-shrink:0">'+it.ic+'</span>'+it.l;
+      (function(itemId){d.onclick=function(){navigate(itemId);};})(it.id);
+      gDiv.appendChild(d);
+      // Sub items — only show when parent is active
+      if(it.sub&&(currentPage===it.id||it.sub.some(function(s){return s.id===currentPage;}))){
+        it.sub.forEach(function(s){
+          if(!s.roles||s.roles.indexOf(role)>=0){
+            var sd=document.createElement("div");
+            sd.className="sni sni-sub"+(currentPage===s.id?" act":"");
+            sd.innerHTML='<span style="font-size:12px;flex-shrink:0">'+s.ic+'</span>'+s.l;
+            (function(sid){sd.onclick=function(){navigate(sid);};})(s.id);
+            gDiv.appendChild(sd);
           }
-          navigate(it.id);
-        };
-      } else {
-        d.innerHTML=`<span style="font-size:15px;flex-shrink:0">${it.ic}</span>${it.l}`;
-        d.onclick=()=>navigate(it.id);
-      }
-      g.appendChild(d);
-
-      // Sub-items container
-      if(subs.length){
-        const subDiv=document.createElement("div");
-        subDiv.className="nav-sub";
-        subDiv.style.display=isOpen?"block":"none";
-        subs.forEach(s=>{
-          const sd=document.createElement("div");
-          sd.className="sni sni-sub"+(currentPage===s.id?" act":"");
-          sd.innerHTML=`<span style="font-size:11px;color:var(--t3);margin-right:4px">└</span>
-            <span style="font-size:13px;flex-shrink:0">${s.ic}</span>${s.l}`;
-          sd.onclick=()=>navigate(s.id);
-          subDiv.appendChild(sd);
         });
-        g.appendChild(subDiv);
       }
     });
-    nav.appendChild(g);
+    nav.appendChild(gDiv);
   });
 }
 
 function navigate(id){
-  if(!canAccess(id))return;
+  if(!canAccess(id)) return;
   currentPage=id;
-  document.getElementById("page-title").textContent=TITLES[id]||id;
-  buildNav(); // rebuild nav first so sub-items appear/hide
+  var t=el("page-title");if(t) t.textContent=TITLES[id]||id;
+  buildNav();
   renderPage(id);
   closeSide();
 }
 
 function toggleSide(){
-  const s=document.getElementById("sidebar");
-  const o=document.getElementById("sov");
-  s.classList.toggle("open");
-  o.classList.toggle("show");
+  var s=el("sidebar"),o=el("sov");
+  s.classList.toggle("open");o.classList.toggle("show");
 }
 function closeSide(){
-  document.getElementById("sidebar").classList.remove("open");
-  document.getElementById("sov").classList.remove("show");
+  var s=el("sidebar"),o=el("sov");
+  if(s)s.classList.remove("open");if(o)o.classList.remove("show");
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════
 // MODAL
-// ═══════════════════════════════════════
-let modalSave=null;
-function openModal(title,bodyHTML,saveLabel,saveFn){
-  document.getElementById("modal-title").textContent=title;
-  document.getElementById("modal-body").innerHTML=bodyHTML;
-  const mf=document.getElementById("modal-footer");
-  mf.innerHTML="";
+// ═══════════════════════════
+function openModal(title,body,saveLbl,saveFn){
+  el("modal-title").textContent=title;
+  el("modal-body").innerHTML=body;
+  var mf=el("modal-footer");mf.innerHTML="";
   if(saveFn){
-    modalSave=saveFn;
-    const sb=document.createElement("button");sb.className="btn bp";
-    sb.textContent="💾 "+(saveLabel||"حفظ");sb.onclick=()=>saveFn();
-    mf.appendChild(sb);
+    var sb=document.createElement("button");sb.className="btn bp";
+    sb.textContent="💾 "+(saveLbl||"حفظ");
+    sb.onclick=saveFn;mf.appendChild(sb);
   }
-  const cb=document.createElement("button");cb.className="btn bg";cb.textContent="إلغاء";cb.onclick=closeModal;
-  mf.appendChild(cb);
-  document.getElementById("modal").classList.add("show");
+  var cb=document.createElement("button");cb.className="btn bg";
+  cb.textContent="إلغاء";cb.onclick=closeModal;mf.appendChild(cb);
+  el("modal").classList.add("show");
 }
-function closeModal(){document.getElementById("modal").classList.remove("show");}
-document.getElementById("modal").addEventListener("click",e=>{if(e.target===document.getElementById("modal"))closeModal();});
+function closeModal(){el("modal").classList.remove("show");}
 
-// ═══════════════════════════════════════
+// ═══════════════════════════
 // RENDER PAGES
-// ═══════════════════════════════════════
-function bj(t,txt){return`<span class="bj ${t}">${txt}</span>`;}
-function offlBanner(){return!isOnline?`<div class="ob">📴 غير متصل — البيانات محفوظة محلياً</div>`:""}
-
+// ═══════════════════════════
 function renderPage(id){
-  const el=document.getElementById("app-content");
+  var c=el("app-content");if(!c)return;
+  if(id==="users"&&currentUser.role!=="admin"){renderPage("dash");return;}
+  c.innerHTML=offl();
   switch(id){
-    case"dash":         el.innerHTML=offlBanner()+renderDash();        attachDash();        break;
-    case"users":        el.innerHTML=offlBanner()+renderUsers();       attachUsers();       break;
-    case"clients":      el.innerHTML=offlBanner()+renderClients();     attachClients();     break;
-    case"lists":        el.innerHTML=offlBanner()+renderLists();       attachLists();       break;
-    case"se":           el.innerHTML=offlBanner()+renderSE();          attachSE();          break;
-    case"sv":           el.innerHTML=offlBanner()+renderSV();          attachSV();          break;
-    case"ee":           el.innerHTML=offlBanner()+renderEE();          attachEE();          break;
-    case"ev":           el.innerHTML=offlBanner()+renderEV();          attachEV();          break;
-    case"payroll":      el.innerHTML=offlBanner()+renderPayroll();     attachPayroll();     break;
-    case"payroll-view": el.innerHTML=offlBanner()+renderPayrollView(); attachPayrollView(); break;
-    case"payroll-rep":  el.innerHTML=offlBanner()+renderPayrollRep();  attachPayrollRep();  break;
-    case"rep":          el.innerHTML=offlBanner()+renderRep();         attachRep();         break;
+    case"dash":      c.innerHTML+=renderDash();   setTimeout(attachDash,30);   break;
+    case"users":     c.innerHTML+=renderUsers();  break;
+    case"clients":   c.innerHTML+=renderClients();break;
+    case"lists":     c.innerHTML+=renderLists();  break;
+    case"se":        c.innerHTML+=renderSE();     attachSE();  break;
+    case"sv":        c.innerHTML+=renderSV();     attachSV();  break;
+    case"ee":        c.innerHTML+=renderEE();     attachEE();  break;
+    case"ev":        c.innerHTML+=renderEV();     attachEV();  break;
+    case"payroll":   c.innerHTML+=renderPayroll();attachPayroll();break;
+    case"payroll-view":c.innerHTML+=renderPayView();attachPayView();break;
+    case"payroll-rep": c.innerHTML+=renderPayRep(); attachPayRep(); break;
+    case"rep":       c.innerHTML+=renderRep();    attachRep(); break;
+    default: c.innerHTML+=renderDash(); setTimeout(attachDash,30);
   }
 }
 
-// ─── DASHBOARD ───
+// ═══════════════════════════
+// DASHBOARD
+// ═══════════════════════════
 function renderDash(){
-  const today=toDay(), m=today.slice(0,7);
-  return(
-    '<div class="card" style="margin-bottom:16px">'+
-      '<div class="fb" style="flex-wrap:wrap">'+
-        '<div class="ffi"><label>📅 من</label><input type="date" id="df-from" value="'+m+'-01"/></div>'+
-        '<div class="ffi"><label>📅 إلى</label><input type="date" id="df-to" value="'+today+'"/></div>'+
-        '<div class="ffi"><label>⛵ المركب</label>'+
-          '<select id="df-boat"><option value="">كل المراكب</option>'+
-          BOATS.map(function(b){return'<option>'+b+'</option>';}).join('')+
-          '</select>'+
-        '</div>'+
-        '<div style="display:flex;gap:6px;align-items:flex-end">'+
-          '<button class="btn bp sm" onclick="updateDash()">🔍 تطبيق</button>'+
-          '<button class="btn bg sm" onclick="resetDash()">↺</button>'+
-        '</div>'+
-      '</div>'+
-    '</div>'+
-    '<div id="d-kpi" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px"></div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">'+
-      '<div id="d-boats-chart"></div>'+
-      '<div id="d-exp-chart"></div>'+
-    '</div>'+
-    '<div id="d-boats-table" style="margin-bottom:16px"></div>'+
-    '<div id="d-recent"></div>'
-  );
+  var d=toDay(),m=d.slice(0,7);
+  return '<div class="card" style="margin-bottom:14px">'+
+    '<div class="fb">'+
+    '<div class="ffi"><label>📅 من</label><input type="date" id="df-from" value="'+m+'-01"/></div>'+
+    '<div class="ffi"><label>📅 إلى</label><input type="date" id="df-to" value="'+d+'"/></div>'+
+    '<div class="ffi"><label>⛵ المركب</label><select id="df-boat"><option value="">كل المراكب</option>'+
+    BOATS.map(function(b){return'<option>'+b+'</option>';}).join("")+'</select></div>'+
+    '<div style="display:flex;gap:6px;align-items:flex-end">'+
+    '<button class="btn bp sm" onclick="updateDash()">🔍</button>'+
+    '<button class="btn bg sm" onclick="resetDash()">↺</button></div>'+
+    '</div></div>'+
+    '<div id="d-kpi" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px"></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" id="d-charts"></div>'+
+    '<div id="d-boats" style="margin-bottom:14px"></div>'+
+    '<div id="d-recent"></div>';
 }
-
 function attachDash(){
-  setTimeout(function(){
-    var els=["df-from","df-to","df-boat"];
-    els.forEach(function(id){
-      var el=document.getElementById(id);
-      if(el)el.addEventListener("change",updateDash);
-    });
-    updateDash();
-  },30);
-}
-
-function resetDash(){
-  var today=toDay(),m=today.slice(0,7);
-  var f=document.getElementById("df-from");
-  var t=document.getElementById("df-to");
-  var b=document.getElementById("df-boat");
-  if(f)f.value=m+"-01";
-  if(t)t.value=today;
-  if(b)b.value="";
+  ["df-from","df-to","df-boat"].forEach(function(i){
+    var e=el(i);if(e)e.addEventListener("change",updateDash);
+  });
   updateDash();
 }
-
+function resetDash(){
+  var d=toDay(),m=d.slice(0,7);
+  var f=el("df-from"),t=el("df-to"),b=el("df-boat");
+  if(f)f.value=m+"-01";if(t)t.value=d;if(b)b.value="";
+  updateDash();
+}
 function updateDash(){
-  var kpiEl=document.getElementById("d-kpi");
-  if(!kpiEl)return;
-
-  var fd=document.getElementById("df-from")?.value||"";
-  var ft=document.getElementById("df-to")?.value||"";
-  var fb=document.getElementById("df-boat")?.value||"";
-
-  var sales=ld(K.S,[]);
-  var exps=ld(K.E,[]);
-  var pay=ld(K.P,[]);
-
-  var fs=sales.filter(function(s){return(!fd||s.date>=fd)&&(!ft||s.date<=ft)&&(!fb||s.boat===fb);});
-  var fe=exps.filter(function(e){return(!fd||e.date>=fd)&&(!ft||e.date<=ft)&&(!fb||e.boat===fb);});
-  var fp=pay.filter(function(p){return(!fd||p.date>=fd)&&(!ft||p.date<=ft)&&(!fb||p.boat===fb);});
-
+  var kpi=el("d-kpi");if(!kpi)return;
+  var fd=el("df-from")?el("df-from").value:"";
+  var ft=el("df-to")?el("df-to").value:"";
+  var fb=el("df-boat")?el("df-boat").value:"";
+  var sales=ld(K.S,[]);var exps=ld(K.E,[]);var pays=ld(K.P,[]);
+  function inR(d){return(!fd||d>=fd)&&(!ft||d<=ft);}
+  var fs=sales.filter(function(s){return inR(s.date)&&(!fb||s.boat===fb);});
+  var fe=exps.filter(function(e){return inR(e.date)&&(!fb||e.boat===fb);});
+  var fp=pays.filter(function(p){return inR(p.date)&&(!fb||p.boat===fb);});
   var rev=fs.reduce(function(a,s){return a+(+s.total||0);},0);
   var exp=fe.reduce(function(a,e){return a+(+e.total||0);},0);
   var payT=fp.reduce(function(a,p){return a+(+p.amount||0);},0);
@@ -1058,689 +814,861 @@ function updateDash(){
   var kit=fe.filter(function(e){return e.exp_type==="المطابخ";}).reduce(function(a,e){return a+(+e.total||0);},0);
   var opX=fe.filter(function(e){return e.exp_type==="مصاريف التشغيل";}).reduce(function(a,e){return a+(+e.total||0);},0);
   var adm=fe.filter(function(e){return e.exp_type==="المصاريف الإدارية";}).reduce(function(a,e){return a+(+e.total||0);},0);
-
-  // KPI cards
+  // KPI
   var kpis=[
     {ic:"💰",l:"إجمالي الإيرادات",v:rev,c:"var(--cy)",sub:fs.length+" رحلة"},
     {ic:"📊",l:"إجمالي المصاريف",v:exp+payT,c:"var(--re)",sub:"مطابخ: "+fmt(kit)},
     {ic:"📈",l:"صافي الربح",v:net,c:net>=0?"var(--gr)":"var(--re)",sub:net>=0?"✅ ربح":"⚠️ خسارة"},
-    {ic:"👥",l:"إجمالي المرتبات",v:payT,c:"var(--go)",sub:fp.length+" سجل"},
+    {ic:"👥",l:"إجمالي المرتبات",v:payT,c:"var(--go)",sub:fp.length+" سجل"}
   ];
-  kpiEl.innerHTML=kpis.map(function(x){
-    return'<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;position:relative;overflow:hidden">'+
+  kpi.innerHTML=kpis.map(function(x){
+    return '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:18px;position:relative;overflow:hidden">'+
       '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+x.c+'"></div>'+
-      '<div style="font-size:24px;margin-bottom:8px">'+x.ic+'</div>'+
+      '<div style="font-size:22px;margin-bottom:6px">'+x.ic+'</div>'+
       '<div style="font-size:11px;color:var(--t2);margin-bottom:4px">'+x.l+'</div>'+
-      '<div style="font-size:22px;font-weight:800;color:'+x.c+'">'+fmt(x.v)+'</div>'+
-      '<div style="font-size:11px;color:var(--t3);margin-top:4px">'+x.sub+'</div>'+
-    '</div>';
+      '<div style="font-size:20px;font-weight:800;color:'+x.c+'">'+fmt(x.v)+'</div>'+
+      '<div style="font-size:10px;color:var(--t3);margin-top:3px">'+x.sub+'</div></div>';
   }).join("");
-
-  // Boats bar chart
-  var boatEl=document.getElementById("d-boats-chart");
-  if(boatEl){
+  // Charts
+  var ch=el("d-charts");
+  if(ch){
+    var bmax=0;
     var bdata=BOATS.map(function(b){
-      return{l:b,v:fs.filter(function(s){return s.boat===b;}).reduce(function(a,s){return a+(+s.total||0);},0)};
+      var v=fs.filter(function(s){return s.boat===b;}).reduce(function(a,s){return a+(+s.total||0);},0);
+      if(v>bmax)bmax=v;return{l:b,v:v};
     }).filter(function(x){return x.v>0;}).sort(function(a,b2){return b2.v-a.v;});
-    var bmax=Math.max.apply(null,bdata.map(function(x){return x.v;})||[1]);
-    boatEl.innerHTML='<div class="card"><div class="ch"><span class="ct">⛵ إيرادات المراكب</span></div><div class="cb">'+
-      (bdata.length===0?'<div class="empty">لا بيانات</div>':
-        bdata.map(function(x){
-          var pct=bmax>0?Math.round(x.v/bmax*100):0;
-          return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
-            '<div style="width:70px;font-size:12px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+x.l+'</div>'+
-            '<div style="flex:1;height:20px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden">'+
-              '<div style="height:100%;width:'+pct+'%;background:var(--cy);border-radius:4px;transition:width .5s"></div>'+
-            '</div>'+
-            '<div style="width:85px;font-size:12px;font-weight:700;color:var(--cy);text-align:left">'+fmt(x.v)+'</div>'+
-          '</div>';
-        }).join(""))+'</div></div>';
-  }
-
-  // Expense breakdown
-  var expEl=document.getElementById("d-exp-chart");
-  if(expEl){
     var colors=["var(--go)","#60a5fa","var(--re)","var(--cy)"];
-    var edata=[
-      {l:"المطابخ",v:kit},{l:"التشغيل",v:opX},{l:"الإدارية",v:adm},{l:"المرتبات",v:payT}
-    ].filter(function(x){return x.v>0;}).sort(function(a,b2){return b2.v-a.v;});
+    var edata=[{l:"المطابخ",v:kit},{l:"التشغيل",v:opX},{l:"الإدارية",v:adm},{l:"المرتبات",v:payT}].filter(function(x){return x.v>0;});
     var etot=edata.reduce(function(a,x){return a+x.v;},0);
-    expEl.innerHTML='<div class="card"><div class="ch"><span class="ct">📊 توزيع المصاريف</span></div><div class="cb">'+
-      (edata.length===0?'<div class="empty">لا بيانات</div>':
-        edata.map(function(x,i){
-          var pct=etot>0?Math.round(x.v/etot*100):0;
-          return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
-            '<div style="width:10px;height:10px;border-radius:50%;background:'+colors[i%4]+';flex-shrink:0"></div>'+
-            '<div style="flex:1;font-size:12px;color:var(--t1)">'+x.l+'</div>'+
-            '<div style="width:100px;height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden">'+
-              '<div style="height:100%;width:'+pct+'%;background:'+colors[i%4]+';border-radius:4px"></div>'+
-            '</div>'+
-            '<div style="width:28px;font-size:10px;color:var(--t3)">'+pct+'%</div>'+
-            '<div style="width:75px;font-size:12px;font-weight:700;color:'+colors[i%4]+';text-align:left">'+fmt(x.v)+'</div>'+
-          '</div>';
-        }).join(""))+'</div></div>';
+    ch.innerHTML=
+      '<div class="card"><div class="ch"><span class="ct">⛵ إيرادات المراكب</span></div><div class="cb">'+
+      (bdata.length?bdata.map(function(x){
+        var p=bmax>0?Math.round(x.v/bmax*100):0;
+        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
+          '<div style="width:65px;font-size:11px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+x.l+'</div>'+
+          '<div style="flex:1;height:18px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden">'+
+          '<div style="height:100%;width:'+p+'%;background:var(--cy);border-radius:3px;transition:width .5s"></div></div>'+
+          '<div style="width:80px;font-size:11px;font-weight:700;color:var(--cy);text-align:left">'+fmt(x.v)+'</div></div>';
+      }).join(""):'<div class="empty">لا بيانات</div>')+'</div></div>'+
+      '<div class="card"><div class="ch"><span class="ct">📊 توزيع المصاريف</span></div><div class="cb">'+
+      (edata.length?edata.map(function(x,i){
+        var p=etot>0?Math.round(x.v/etot*100):0;
+        return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">'+
+          '<div style="width:9px;height:9px;border-radius:50%;background:'+colors[i%4]+';flex-shrink:0"></div>'+
+          '<div style="flex:1;font-size:11px;color:var(--t1)">'+x.l+'</div>'+
+          '<div style="width:90px;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">'+
+          '<div style="height:100%;width:'+p+'%;background:'+colors[i%4]+';border-radius:3px"></div></div>'+
+          '<div style="width:25px;font-size:10px;color:var(--t3)">'+p+'%</div>'+
+          '<div style="width:70px;font-size:11px;font-weight:700;color:'+colors[i%4]+';text-align:left">'+fmt(x.v)+'</div></div>';
+      }).join(""):'<div class="empty">لا بيانات</div>')+'</div></div>';
   }
-
-  // Boats summary table
-  var tblEl=document.getElementById("d-boats-table");
-  if(tblEl){
+  // Boats table
+  var bt=el("d-boats");
+  if(bt){
     var rows=BOATS.map(function(b){
       var br=fs.filter(function(s){return s.boat===b;}).reduce(function(a,s){return a+(+s.total||0);},0);
       var be=fe.filter(function(e){return e.boat===b;}).reduce(function(a,e){return a+(+e.total||0);},0);
       var bp=fp.filter(function(p){return p.boat===b;}).reduce(function(a,p){return a+(+p.amount||0);},0);
-      var bn=br-be-bp;
-      var trips=fs.filter(function(s){return s.boat===b;}).length;
-      return{b:b,br:br,be:be,bp:bp,bn:bn,trips:trips};
+      var bn=br-be-bp;var tr=fs.filter(function(s){return s.boat===b;}).length;
+      return{b:b,br:br,be:be,bp:bp,bn:bn,tr:tr};
     }).filter(function(r){return r.br>0||r.be>0;});
-    tblEl.innerHTML='<div class="card"><div class="ch"><span class="ct">⛵ ملخص المراكب</span></div>'+
-      '<div class="tw"><table><thead><tr><th>المركب</th><th>الرحلات</th><th>الإيرادات</th><th>المصاريف</th><th>المرتبات</th><th>الصافي</th></tr></thead>'+
-      '<tbody>'+(rows.length===0?'<tr><td colspan="6"><div class="empty">لا بيانات</div></td></tr>':
-        rows.map(function(r){
-          return'<tr>'+
-            '<td>'+bj("bc",r.b)+'</td>'+
-            '<td style="text-align:center">'+r.trips+'</td>'+
-            '<td style="color:var(--gr);font-weight:700">'+fmt(r.br)+'</td>'+
-            '<td style="color:var(--re)">'+fmt(r.be)+'</td>'+
-            '<td style="color:var(--go)">'+fmt(r.bp)+'</td>'+
-            '<td style="color:'+(r.bn>=0?"var(--gr)":"var(--re)")+';font-weight:800">'+fmt(r.bn)+'</td>'+
-          '</tr>';
-        }).join(""))+'</tbody></table></div></div>';
+    bt.innerHTML='<div class="card"><div class="ch"><span class="ct">⛵ ملخص المراكب</span></div>'+
+      '<div class="tw"><table><thead><tr><th>المركب</th><th>الرحلات</th><th>الإيرادات</th><th>المصاريف</th><th>المرتبات</th><th>الصافي</th></tr></thead><tbody>'+
+      (rows.length?rows.map(function(r){
+        return '<tr><td>'+bj("bc",r.b)+'</td><td style="text-align:center">'+r.tr+'</td>'+
+          '<td style="color:var(--gr);font-weight:700">'+fmt(r.br)+'</td>'+
+          '<td style="color:var(--re)">'+fmt(r.be)+'</td>'+
+          '<td style="color:var(--go)">'+fmt(r.bp)+'</td>'+
+          '<td style="color:'+(r.bn>=0?"var(--gr)":"var(--re)")+';font-weight:800">'+fmt(r.bn)+'</td></tr>';
+      }).join(""):'<tr><td colspan="6"><div class="empty">لا بيانات</div></td></tr>')+'</tbody></table></div></div>';
   }
-
-  // Recent sales
-  var recEl=document.getElementById("d-recent");
-  if(recEl){
-    var recent=fs.slice().sort(function(a,b2){return b2.date.localeCompare(a.date);}).slice(0,5);
-    recEl.innerHTML='<div class="card"><div class="ch"><span class="ct">🕐 آخر المبيعات</span></div>'+
-      '<div class="tw"><table><thead><tr><th>التاريخ</th><th>المركب</th><th>السنتر</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th></tr></thead>'+
-      '<tbody>'+(recent.length===0?'<tr><td colspan="6"><div class="empty">لا بيانات بعد</div></td></tr>':
-        recent.map(function(s){
-          return'<tr>'+
-            '<td>'+s.date+'</td>'+
-            '<td>'+bj("bc",s.boat||"")+'</td>'+
-            '<td>'+(s.center||"-")+'</td>'+
-            '<td style="color:var(--cy)">'+fmt(s.trip)+'</td>'+
-            '<td style="color:var(--go)">'+fmt(s.kitchen)+'</td>'+
-            '<td style="color:var(--gr);font-weight:700">'+fmt(s.total)+'</td>'+
-          '</tr>';
-        }).join(""))+'</tbody></table></div></div>';
+  // Recent
+  var rc=el("d-recent");
+  if(rc){
+    var recent=fs.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,5);
+    rc.innerHTML='<div class="card"><div class="ch"><span class="ct">🕐 آخر المبيعات</span></div>'+
+      '<div class="tw"><table><thead><tr><th>التاريخ</th><th>المركب</th><th>السنتر</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th></tr></thead><tbody>'+
+      (recent.length?recent.map(function(s){
+        return '<tr><td>'+s.date+'</td><td>'+bj("bc",s.boat||"")+'</td><td>'+(s.center||"-")+'</td>'+
+          '<td style="color:var(--cy)">'+fmt(s.trip)+'</td>'+
+          '<td style="color:var(--go)">'+fmt(s.kitchen)+'</td>'+
+          '<td style="color:var(--gr);font-weight:700">'+fmt(s.total)+'</td></tr>';
+      }).join(""):'<tr><td colspan="6"><div class="empty">لا بيانات بعد</div></td></tr>')+'</tbody></table></div></div>';
   }
 }
 
-// ─── USERS ───
+// ═══════════════════════════
+// USERS
+// ═══════════════════════════
 function renderUsers(){
   var users=ld(K.U,INIT_USERS);
-  var isAdmin=currentUser&&currentUser.role==="admin";
-  var ro=isReadOnly();
-  var roleBadges={admin:bj("bg2","مدير"),user:bj("bc","مستخدم"),hr:bj("be","HR"),viewer:bj("br","مشاهد")};
-  var rows=users.map(function(u){
-    var editBtn=(!ro&&(isAdmin||u.id===currentUser.id))?'<button class="btn bg sm" onclick="userForm('+u.id+')">✏️</button>':"";
-    var delBtn=(!ro&&isAdmin&&u.id!==currentUser.id)?'<button class="btn bd2 sm" onclick="delUser('+u.id+')">🗑</button>':"";
-    return'<tr><td>'+u.id+'</td><td style="font-weight:600">'+u.name+'</td><td>'+bj("bb",u.username)+'</td><td>'+(roleBadges[u.role]||bj("bc",u.role||""))+'</td><td><div class="tda">'+editBtn+delBtn+'</div></td></tr>';
-  }).join("");
-  return'<div class="card"><div class="ch"><span class="ct">👥 المستخدمون</span>'+(isAdmin?'<button class="btn bp sm" onclick="userForm()">+ إضافة</button>':"")+
+  var isAdmin=currentUser.role==="admin";
+  var ro=currentUser.role==="viewer";
+  return '<div class="card"><div class="ch"><span class="ct">👥 المستخدمون</span>'+
+    (!ro&&isAdmin?'<button class="btn bp sm" onclick="userForm()">+ إضافة</button>':"")+
     '</div><div class="tw"><table><thead><tr><th>#</th><th>الاسم</th><th>المستخدم</th><th>الدور</th><th></th></tr></thead><tbody>'+
-    (rows||'<tr><td colspan="5"><div class="empty">لا يوجد مستخدمون</div></td></tr>')+'</tbody></table></div></div>';
+    users.map(function(u){
+      var roleBadge={admin:bj("bg2","مدير"),user:bj("bc","مستخدم"),hr:bj("be","HR"),viewer:bj("br","مشاهد")}[u.role]||bj("bc",u.role);
+      var canEdit=!ro&&(isAdmin||u.id===currentUser.id);
+      var canDel=!ro&&isAdmin&&u.id!==currentUser.id;
+      return '<tr><td>'+u.id+'</td><td style="font-weight:600">'+u.name+'</td>'+
+        '<td>'+bj("bb",u.username)+'</td><td>'+roleBadge+'</td>'+
+        '<td><div class="tda">'+
+        (canEdit?'<button class="btn bg sm" onclick="userForm('+u.id+')">✏️</button>':"")+
+        (canDel?'<button class="btn bd2 sm" onclick="delUser('+u.id+')">🗑</button>':"")+
+        '</div></td></tr>';
+    }).join("")+'</tbody></table></div></div>';
 }
-function attachUsers(){}
 function userForm(id){
-  const users=ld(K.U,INIT_USERS);
-  const u=id?users.find(x=>x.id===id):{id:null,username:"",password:"",name:"",role:"user"};
-  openModal(id?"تعديل المستخدم":"إضافة مستخدم",`
-    <div class="fr2">
-      <div class="ff"><label>الاسم الكامل</label><input id="u-name" value="${u.name||""}"/></div>
-      <div class="ff"><label>اسم المستخدم</label><input id="u-user" value="${u.username||""}"/></div>
-      <div class="ff"><label>كلمة المرور</label><input id="u-pass" type="password" value="${u.password||""}"/></div>
-      <div class="ff"><label>الدور</label>
-        <select id="u-role">
-          <option value="admin" ${u.role==="admin"?"selected":""}>مدير</option>
-          <option value="user" ${u.role==="user"?"selected":""}>مستخدم</option>
-          <option value="hr" ${u.role==="hr"?"selected":""}>موارد بشرية</option>
-          <option value="viewer" ${u.role==="viewer"?"selected":""}>مشاهد فقط</option>
-        </select>
-      </div>
-    </div>`,"حفظ",()=>{
-    const name=document.getElementById("u-name").value.trim();
-    const user=document.getElementById("u-user").value.trim();
-    const pass=document.getElementById("u-pass").value;
-    const role=document.getElementById("u-role").value;
-    if(!name||!user||!pass)return alert("يرجى ملء الحقول");
-    const users=ld(K.U,INIT_USERS);
-    const rec={id:id||gid(users),username:user,password:pass,name,role};
-    const newUsers=id?users.map(x=>x.id===id?rec:x):[...users,rec];
-    sv(K.U,newUsers);enq(K.U,"u",rec);closeModal();renderPage("users");
-  });
+  var users=ld(K.U,INIT_USERS);
+  var u=id?users.filter(function(x){return x.id===id;})[0]:{id:null,username:"",password:"",name:"",role:"user"};
+  if(!u) return;
+  openModal(id?"تعديل المستخدم":"إضافة مستخدم",
+    '<div class="fr2">'+
+    '<div class="ff"><label>الاسم الكامل</label><input id="u-name" value="'+escHtml(u.name)+'"/></div>'+
+    '<div class="ff"><label>اسم المستخدم</label><input id="u-user" value="'+escHtml(u.username)+'"/></div>'+
+    '<div class="ff"><label>كلمة المرور</label><input id="u-pass" type="password" value="'+escHtml(u.password)+'"/></div>'+
+    '<div class="ff"><label>الدور</label><select id="u-role">'+
+    '<option value="admin"'+(u.role==="admin"?" selected":"")+'>مدير</option>'+
+    '<option value="user"'+(u.role==="user"?" selected":"")+'>مستخدم</option>'+
+    '<option value="hr"'+(u.role==="hr"?" selected":"")+'>موارد بشرية</option>'+
+    '<option value="viewer"'+(u.role==="viewer"?" selected":"")+'>مشاهد فقط</option>'+
+    '</select></div></div>',
+    "حفظ",function(){
+      var nm=el("u-name").value.trim(),un=el("u-user").value.trim(),pw=el("u-pass").value,rl=el("u-role").value;
+      if(!nm||!un||!pw){alert("يرجى ملء الحقول");return;}
+      var users2=ld(K.U,INIT_USERS);
+      var rec={id:id||gid(users2),username:un,password:pw,name:nm,role:rl};
+      var newU=id?users2.map(function(x){return x.id===id?rec:x;}):users2.concat([rec]);
+      sv(K.U,newU);enq(K.U,"u",rec);closeModal();renderPage("users");
+    });
 }
 function delUser(id){
-  if(!confirm("حذف المستخدم؟"))return;
-  const users=ld(K.U,INIT_USERS);
-  const rec=users.find(x=>x.id===id);
-  sv(K.U,users.filter(x=>x.id!==id));enq(K.U,"d",rec);renderPage("users");
+  if(!confirm("حذف المستخدم؟")) return;
+  var users=ld(K.U,INIT_USERS);
+  var rec=users.filter(function(x){return x.id===id;})[0];
+  sv(K.U,users.filter(function(x){return x.id!==id;}));
+  if(rec) enq(K.U,"d",rec);
+  renderPage("users");
 }
 
-// ─── CLIENTS ───
+// ═══════════════════════════
+// CLIENTS
+// ═══════════════════════════
 function renderClients(){
   var cls=ld(K.C,[]);
-  var isAdmin=currentUser&&currentUser.role==="admin";
-  var rows=cls.map(function(c){
-    var editBtn=(isAdmin||c.by_user===currentUser.id)?'<button class="btn bg sm" onclick="clientForm('+c.id+')">✏️</button>':"";
-    var delBtn=isAdmin?'<button class="btn bd2 sm" onclick="delClient('+c.id+')">🗑</button>':"";
-    return'<tr><td>'+c.id+'</td><td style="font-weight:600">'+c.name+'</td><td>'+(c.phone||"")+'</td><td>'+(c.address||"")+'</td><td style="color:var(--go);font-weight:700">'+fmt(c.price)+'</td><td><div class="tda">'+editBtn+delBtn+'</div></td></tr>';
-  }).join("");
-  return'<div class="card"><div class="ch"><span class="ct">👤 العملاء</span>'+
-    '<button class="btn bp sm" onclick="clientForm()">+ إضافة</button></div>'+
-    '<div class="tw"><table><thead><tr><th>#</th><th>الاسم</th><th>التليفون</th><th>العنوان</th><th>السعر</th><th></th></tr></thead><tbody>'+
-    (rows||'<tr><td colspan="6"><div class="empty">لا يوجد عملاء</div></td></tr>')+'</tbody></table></div></div>';
+  var isAdmin=currentUser.role==="admin";
+  var ro=currentUser.role==="viewer";
+  return '<div class="card"><div class="ch"><span class="ct">👤 العملاء</span>'+
+    (!ro?'<button class="btn bp sm" onclick="clientForm()">+ إضافة</button>':"")+
+    '</div><div class="tw"><table><thead><tr><th>#</th><th>الاسم</th><th>التليفون</th><th>العنوان</th><th>السعر</th><th></th></tr></thead><tbody>'+
+    (cls.length?cls.map(function(c){
+      var canEdit=!ro&&(isAdmin||c.by_user===currentUser.id);
+      return '<tr><td>'+c.id+'</td><td style="font-weight:600">'+escHtml(c.name)+'</td>'+
+        '<td>'+(c.phone||"")+'</td><td>'+(c.address||"")+'</td>'+
+        '<td style="color:var(--go);font-weight:700">'+fmt(c.price)+'</td>'+
+        '<td><div class="tda">'+
+        (canEdit?'<button class="btn bg sm" onclick="clientForm('+c.id+')">✏️</button>':"")+
+        (isAdmin?'<button class="btn bd2 sm" onclick="delClient('+c.id+')">🗑</button>':"")+
+        '</div></td></tr>';
+    }).join(""):'<tr><td colspan="6"><div class="empty">لا يوجد عملاء</div></td></tr>')+'</tbody></table></div></div>';
 }
-function attachClients(){}
 function clientForm(id){
-  const cls=ld(K.C,[]);
-  const c=id?cls.find(x=>x.id===id):{id:null,name:"",phone:"",address:"",price:""};
-  openModal(id?"تعديل العميل":"إضافة عميل",`
-    <div class="fr2">
-      <div class="ff"><label>الاسم</label><input id="c-name" value="${c.name||""}"/></div>
-      <div class="ff"><label>التليفون</label><input id="c-phone" value="${c.phone||""}"/></div>
-      <div class="ff"><label>العنوان</label><input id="c-addr" value="${c.address||""}"/></div>
-      <div class="ff"><label>السعر</label><input id="c-price" type="number" value="${c.price||""}"/></div>
-    </div>`,"حفظ",()=>{
-    const name=document.getElementById("c-name").value.trim();
-    if(!name)return alert("أدخل الاسم");
-    const cls=ld(K.C,[]);
-    const rec={id:id||gid(cls),name,phone:document.getElementById("c-phone").value,
-      address:document.getElementById("c-addr").value,
-      price:+document.getElementById("c-price").value||0,
-      by_user:currentUser?.id};
-    const newCls=id?cls.map(x=>x.id===id?rec:x):[...cls,rec];
-    sv(K.C,newCls);enq(K.C,"u",rec);closeModal();renderPage("clients");
-  });
+  var cls=ld(K.C,[]);
+  var c=id?cls.filter(function(x){return x.id===id;})[0]:{id:null,name:"",phone:"",address:"",price:""};
+  if(!c) return;
+  openModal(id?"تعديل العميل":"إضافة عميل",
+    '<div class="fr2">'+
+    '<div class="ff"><label>الاسم</label><input id="c-name" value="'+escHtml(c.name)+'"/></div>'+
+    '<div class="ff"><label>التليفون</label><input id="c-phone" value="'+(c.phone||"")+'"/></div>'+
+    '<div class="ff"><label>العنوان</label><input id="c-addr" value="'+(c.address||"")+'"/></div>'+
+    '<div class="ff"><label>السعر</label><input id="c-price" type="number" value="'+(c.price||"")+'"/></div></div>',
+    "حفظ",function(){
+      var nm=el("c-name").value.trim();if(!nm){alert("أدخل الاسم");return;}
+      var cls2=ld(K.C,[]);
+      var rec={id:id||gid(cls2),name:nm,phone:el("c-phone").value,address:el("c-addr").value,price:+el("c-price").value||0,by_user:currentUser.id};
+      sv(K.C,id?cls2.map(function(x){return x.id===id?rec:x;}):cls2.concat([rec]));
+      enq(K.C,"u",rec);closeModal();renderPage("clients");
+    });
 }
 function delClient(id){
-  if(!confirm("حذف العميل؟"))return;
-  const cls=ld(K.C,[]);const rec=cls.find(x=>x.id===id);
-  sv(K.C,cls.filter(x=>x.id!==id));enq(K.C,"d",rec);renderPage("clients");
+  if(!confirm("حذف؟")) return;
+  var cls=ld(K.C,[]);var rec=cls.filter(function(x){return x.id===id;})[0];
+  sv(K.C,cls.filter(function(x){return x.id!==id;}));if(rec)enq(K.C,"d",rec);renderPage("clients");
 }
 
-// ─── LISTS ───
-let listsTab="b";
+// ═══════════════════════════
+// LISTS
+// ═══════════════════════════
+var listsTab="b";
+function switchListTab(t){listsTab=t;renderPage("lists");}
 function renderLists(){
-  var role=currentUser&&currentUser.role||"user";
-  var isHR=role==="hr";
-  if(isHR)return renderHRList();
-  var tabs='<div style="display:flex;gap:8px;margin-bottom:14px">'+
-    '<button class="btn '+(listsTab==="b"?"bp":"bg")+'" onclick="switchListTab(\"b\")">⛵ المراكب</button>'+
-    '<button class="btn '+(listsTab==="e"?"bp":"bg")+'" onclick="switchListTab(\"e\")">📋 المصاريف</button>'+
-  '</div>';
-  return tabs+(listsTab==="b"?renderBoatsList():renderExpLists());
+  var isHR=currentUser.role==="hr";
+  if(isHR) return renderHRList();
+  return '<div style="display:flex;gap:8px;margin-bottom:12px">'+
+    '<button class="btn '+(listsTab==="b"?"bp":"bg")+'" onclick="switchListTab(\'b\')">⛵ المراكب</button>'+
+    '<button class="btn '+(listsTab==="e"?"bp":"bg")+'" onclick="switchListTab(\'e\')">📋 المصاريف</button></div>'+
+    (listsTab==="b"?renderBoatsList():renderExpLists());
 }
 function renderHRList(){
-  var cat="مرتبات العاملين";
-  var items=EXP_CATS[cat]||[];
-  var chips=items.map(function(it,i){
-    return'<div style="display:flex;align-items:center;gap:4px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);border-radius:7px;padding:6px 12px;font-size:13px;font-weight:600">👤 '+it+
-      '<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:12px" onclick="rmItem(this)">✕</button></div>';
-  }).join("");
-  return'<div class="card"><div class="ch"><span class="ct">👥 مرتبات العاملين</span></div><div class="cb">'+
-    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">'+chips+'</div>'+
-    '<div style="display:flex;gap:8px"><input id="ni-hr-emp" placeholder="إضافة موظف جديد..." style="flex:1"/>'+
-    '<button class="btn bp sm" onclick="addHREmp()">+ إضافة</button></div>'+
-  '</div></div>';
+  var items=EXP_CATS["مرتبات العاملين"]||[];
+  return '<div class="card"><div class="ch"><span class="ct">👥 مرتبات العاملين</span></div><div class="cb">'+
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">'+
+    items.map(function(it,i){
+      return '<div style="display:flex;align-items:center;gap:4px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);border-radius:7px;padding:5px 10px;font-size:12px;font-weight:600">'+
+        '👤 '+it+'<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:11px" onclick="rmHREmp('+i+')">✕</button></div>';
+    }).join("")+
+    '</div><div style="display:flex;gap:8px"><input id="hr-emp-input" placeholder="إضافة موظف..." style="flex:1"/>'+
+    '<button class="btn bp sm" onclick="addHREmp()">+</button></div></div></div>';
 }
+function addHREmp(){
+  var v=el("hr-emp-input")&&el("hr-emp-input").value.trim();
+  if(v){EXP_CATS["مرتبات العاملين"].push(v);EMPLOYEES.push(v);renderPage("lists");}
+}
+function rmHREmp(i){EXP_CATS["مرتبات العاملين"].splice(i,1);renderPage("lists");}
 function renderBoatsList(){
-  var chips=BOATS.map(function(b,i){
-    return'<div style="display:flex;align-items:center;gap:4px;background:rgba(8,145,178,.12);border:1px solid var(--bd);border-radius:7px;padding:5px 10px;font-size:13px">⛵ '+b+
-      '<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:12px" onclick="rmBoat(this)">✕</button></div>';
-  }).join("");
-  return'<div class="card"><div class="ch"><span class="ct">⛵ المراكب</span></div><div class="cb">'+
-    '<div style="display:flex;gap:8px;margin-bottom:12px"><input id="new-boat" placeholder="اسم مركب جديد" style="flex:1"/>'+
+  return '<div class="card"><div class="ch"><span class="ct">⛵ المراكب</span></div><div class="cb">'+
+    '<div style="display:flex;gap:8px;margin-bottom:10px"><input id="new-boat" placeholder="مركب جديد..." style="flex:1"/>'+
     '<button class="btn bp sm" onclick="addBoat()">+</button></div>'+
-    '<div style="display:flex;flex-wrap:wrap;gap:6px">'+chips+'</div>'+
-  '</div></div>';
+    '<div style="display:flex;flex-wrap:wrap;gap:6px">'+
+    BOATS.map(function(b,i){
+      return '<div style="display:flex;align-items:center;gap:4px;background:rgba(8,145,178,.1);border:1px solid var(--bd);border-radius:7px;padding:5px 10px;font-size:12px">'+
+        '⛵ '+b+'<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:11px" onclick="rmBoat('+i+')">✕</button></div>';
+    }).join("")+'</div></div></div>';
 }
+function addBoat(){var v=el("new-boat").value.trim();if(v){BOATS.push(v);renderPage("lists");}}
+function rmBoat(i){BOATS.splice(i,1);renderPage("lists");}
 function renderExpLists(){
-  var newCatRow='<div style="display:flex;gap:8px;margin-bottom:14px">'+
-    '<input id="new-cat" placeholder="فئة جديدة" style="flex:1"/>'+
-    '<button class="btn bp sm" onclick="addCat()">+ فئة</button></div>';
-  var cats=Object.entries(EXP_CATS).map(function(entry){
-    var cat=entry[0]; var items=entry[1];
-    var chips=items.map(function(it,i){
-      return'<div style="display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:12px">'+it+
-        '<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:11px" onclick="rmItem(this)">✕</button></div>';
-    }).join("");
-    var safeId="ni_"+cat.replace(/\s/g,"_");
-    return'<div style="margin-bottom:12px;background:rgba(29,78,216,.06);border-radius:9px;border:1px solid var(--bd);overflow:hidden">'+
-      '<div style="padding:8px 14px;background:rgba(29,78,216,.12);display:flex;justify-content:space-between;align-items:center">'+
-        '<span style="font-weight:700;font-size:13px">'+cat+'</span>'+
-        '<button class="btn bd2 sm" onclick=\"rmCat(this)\">حذف</button>'+
-      '</div>'+
-      '<div style="padding:10px">'+
-        '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">'+chips+'</div>'+
-        '<div style="display:flex;gap:6px">'+
-          '<input id="'+safeId+'" data-cat="'+cat+'" placeholder="بند جديد..." style="flex:1;font-size:12px;padding:5px 8px"/>'+
-          '<button class="btn bs sm" onclick=\"addItemCurrent(this)\">+</button>'+
-        '</div>'+
-      '</div>'+
-    '</div>';
-  }).join("");
-  return'<div class="card"><div class="ch"><span class="ct">📋 فئات المصاريف</span></div><div class="cb">'+newCatRow+cats+'</div></div>';
+  var cats=Object.keys(EXP_CATS);
+  return '<div class="card"><div class="ch"><span class="ct">📋 فئات المصاريف</span>'+
+    '<div style="display:flex;gap:6px"><input id="new-cat" placeholder="فئة جديدة..." style="max-width:160px;font-size:12px;padding:5px 8px"/>'+
+    '<button class="btn bp sm" onclick="addCat()">+ فئة</button></div></div><div class="cb">'+
+    cats.map(function(cat){
+      var items=EXP_CATS[cat]||[];
+      return '<div style="margin-bottom:12px;background:rgba(29,78,216,.06);border-radius:9px;border:1px solid var(--bd);overflow:hidden">'+
+        '<div style="padding:8px 12px;background:rgba(29,78,216,.12);display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-weight:700;font-size:12px">'+cat+'</span>'+
+        '<button class="btn bd2 sm" onclick="rmCat(\''+cat.replace(/'/g,"\\'")+"'"+'\')">حذف</button></div>'+
+        '<div style="padding:10px">'+
+        '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">'+
+        items.map(function(it,i){
+          return '<div style="display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:11px">'+
+            it+'<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:10px" onclick="rmItem(\''+cat.replace(/'/g,"\\'")+'\','+i+')">✕</button></div>';
+        }).join("")+
+        '</div><div style="display:flex;gap:6px"><input id="ni_'+cat.replace(/\s/g,"_").replace(/[^\w]/g,"")+'_" placeholder="بند جديد..." style="flex:1;font-size:11px;padding:5px 8px"/>'+
+        '<button class="btn bs sm" onclick="addItem(\''+cat.replace(/'/g,"\\'")+'\')">+</button></div></div></div>';
+    }).join("")+'</div></div>';
 }
-function attachLists(){}
-function switchListTab(tab){listsTab=tab;renderPage('lists');}
-function addItemCurrent(btn){
-  var input=btn.previousElementSibling;
-  if(!input)return;
-  var v=input.value.trim();
-  if(!v)return;
-  // Find category from container
-  var container=btn.closest('[data-cat]');
-  var cat=container?container.dataset.cat:'';
-  if(cat&&EXP_CATS[cat]){EXP_CATS[cat].push(v);input.value='';renderPage('lists');}
+function addCat(){var v=el("new-cat").value.trim();if(v){EXP_CATS[v]=[];renderPage("lists");}}
+function rmCat(cat){delete EXP_CATS[cat];renderPage("lists");}
+function addItem(cat){
+  var iid="ni_"+cat.replace(/\s/g,"_").replace(/[^\w]/g,"")+"_";
+  var inp=el(iid);if(!inp)return;
+  var v=inp.value.trim();if(v){EXP_CATS[cat].push(v);renderPage("lists");}
 }
-function addBoat(){const v=document.getElementById("new-boat").value.trim();if(v){BOATS.push(v);renderPage("lists");}}
-function rmBoat(btn){
-  var div=btn.parentElement;
-  var txt=div.textContent.trim().replace('⛵','').trim();
-  var idx=BOATS.indexOf(txt);
-  if(idx>=0){BOATS.splice(idx,1);renderPage("lists");}
-}
-function addCat(){const v=document.getElementById("new-cat").value.trim();if(v){EXP_CATS[v]=[];renderPage("lists");}}
-function rmCat(btn){
-  var header=btn.closest('[data-cat]')||btn.parentElement;
-  var cat=header?header.dataset.cat:'';
-  if(!cat){
-    // fallback: find from siblings
-    var h=btn.parentElement;
-    if(h){var s=h.querySelector('[data-cat-name]');if(s)cat=s.dataset.catName;}
-  }
-  if(cat&&EXP_CATS[cat]!==undefined){delete EXP_CATS[cat];renderPage("lists");}
-}
-function addItem(cat){const id="ni-"+cat.replace(/\s/g,"_");const v=document.getElementById(id)?.value.trim();if(v){EXP_CATS[cat].push(v);renderPage("lists");}}
-function rmItem(btn){
-  var div=btn.parentElement;
-  var txt=div.textContent.trim().replace('✕','').trim();
-  // Find which category and item
-  Object.keys(EXP_CATS).forEach(function(cat){
-    var idx=EXP_CATS[cat].indexOf(txt);
-    if(idx>=0)EXP_CATS[cat].splice(idx,1);
-  });
-  renderPage("lists");
-}
+function rmItem(cat,i){if(EXP_CATS[cat])EXP_CATS[cat].splice(i,1);renderPage("lists");}
 
-// ─── SALES ENTRY ───
+// ═══════════════════════════
+// SALES ENTRY
+// ═══════════════════════════
 function renderSE(){
-  var isAdmin=currentUser&&currentUser.role==="admin";
+  var isAdmin=currentUser.role==="admin";
   var pending=ld(K.SP,[]);
   var approved=ld(K.S,[]);
-  var data=isAdmin?pending.concat(approved.filter(function(a){return!pending.find(function(p){return p.id===a.id;});})):pending.slice();
-  var pendingBadge=pending.length>0&&isAdmin
-    ?'<span style="background:rgba(245,158,11,.15);color:var(--go);border:1px solid rgba(245,158,11,.3);border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700">⏳ '+pending.length+' بانتظار الموافقة</span>'
-    :"";
-  var rows="";
-  data.forEach(function(s){
-    var isPend=!!s._pending;
-    var editBtn=(isAdmin||s.by_user===currentUser.id)
-      ?'<button class="btn bg sm" onclick="saleForm('+s.id+','+(isPend?1:0)+')" style="padding:4px 8px">✏️</button>':"";
-    var approveBtn=(isAdmin&&isPend)
-      ?'<button class="btn bs sm" onclick="approveSale('+s.id+')" style="padding:4px 8px;font-size:11px">✅</button>':"";
-    var delBtn=(isAdmin||s.by_user===currentUser.id)
-      ?'<button class="btn bd2 sm" onclick="delSale('+s.id+','+(isPend?1:0)+')" style="padding:4px 8px">🗑</button>':"";
-    var statusBadge=isPend?bj("bg2","⏳ مؤقت"):bj("be","✅ معتمد");
-    rows+='<tr style="'+(isPend?"background:rgba(245,158,11,.04)":"")+'">'+
-      '<td>'+s.id+'</td>'+
-      '<td style="white-space:nowrap">'+s.date+'</td>'+
-      '<td>'+bj("bb",s.rtype||"")+'</td>'+
-      '<td>'+(s.center||"")+'</td>'+
-      '<td>'+bj("bc",s.boat||"")+'</td>'+
-      '<td>'+(s.count||"")+'</td>'+
-      '<td style="color:var(--cy)">'+fmt(s.trip)+'</td>'+
-      '<td style="color:var(--go)">'+fmt(s.kitchen)+'</td>'+
-      '<td style="color:var(--gr);font-weight:700">'+fmt(s.total)+'</td>'+
-      '<td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(s.notes||"")+'</td>'+
-      '<td>'+statusBadge+'</td>'+
-      '<td><div class="tda">'+editBtn+approveBtn+delBtn+'</div></td>'+
-    '</tr>';
-  });
-  return'<div class="card">'+
-    '<div class="ch"><span class="ct">💼 تسجيل المبيعات اليومية</span>'+
-      '<div style="display:flex;gap:6px;align-items:center">'+pendingBadge+
-        '<label class="btn bg sm" style="cursor:pointer">📤 Excel<input type="file" accept=".csv" style="display:none" onchange="impSales(this)"/></label>'+
-        '<button class="btn bp sm" onclick="saleForm()">+ إضافة</button>'+
-      '</div>'+
-    '</div>'+
-    '<div class="tw"><table>'+
-      '<thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th><th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>ملاحظات</th><th>الحالة</th><th></th></tr></thead>'+
-      '<tbody>'+(rows||'<tr><td colspan="12"><div class="empty">لا توجد مبيعات</div></td></tr>')+'</tbody>'+
-    '</table></div>'+
-  '</div>';
-}
-function attachSE(){
-  // If no local data, pull from Supabase
-  var local=ld(K.S,[]);
-  if(local.length===0&&isOnline){
-    pull().then(function(){renderPage("se");}).catch(function(){});
-  }
-}
-
-function saleForm(id,isPending){
-  var isAdmin=currentUser&&currentUser.role==="admin";
-  var pendingEdit=isPending===true||isPending==="true";
-  var allData=ld(K.SP,[]).concat(ld(K.S,[]));
-  var s=id?allData.find(function(x){return x.id==id;})||{}:{date:toDay(),rtype:"إيرادات عامة",center:"",boat:BOATS[0],count:"",trip:"",kitchen:"",notes:""};
-  var rtypeOpts=REV_TYPES.map(function(t){return'<option '+(s.rtype===t?"selected":"")+'>'+t+'</option>';}).join("");
-  var boatOpts=BOATS.map(function(b){return'<option '+(s.boat===b?"selected":"")+'>'+b+'</option>';}).join("");
-  openModal(id?"تعديل المبيعة":"إضافة مبيعة جديدة",
-    '<div class="fgrid">'+
-      '<div class="fr3">'+
-        '<div class="ff"><label>التاريخ</label><input id="s-date" type="date" value="'+(s.date||toDay())+'"/></div>'+
-        '<div class="ff"><label>نوع الإيراد</label><select id="s-rtype">'+rtypeOpts+'</select></div>'+
-        '<div class="ff"><label>اسم السنتر</label><input id="s-center" value="'+(s.center||"")+'"/></div>'+
-        '<div class="ff"><label>المركب</label><select id="s-boat">'+boatOpts+'</select></div>'+
-        '<div class="ff"><label>العدد</label><input id="s-count" type="number" value="'+(s.count||"")+'"/></div>'+
-      '</div>'+
-      '<div class="fr3">'+
-        '<div class="ff"><label>الطلعة (ج.م)</label><input id="s-trip" type="number" value="'+(s.trip||"")+'" oninput="calcSaleTotal()"/></div>'+
-        '<div class="ff"><label>المطبخ (ج.م)</label><input id="s-kitchen" type="number" value="'+(s.kitchen||"")+'" oninput="calcSaleTotal()"/></div>'+
-        '<div class="ff"><label>الإجمالي</label><input id="s-total" readonly value="'+fmt(s.total||0)+'" style="color:var(--gr);font-weight:700"/></div>'+
-      '</div>'+
-      '<div class="ff"><label>ملاحظات</label><textarea id="s-notes" rows="2">'+(s.notes||"")+'</textarea></div>'+
-    '</div>'
-  ,"حفظ",function(){
-    var trip=+document.getElementById("s-trip").value||0;
-    var kitchen=+document.getElementById("s-kitchen").value||0;
-    var isPendingS=!isAdmin||pendingEdit;
-    var storeKey=isPendingS?K.SP:K.S;
-    var data=ld(storeKey,[]);
-    var rec={
-      id:id?+id:gid(ld(K.S,[]).concat(ld(K.SP,[]))),
-      date:document.getElementById("s-date").value,
-      rtype:document.getElementById("s-rtype").value,
-      center:document.getElementById("s-center").value,
-      boat:document.getElementById("s-boat").value,
-      count:document.getElementById("s-count").value,
-      trip:trip,kitchen:kitchen,total:trip+kitchen,
-      notes:document.getElementById("s-notes").value,
-      by_user:currentUser.id,_pending:isPendingS
-    };
-    var newD=id?data.map(function(x){return x.id==id?rec:x;}):[...data,rec];
-    sv(storeKey,newD);
-    if(!isPendingS)enq(K.S,"u",rec);
-    closeModal();renderPage("se");
-  });
-}
-function calcSaleTotal(){
-  var t=+(document.getElementById("s-trip")||{value:0}).value||0;
-  var k=+(document.getElementById("s-kitchen")||{value:0}).value||0;
-  var el=document.getElementById("s-total");if(el)el.value=fmt(t+k);
-}
-function delSale(id,isPending){
-  if(!confirm("حذف؟"))return;
-  var pk=(isPending===true||isPending==="true")?K.SP:K.S;
-  var d=ld(pk,[]);var rec=d.find(function(x){return x.id==id;});
-  sv(pk,d.filter(function(x){return x.id!=id;}));
-  if(pk===K.S&&rec)enq(K.S,"d",rec);
-  renderPage("se");
-}
-function approveSale(id){
-  var pending=ld(K.SP,[]);
-  var rec=pending.find(function(x){return x.id==id;});
-  if(!rec)return alert("السجل غير موجود");
-  rec._pending=false;
-  var approved=ld(K.S,[]).concat([rec]);
-  sv(K.S,approved);sv(K.SP,pending.filter(function(x){return x.id!=id;}));
-  enq(K.S,"u",rec);renderPage("se");
-  alert("✅ تمت الموافقة — المبيعة في البيان النهائي");
-}
-function impSales(inp){
-  var f=inp.files[0];if(!f)return;
-  var r=new FileReader();
-  r.onload=function(ev){
-    try{
-      var rows=ev.target.result.split("\n").slice(1).filter(Boolean).map(function(row,i){
-        var c=row.split(",");
-        var isPendingS=currentUser.role!=="admin";
-        return{id:gid(ld(K.S,[]).concat(ld(K.SP,[]))),date:c[0]&&c[0].trim()||toDay(),rtype:c[1]&&c[1].trim()||"",
-          center:c[2]&&c[2].trim()||"",boat:c[3]&&c[3].trim()||"",count:c[4]&&c[4].trim()||"",
-          trip:+c[5]||0,kitchen:+c[6]||0,total:(+c[5]||0)+(+c[6]||0),
-          notes:c[7]&&c[7].trim()||"",by_user:currentUser.id,_pending:isPendingS};
-      });
-      var storeKey=currentUser.role==="admin"?K.S:K.SP;
-      var existing=ld(storeKey,[]);
-      sv(storeKey,existing.concat(rows));
-      if(storeKey===K.S)rows.forEach(function(r2){enq(K.S,"u",r2);});
-      alert("تم استيراد "+rows.length+" سجل");renderPage("se");
-    }catch(e){alert("خطأ في القراءة: "+e.message);}
-  };
-  r.readAsText(f);inp.value="";
-}
-
-// ─── SALES VIEW ───
-function renderSV(){
-  return`<div class="card">
-    <div class="fb">
-      <div class="ffi"><label>📅 التاريخ</label><input type="date" id="sv-date"/></div>
-      <div class="ffi"><label>🏢 السنتر</label><input id="sv-center" placeholder="بحث..."/></div>
-      <div class="ffi"><label>⛵ المركب</label>
-        <select id="sv-boat"><option value="">الكل</option>'+BOATS.map(function(b){return'<option>'+b+'</option>';}).join('')+'</select>
-      </div>
-      <button class="btn bg sm" onclick="filterSV()">↺ مسح</button>
-    </div>
-  </div>
-  <div id="sv-table"></div>`;
-}
-function attachSV(){
-  ["sv-date","sv-center","sv-boat"].forEach(id=>document.getElementById(id)?.addEventListener("input",filterSV));
-  filterSV();
-}
-function exportSalesExcel(){
-  var fd=document.getElementById("sv-date")?.value||"";
-  var fc=document.getElementById("sv-center")?.value||"";
-  var fb=document.getElementById("sv-boat")?.value||"";
-  var rows=ld(K.S,[]).filter(function(s){return(!fd||s.date>=fd)&&(!fc||(s.center||"").includes(fc))&&(!fb||s.boat===fb);});
-  if(!rows.length)return alert("لا توجد بيانات معتمدة للتصدير");
-  exportExcel(rows,[
-    {key:"id",label:"#"},{key:"date",label:"التاريخ"},{key:"rtype",label:"نوع الإيراد"},
-    {key:"center",label:"السنتر"},{key:"boat",label:"المركب"},{key:"count",label:"العدد"},
-    {key:"trip",label:"الطلعة"},{key:"kitchen",label:"المطبخ"},{key:"total",label:"الإجمالي"},
-    {key:"notes",label:"ملاحظات"}
-  ],"بيان_المبيعات");
-}
-function filterSV(){
-  var fd=document.getElementById("sv-date")?.value||"";
-  var fc=document.getElementById("sv-center")?.value||"";
-  var fb=document.getElementById("sv-boat")?.value||"";
-  var data=ld(K.S,[]).filter(function(s){return(!fd||s.date===fd)&&(!fc||(s.center||"").includes(fc))&&(!fb||s.boat===fb);});
-  var el=document.getElementById("sv-table");if(!el)return;
-  var tot=data.reduce(function(a,s){return a+(+s.total||0);},0);
-  var rows=data.length===0?
-    '<tr><td colspan="10"><div class="empty">لا نتائج</div></td></tr>':
-    data.map(function(s){
-      return '<tr><td>'+s.id+'</td><td>'+s.date+'</td><td>'+bj("bb",s.rtype||"")+'</td>'+
+  var data=isAdmin?pending.concat(approved.filter(function(a){return !pending.some(function(p){return p.id===a.id;});})):pending;
+  data.sort(function(a,b){return b.date.localeCompare(a.date);});
+  return '<div class="card"><div class="ch"><span class="ct">💼 تسجيل المبيعات اليومية</span>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+
+    (pending.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pending.length+' بانتظار الموافقة</span>':"")+
+    '<button class="btn bp sm" onclick="saleForm()">+ إضافة</button></div></div>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th><th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
+    (data.length?data.map(function(s){
+      var isPend=s._pending;
+      return '<tr style="'+(isPend?"background:rgba(245,158,11,.04)":"")+'">' +
+        '<td>'+s.id+'</td><td>'+s.date+'</td><td>'+bj("bb",s.rtype||"")+'</td>'+
         '<td>'+(s.center||"")+'</td><td>'+bj("bc",s.boat||"")+'</td><td>'+(s.count||"")+'</td>'+
         '<td style="color:var(--cy)">'+fmt(s.trip)+'</td>'+
         '<td style="color:var(--go)">'+fmt(s.kitchen)+'</td>'+
         '<td style="color:var(--gr);font-weight:700">'+fmt(s.total)+'</td>'+
-        '<td>'+(s.notes||"")+'</td></tr>';
-    }).join("");
-  el.innerHTML=
-    '<div class="card">'+
-    '<div class="ch"><span class="ct">📈 بيان المبيعات</span>'+
-    '<div style="display:flex;gap:6px;align-items:center">'+
-    bj("bc",data.length+" سجل")+
-    '<button class="btn bs sm" onclick="exportSalesExcel()">📥 Excel</button>'+
-    '</div></div>'+
-    '<div class="tw"><table>'+
-    '<thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th>'+
-    '<th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>ملاحظات</th></tr></thead>'+
-    '<tbody>'+rows+'</tbody></table></div>'+
-    (data.length>0?'<div style="padding:9px 14px;border-top:1px solid var(--bd);font-size:13px">'+
-    'الإجمالي: <strong style="color:var(--gr)">'+fmt(tot)+' ج.م</strong></div>':"")+
+        '<td>'+(isPend?bj("bg2","⏳ مؤقت"):bj("be","✅ معتمد"))+'</td>'+
+        '<td><div class="tda">'+
+        (isAdmin||s.by_user===currentUser.id?'<button class="btn bg sm" onclick="saleForm('+s.id+','+(isPend?1:0)+')">✏️</button>':"")+
+        (isAdmin&&isPend?'<button class="btn bs sm" onclick="approveSale('+s.id+')">✅</button>':"")+
+        (isAdmin||s.by_user===currentUser.id?'<button class="btn bd2 sm" onclick="delSale('+s.id+','+(isPend?1:0)+')">🗑</button>':"")+
+        '</div></td></tr>';
+    }).join(""):'<tr><td colspan="11"><div class="empty">لا توجد مبيعات</div></td></tr>')+'</tbody></table></div></div>';
+}
+function attachSE(){
+  var local=ld(K.S,[]);
+  if(local.length===0&&isOnline){
+    pull().then(function(){renderPage("se");});
+  }
+}
+function saleForm(id,isPend){
+  var allData=ld(K.SP,[]).concat(ld(K.S,[]));
+  var s=id?allData.filter(function(x){return x.id===id;})[0]:null;
+  s=s||{date:toDay(),rtype:"إيرادات عامة",center:"",boat:BOATS[0],count:"",trip:"",kitchen:"",notes:""};
+  openModal(id?"تعديل المبيعة":"إضافة مبيعة جديدة",
+    '<div class="fg"><div class="fr3">'+
+    '<div class="ff"><label>التاريخ</label><input id="s-date" type="date" value="'+(s.date||toDay())+'"/></div>'+
+    '<div class="ff"><label>نوع الإيراد</label><select id="s-rtype">'+REV_TYPES.map(function(t){return '<option'+(s.rtype===t?" selected":"")+'>'+t+'</option>';}).join("")+'</select></div>'+
+    '<div class="ff"><label>السنتر</label><input id="s-center" value="'+(s.center||"")+'"/></div>'+
+    '<div class="ff"><label>المركب</label><select id="s-boat">'+BOATS.map(function(b){return '<option'+(s.boat===b?" selected":"")+'>'+b+'</option>';}).join("")+'</select></div>'+
+    '<div class="ff"><label>العدد</label><input id="s-count" type="number" value="'+(s.count||"")+'"/></div></div>'+
+    '<div class="fr3">'+
+    '<div class="ff"><label>الطلعة (ج.م)</label><input id="s-trip" type="number" value="'+(s.trip||"")+'" oninput="calcSaleTotal()"/></div>'+
+    '<div class="ff"><label>المطبخ (ج.م)</label><input id="s-kitchen" type="number" value="'+(s.kitchen||"")+'" oninput="calcSaleTotal()"/></div>'+
+    '<div class="ff"><label>الإجمالي</label><input id="s-total" readonly value="'+fmt(s.total||0)+'" style="color:var(--gr);font-weight:700"/></div></div>'+
+    '<div class="ff"><label>ملاحظات</label><textarea id="s-notes" rows="2">'+(s.notes||"")+'</textarea></div></div>',
+    "حفظ",function(){
+      var isAdmin=currentUser.role==="admin";
+      var pendingEdit=isPend?true:false;
+      var trip=+el("s-trip").value||0,kit=+el("s-kitchen").value||0;
+      var isSalePend=!isAdmin||pendingEdit;
+      var sk=isSalePend?K.SP:K.S;
+      var data=ld(sk,[]);
+      var rec={id:id||gid(ld(K.S,[]).concat(ld(K.SP,[]))),
+        date:el("s-date").value,rtype:el("s-rtype").value,
+        center:el("s-center").value,boat:el("s-boat").value,
+        count:el("s-count").value,trip:trip,kitchen:kit,total:trip+kit,
+        notes:el("s-notes").value,by_user:currentUser.id,_pending:isSalePend};
+      sv(sk,id?data.map(function(x){return x.id===id?rec:x;}):data.concat([rec]));
+      if(!isSalePend) enq(K.S,"u",rec);
+      closeModal();renderPage("se");
+    });
+}
+function calcSaleTotal(){
+  var t=+(el("s-trip")&&el("s-trip").value)||0;
+  var k=+(el("s-kitchen")&&el("s-kitchen").value)||0;
+  var e=el("s-total");if(e)e.value=fmt(t+k);
+}
+function approveSale(id){
+  var pending=ld(K.SP,[]);
+  var rec=pending.filter(function(x){return x.id===id;})[0];
+  if(!rec) return;
+  rec._pending=false;
+  sv(K.S,ld(K.S,[]).concat([rec]));
+  sv(K.SP,pending.filter(function(x){return x.id!==id;}));
+  enq(K.S,"u",rec);renderPage("se");
+  alert("✅ تمت الموافقة وحفظ المبيعة في البيان النهائي");
+}
+function delSale(id,isPend){
+  if(!confirm("حذف؟")) return;
+  var pk=isPend?K.SP:K.S;
+  var d=ld(pk,[]);var rec=d.filter(function(x){return x.id===id;})[0];
+  sv(pk,d.filter(function(x){return x.id!==id;}));
+  if(!isPend&&rec) enq(K.S,"d",rec);
+  renderPage("se");
+}
+
+// ═══════════════════════════
+// SALES VIEW
+// ═══════════════════════════
+function renderSV(){
+  return '<div class="card"><div class="fb">'+
+    '<div class="ffi"><label>📅 التاريخ</label><input type="date" id="sv-date"/></div>'+
+    '<div class="ffi"><label>🏢 السنتر</label><input id="sv-center" placeholder="بحث..."/></div>'+
+    '<div class="ffi"><label>⛵ المركب</label><select id="sv-boat"><option value="">الكل</option>'+BOATS.map(function(b){return'<option>'+b+'</option>';}).join("")+'</select></div>'+
+    '<button class="btn bg sm" onclick="filterSV()">↺</button></div></div>'+
+    '<div id="sv-table"></div>';
+}
+function attachSV(){
+  ["sv-date","sv-center","sv-boat"].forEach(function(i){var e=el(i);if(e)e.addEventListener("input",filterSV);});
+  filterSV();
+}
+function filterSV(){
+  var fd=el("sv-date")?el("sv-date").value:"";
+  var fc=el("sv-center")?el("sv-center").value:"";
+  var fb=el("sv-boat")?el("sv-boat").value:"";
+  var data=ld(K.S,[]).filter(function(s){return(!fd||s.date===fd)&&(!fc||(s.center||"").includes(fc))&&(!fb||s.boat===fb);});
+  var tot=data.reduce(function(a,s){return a+(+s.total||0);},0);
+  var tbl=el("sv-table");if(!tbl)return;
+  tbl.innerHTML='<div class="card"><div class="ch"><span class="ct">📈 بيان المبيعات</span>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+bj("bc",data.length+" سجل")+
+    '<button class="btn bs sm" onclick="exportSV()">📥 Excel</button></div></div>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th><th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>ملاحظات</th></tr></thead><tbody>'+
+    (data.length?data.map(function(s){
+      return '<tr><td>'+s.id+'</td><td>'+s.date+'</td><td>'+bj("bb",s.rtype||"")+'</td>'+
+        '<td>'+(s.center||"")+'</td><td>'+bj("bc",s.boat||"")+'</td><td>'+(s.count||"")+'</td>'+
+        '<td style="color:var(--cy)">'+fmt(s.trip)+'</td><td style="color:var(--go)">'+fmt(s.kitchen)+'</td>'+
+        '<td style="color:var(--gr);font-weight:700">'+fmt(s.total)+'</td><td>'+(s.notes||"")+'</td></tr>';
+    }).join(""):'<tr><td colspan="10"><div class="empty">لا نتائج</div></td></tr>')+'</tbody></table></div>'+
+    (data.length?'<div style="padding:8px 14px;border-top:1px solid var(--bd);font-size:12px">الإجمالي: <strong style="color:var(--gr)">'+fmt(tot)+' ج.م</strong></div>':"")+
     '</div>';
 }
-function filterEV(){
-  var fd=document.getElementById("ev-date")?.value||"";
-  var ft=document.getElementById("ev-type")?.value||"";
-  var fn2=document.getElementById("ev-name")?.value||"";
-  var data=ld(K.E,[]).filter(function(e){
-    return(!fd||e.date===fd)&&(!ft||(e.exp_type===ft||e.expType===ft))&&(!fn2||(e.name||"").includes(fn2));
-  });
-  var el=document.getElementById("ev-table");if(!el)return;
-  var tot=data.reduce(function(a,e){return a+(+e.total||0);},0);
-  var rows=data.length===0?
-    '<tr><td colspan="9"><div class="empty">لا نتائج</div></td></tr>':
-    data.map(function(e){
-      return '<tr><td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bg2",e.exp_type||e.expType||"")+'</td>'+
+function exportSV(){
+  var fd=el("sv-date")?el("sv-date").value:"";
+  var fc=el("sv-center")?el("sv-center").value:"";
+  var fb=el("sv-boat")?el("sv-boat").value:"";
+  var data=ld(K.S,[]).filter(function(s){return(!fd||s.date===fd)&&(!fc||(s.center||"").includes(fc))&&(!fb||s.boat===fb);});
+  exportExcel(data,[{k:"id",l:"#"},{k:"date",l:"التاريخ"},{k:"rtype",l:"نوع الإيراد"},{k:"center",l:"السنتر"},{k:"boat",l:"المركب"},{k:"count",l:"العدد"},{k:"trip",l:"الطلعة"},{k:"kitchen",l:"المطبخ"},{k:"total",l:"الإجمالي"},{k:"notes",l:"ملاحظات"}],"بيان_المبيعات");
+}
+
+// ═══════════════════════════
+// EXPENSE ENTRY
+// ═══════════════════════════
+function renderEE(){
+  var isAdmin=currentUser.role==="admin";
+  var pendingE=ld(K.EP,[]);
+  var approvedE=ld(K.E,[]);
+  var data=isAdmin?pendingE.concat(approvedE.filter(function(a){return !pendingE.some(function(p){return p.id===a.id;});})):pendingE;
+  data.sort(function(a,b){return b.date.localeCompare(a.date);});
+  var xr=ld(K.X,{usd:50,eur:55});
+  return '<div class="card"><div class="ch"><span class="ct">💱 سعر الصرف</span></div><div class="cb">'+
+    '<div class="fr2"><div class="ff"><label>دولار ($) → ج.م</label><input id="xr-usd" type="number" value="'+xr.usd+'" onchange="saveXR()"/></div>'+
+    '<div class="ff"><label>يورو (€) → ج.م</label><input id="xr-eur" type="number" value="'+xr.eur+'" onchange="saveXR()"/></div></div></div></div>'+
+    '<div class="card"><div class="ch"><span class="ct">🧾 تسجيل مصاريف الخزنة</span>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+
+    (pendingE.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pendingE.length+'</span>':"")+
+    '<button class="btn bp sm" onclick="expForm()">+ إضافة</button></div></div>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
+    (data.length?data.map(function(e){
+      var isPend=e._pending;
+      return '<tr style="'+(isPend?"background:rgba(245,158,11,.04)":"")+'">' +
+        '<td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
         '<td style="font-weight:600">'+(e.name||"")+'</td>'+
-        '<td>'+(e.description||e.desc||"")+'</td>'+
+        '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(e.description||"")+'</td>'+
+        '<td>'+fmt(e.egp)+'</td>'+
+        '<td>'+(+e.usd>0?"$"+(+e.usd).toFixed(0):"-")+'</td>'+
+        '<td>'+(+e.eur>0?"€"+(+e.eur).toFixed(0):"-")+'</td>'+
+        '<td style="color:var(--re);font-weight:700">'+fmt(e.total)+'</td>'+
+        '<td>'+(isPend?bj("bg2","⏳ مؤقت"):bj("be","✅ معتمد"))+'</td>'+
+        '<td><div class="tda">'+
+        (isAdmin||e.by_user===currentUser.id?'<button class="btn bg sm" onclick="expForm('+e.id+','+(isPend?1:0)+')">✏️</button>':"")+
+        (isAdmin&&isPend?'<button class="btn bs sm" onclick="approveExp('+e.id+')">✅</button>':"")+
+        (isAdmin||e.by_user===currentUser.id?'<button class="btn bd2 sm" onclick="delExp('+e.id+','+(isPend?1:0)+')">🗑</button>':"")+
+        '</div></td></tr>';
+    }).join(""):'<tr><td colspan="11"><div class="empty">لا توجد مصاريف</div></td></tr>')+'</tbody></table></div></div>';
+}
+function saveXR(){sv(K.X,{usd:+el("xr-usd").value||50,eur:+el("xr-eur").value||55});}
+function attachEE(){var local=ld(K.E,[]);if(local.length===0&&isOnline){pull().then(function(){renderPage("ee");});}}
+function expForm(id,isPend){
+  var allData=ld(K.EP,[]).concat(ld(K.E,[]));
+  var e=id?allData.filter(function(x){return x.id===id;})[0]:null;
+  e=e||{date:toDay(),exp_type:"المطابخ",name:"",description:"",egp:"",usd:"",eur:""};
+  var curCat=e.exp_type||"المطابخ";
+  openModal(id?"تعديل المصروف":"إضافة مصروف",
+    '<div class="fg"><div class="fr3">'+
+    '<div class="ff"><label>التاريخ</label><input id="e-date" type="date" value="'+(e.date||toDay())+'"/></div>'+
+    '<div class="ff"><label>نوع المصاريف</label><select id="e-type" onchange="updateExpNames()">'+Object.keys(EXP_CATS).map(function(k){return'<option'+(curCat===k?" selected":"")+'>'+k+'</option>';}).join("")+'</select></div>'+
+    '<div class="ff"><label>الاسم / البند</label><select id="e-name"><option value="">-- اختر --</option>'+(EXP_CATS[curCat]||[]).map(function(n){return'<option'+(e.name===n?" selected":"")+'>'+n+'</option>';}).join("")+'</select></div></div>'+
+    '<div class="ff"><label>البيان</label><textarea id="e-desc" rows="2">'+(e.description||"")+'</textarea></div>'+
+    '<div class="fr4">'+
+    '<div class="ff"><label>مصري (ج.م)</label><input id="e-egp" type="number" value="'+(e.egp||"")+'" oninput="calcExpTotal()"/></div>'+
+    '<div class="ff"><label>دولار ($)</label><input id="e-usd" type="number" value="'+(e.usd||"")+'" oninput="calcExpTotal()"/></div>'+
+    '<div class="ff"><label>يورو (€)</label><input id="e-eur" type="number" value="'+(e.eur||"")+'" oninput="calcExpTotal()"/></div>'+
+    '<div class="ff"><label>الإجمالي</label><input id="e-total" readonly value="'+fmt(e.total||0)+'" style="color:var(--re);font-weight:700"/></div></div></div>',
+    "حفظ",function(){
+      var isAdmin=currentUser.role==="admin";
+      var pendingEdit=isPend?true:false;
+      var xr=ld(K.X,{usd:50,eur:55});
+      var egp=+el("e-egp").value||0,usd=+el("e-usd").value||0,eur=+el("e-eur").value||0;
+      var isExpPend=!isAdmin||pendingEdit;
+      var sk=isExpPend?K.EP:K.E;
+      var data=ld(sk,[]);
+      var rec={id:id||gid(ld(K.E,[]).concat(ld(K.EP,[]))),
+        date:el("e-date").value,exp_type:el("e-type").value,
+        name:el("e-name").value,description:el("e-desc").value,
+        egp:egp,usd:usd,eur:eur,total:egp+usd*xr.usd+eur*xr.eur,
+        by_user:currentUser.id,_pending:isExpPend};
+      sv(sk,id?data.map(function(x){return x.id===id?rec:x;}):data.concat([rec]));
+      if(!isExpPend) enq(K.E,"u",rec);
+      closeModal();renderPage("ee");
+    });
+}
+function updateExpNames(){
+  var cat=el("e-type")&&el("e-type").value;
+  var sel=el("e-name");if(!sel) return;
+  sel.innerHTML='<option value="">-- اختر --</option>'+(EXP_CATS[cat]||[]).map(function(n){return'<option>'+n+'</option>';}).join("");
+}
+function calcExpTotal(){
+  var xr=ld(K.X,{usd:50,eur:55});
+  var egp=+(el("e-egp")&&el("e-egp").value)||0;
+  var usd=+(el("e-usd")&&el("e-usd").value)||0;
+  var eur=+(el("e-eur")&&el("e-eur").value)||0;
+  var t=el("e-total");if(t)t.value=fmt(egp+usd*xr.usd+eur*xr.eur);
+}
+function approveExp(id){
+  var pending=ld(K.EP,[]);
+  var rec=pending.filter(function(x){return x.id===id;})[0];if(!rec) return;
+  rec._pending=false;
+  sv(K.E,ld(K.E,[]).concat([rec]));
+  sv(K.EP,pending.filter(function(x){return x.id!==id;}));
+  enq(K.E,"u",rec);renderPage("ee");
+  alert("✅ تمت الموافقة وحفظ المصروف في البيان النهائي");
+}
+function delExp(id,isPend){
+  if(!confirm("حذف؟")) return;
+  var pk=isPend?K.EP:K.E;
+  var d=ld(pk,[]);var rec=d.filter(function(x){return x.id===id;})[0];
+  sv(pk,d.filter(function(x){return x.id!==id;}));
+  if(!isPend&&rec) enq(K.E,"d",rec);
+  renderPage("ee");
+}
+
+// ═══════════════════════════
+// EXPENSE VIEW
+// ═══════════════════════════
+function renderEV(){
+  return '<div class="card"><div class="fb">'+
+    '<div class="ffi"><label>📅 التاريخ</label><input type="date" id="ev-date"/></div>'+
+    '<div class="ffi"><label>📋 النوع</label><select id="ev-type"><option value="">الكل</option>'+Object.keys(EXP_CATS).map(function(k){return'<option>'+k+'</option>';}).join("")+'</select></div>'+
+    '<div class="ffi"><label>🔍 الاسم</label><input id="ev-name" placeholder="بحث..."/></div>'+
+    '<button class="btn bg sm" onclick="filterEV()">↺</button></div></div><div id="ev-table"></div>';
+}
+function attachEV(){
+  ["ev-date","ev-type","ev-name"].forEach(function(i){var e=el(i);if(e)e.addEventListener("input",filterEV);});
+  filterEV();
+}
+function filterEV(){
+  var fd=el("ev-date")?el("ev-date").value:"";
+  var ft=el("ev-type")?el("ev-type").value:"";
+  var fn=el("ev-name")?el("ev-name").value:"";
+  var data=ld(K.E,[]).filter(function(e){return(!fd||e.date===fd)&&(!ft||(e.exp_type===ft))&&(!fn||(e.name||"").includes(fn));});
+  var tot=data.reduce(function(a,e){return a+(+e.total||0);},0);
+  var tbl=el("ev-table");if(!tbl) return;
+  tbl.innerHTML='<div class="card"><div class="ch"><span class="ct">📉 بيان المصاريف</span>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+bj("br",data.length+" سجل")+
+    '<button class="btn bs sm" onclick="exportEV()">📥 Excel</button></div></div>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th></tr></thead><tbody>'+
+    (data.length?data.map(function(e){
+      return '<tr><td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
+        '<td style="font-weight:600">'+(e.name||"")+'</td><td>'+(e.description||"")+'</td>'+
         '<td>'+fmt(e.egp)+'</td>'+
         '<td>'+(+e.usd>0?"$"+(+e.usd).toFixed(0):"-")+'</td>'+
         '<td>'+(+e.eur>0?"€"+(+e.eur).toFixed(0):"-")+'</td>'+
         '<td style="color:var(--re);font-weight:700">'+fmt(e.total)+'</td></tr>';
-    }).join("");
-  el.innerHTML=
-    '<div class="card">'+
-    '<div class="ch"><span class="ct">📉 بيان المصاريف</span>'+
-    '<div style="display:flex;gap:6px;align-items:center">'+
-    bj("br",data.length+" سجل")+
-    '<button class="btn bs sm" onclick="exportExpExcel()">📥 Excel</button>'+
-    '</div></div>'+
-    '<div class="tw"><table>'+
-    '<thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th>'+
-    '<th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th></tr></thead>'+
-    '<tbody>'+rows+'</tbody></table></div>'+
-    (data.length>0?'<div style="padding:9px 14px;border-top:1px solid var(--bd);font-size:13px">'+
-    'الإجمالي: <strong style="color:var(--re)">'+fmt(tot)+' ج.م</strong></div>':"")+
+    }).join(""):'<tr><td colspan="9"><div class="empty">لا نتائج</div></td></tr>')+'</tbody></table></div>'+
+    (data.length?'<div style="padding:8px 14px;border-top:1px solid var(--bd);font-size:12px;display:flex;justify-content:space-between">'+
+    '<span>الإجمالي: <strong style="color:var(--re)">'+fmt(tot)+' ج.م</strong></span></div>':"")+
     '</div>';
 }
-// ─── PAYROLL REPORT ───
-function renderPayrollRep(){
-  return`
-  <div class="card">
-    <div class="fb" style="flex-wrap:wrap;gap:12px">
-      <div class="ffi">
-        <label>📅 الشهر</label>
-        <input type="month" id="pr-month" style="min-width:160px"/>
-      </div>
-      <div class="ffi">
-        <label>⛵ المركب</label>
-        <select id="pr-boat" style="min-width:140px">
-          <option value="">كل المراكب</option>
-          '+BOATS.map(function(b){return'<option>'+b+'</option>';}).join('')+'
-        </select>
-      </div>
-      <div class="ffi">
-        <label>👤 الموظف</label>
-        <select id="pr-emp" style="min-width:150px">
-          <option value="">كل الموظفين</option>
-          '+EMPLOYEES.map(function(e){return'<option>'+e+'</option>';}).join('')+'
-        </select>
-      </div>
-      <button class="btn bg sm" onclick="filterPayrollRep()">↺ مسح</button>
-    </div>
-  </div>
-  <div id="pr-summary"></div>
-  <div id="pr-table"></div>`;
+function exportEV(){
+  var fd=el("ev-date")?el("ev-date").value:"";
+  var ft=el("ev-type")?el("ev-type").value:"";
+  var fn=el("ev-name")?el("ev-name").value:"";
+  var data=ld(K.E,[]).filter(function(e){return(!fd||e.date===fd)&&(!ft||(e.exp_type===ft))&&(!fn||(e.name||"").includes(fn));});
+  exportExcel(data,[{k:"id",l:"#"},{k:"date",l:"التاريخ"},{k:"exp_type",l:"نوع المصاريف"},{k:"name",l:"الاسم"},{k:"description",l:"البيان"},{k:"egp",l:"مصري"},{k:"usd",l:"دولار"},{k:"eur",l:"يورو"},{k:"total",l:"الإجمالي"}],"بيان_المصاريف");
 }
-function attachPayrollRep(){
-  ["pr-month","pr-boat","pr-emp"].forEach(id=>
-    document.getElementById(id)?.addEventListener("change",filterPayrollRep)
-  );
-  filterPayrollRep();
-}
-function filterPayrollRep(){
-  var fm=document.getElementById("pr-month")?.value||"";
-  var fb=document.getElementById("pr-boat")?.value||"";
-  var fe=document.getElementById("pr-emp")?.value||"";
 
+// ═══════════════════════════
+// PAYROLL
+// ═══════════════════════════
+function renderPayroll(){
+  var isAdmin=currentUser.role==="admin";
+  var ro=currentUser.role==="viewer";
+  var pendingP=ld(K.PP,[]);
+  var approvedP=ld(K.P,[]);
+  var data=isAdmin?pendingP.concat(approvedP.filter(function(a){return !pendingP.some(function(p){return p.id===a.id;});})):pendingP;
+  data.sort(function(a,b){return b.date.localeCompare(a.date);});
+  var tot=data.reduce(function(a,p){return a+(+p.amount||0);},0);
+  return '<div class="card"><div class="ch"><span class="ct">💰 تسجيل المرتبات</span>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+
+    (pendingP.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pendingP.length+'</span>':"")+
+    (!ro?'<button class="btn bp sm" onclick="payrollForm()">+ إضافة</button>':"")+
+    '</div></div>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع الإيراد</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th><th>الحالة</th>'+(!ro?"<th></th>":"")+'</tr></thead><tbody>'+
+    (data.length?data.map(function(p){
+      var isPend=p._pending;
+      return '<tr style="'+(isPend?"background:rgba(245,158,11,.04)":"")+'">' +
+        '<td>'+p.id+'</td><td>'+p.date+'</td><td>'+bj("bb",p.rtype||"")+'</td>'+
+        '<td>'+bj("bc",p.boat||"")+'</td>'+
+        '<td style="font-weight:700;color:var(--cy)">'+(p.employee||"")+'</td>'+
+        '<td>'+(p.description||"")+'</td>'+
+        '<td style="color:var(--go);font-weight:700">'+fmt(p.amount)+'</td>'+
+        '<td>'+(p.notes||"")+'</td>'+
+        '<td>'+(isPend?bj("bg2","⏳ مؤقت"):bj("be","✅ معتمد"))+'</td>'+
+        (!ro?'<td><div class="tda">'+
+        '<button class="btn bg sm" onclick="payrollForm('+p.id+','+(isPend?1:0)+')">✏️</button>'+
+        (isAdmin&&isPend?'<button class="btn bs sm" onclick="approvePayroll('+p.id+')">✅</button>':"")+
+        '<button class="btn bd2 sm" onclick="delPayroll('+p.id+','+(isPend?1:0)+')">🗑</button>'+
+        '</div></td>':"")+'</tr>';
+    }).join(""):'<tr><td colspan="'+(ro?9:10)+'"><div class="empty">لا توجد مرتبات</div></td></tr>')+'</tbody></table></div>'+
+    (tot?'<div style="padding:8px 14px;border-top:1px solid var(--bd);font-size:12px">الإجمالي: <strong style="color:var(--go)">'+fmt(tot)+' ج.م</strong></div>':"")+
+    '</div>';
+}
+function attachPayroll(){var local=ld(K.P,[]);if(local.length===0&&isOnline){pull().then(function(){renderPage("payroll");});}}
+function payrollForm(id,isPend){
+  var allData=ld(K.PP,[]).concat(ld(K.P,[]));
+  var p=id?allData.filter(function(x){return x.id===id;})[0]:null;
+  p=p||{date:toDay(),rtype:"إيرادات عامة",boat:BOATS[0],employee:"",description:"",amount:"",notes:""};
+  openModal(id?"تعديل المرتب":"إضافة مرتب جديد",
+    '<div class="fg"><div class="fr3">'+
+    '<div class="ff"><label>التاريخ</label><input id="p-date" type="date" value="'+(p.date||toDay())+'"/></div>'+
+    '<div class="ff"><label>نوع الإيراد</label><select id="p-rtype">'+REV_TYPES.map(function(t){return'<option'+(p.rtype===t?" selected":"")+'>'+t+'</option>';}).join("")+'</select></div>'+
+    '<div class="ff"><label>⛵ المركب</label><select id="p-boat">'+BOATS.map(function(b){return'<option'+(p.boat===b?" selected":"")+'>'+b+'</option>';}).join("")+'</select></div></div>'+
+    '<div class="fr2">'+
+    '<div class="ff"><label>👤 الموظف</label><select id="p-emp"><option value="">-- اختر --</option>'+EMPLOYEES.map(function(e){return'<option'+(p.employee===e?" selected":"")+'>'+e+'</option>';}).join("")+'</select></div>'+
+    '<div class="ff"><label>المبلغ (ج.م)</label><input id="p-amount" type="number" value="'+(p.amount||"")+'"/></div></div>'+
+    '<div class="ff"><label>البيان</label><textarea id="p-desc" rows="2">'+(p.description||"")+'</textarea></div>'+
+    '<div class="ff"><label>ملاحظات</label><input id="p-notes" value="'+(p.notes||"")+'"/></div></div>',
+    "حفظ",function(){
+      var isAdmin=currentUser.role==="admin";
+      var pendingEdit=isPend?true:false;
+      var emp=el("p-emp").value;if(!emp){alert("يرجى اختيار الموظف");return;}
+      var isPayPend=!isAdmin||pendingEdit;
+      var sk=isPayPend?K.PP:K.P;
+      var data=ld(sk,[]);
+      var rec={id:id||gid(ld(K.P,[]).concat(ld(K.PP,[]))),
+        date:el("p-date").value,rtype:el("p-rtype").value,
+        boat:el("p-boat").value,employee:emp,
+        description:el("p-desc").value,
+        amount:+el("p-amount").value||0,
+        notes:el("p-notes").value,
+        by_user:currentUser.id,_pending:isPayPend};
+      sv(sk,id?data.map(function(x){return x.id===id?rec:x;}):data.concat([rec]));
+      if(!isPayPend) enq(K.P,"u",rec);
+      closeModal();renderPage("payroll");
+    });
+}
+function approvePayroll(id){
+  var pending=ld(K.PP,[]);
+  var rec=pending.filter(function(x){return x.id===id;})[0];if(!rec) return;
+  rec._pending=false;
+  sv(K.P,ld(K.P,[]).concat([rec]));
+  sv(K.PP,pending.filter(function(x){return x.id!==id;}));
+  enq(K.P,"u",rec);renderPage("payroll");
+  alert("✅ تمت الموافقة وحفظ المرتب في البيان النهائي");
+}
+function delPayroll(id,isPend){
+  if(!confirm("حذف؟")) return;
+  var pk=isPend?K.PP:K.P;
+  var d=ld(pk,[]);var rec=d.filter(function(x){return x.id===id;})[0];
+  sv(pk,d.filter(function(x){return x.id!==id;}));
+  if(!isPend&&rec) enq(K.P,"d",rec);
+  renderPage("payroll");
+}
+
+// ═══════════════════════════
+// PAYROLL VIEW
+// ═══════════════════════════
+function renderPayView(){
+  return '<div class="card"><div class="fb">'+
+    '<div class="ffi"><label>📅 التاريخ</label><input type="date" id="pv-date"/></div>'+
+    '<div class="ffi"><label>⛵ المركب</label><select id="pv-boat"><option value="">الكل</option>'+BOATS.map(function(b){return'<option>'+b+'</option>';}).join("")+'</select></div>'+
+    '<div class="ffi"><label>👤 الموظف</label><select id="pv-emp"><option value="">الكل</option>'+EMPLOYEES.map(function(e){return'<option>'+e+'</option>';}).join("")+'</select></div>'+
+    '<button class="btn bg sm" onclick="filterPV()">↺</button></div></div><div id="pv-table"></div>';
+}
+function attachPayView(){
+  ["pv-date","pv-boat","pv-emp"].forEach(function(i){var e=el(i);if(e)e.addEventListener("change",filterPV);});
+  filterPV();
+}
+function filterPV(){
+  var fd=el("pv-date")?el("pv-date").value:"";
+  var fb=el("pv-boat")?el("pv-boat").value:"";
+  var fe=el("pv-emp")?el("pv-emp").value:"";
+  var data=ld(K.P,[]).filter(function(p){return(!fd||p.date===fd)&&(!fb||p.boat===fb)&&(!fe||p.employee===fe);});
+  var tot=data.reduce(function(a,p){return a+(+p.amount||0);},0);
+  var tbl=el("pv-table");if(!tbl) return;
+  tbl.innerHTML='<div class="card"><div class="ch"><span class="ct">📋 بيان المرتبات</span>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+bj("bg2",data.length+" سجل")+
+    '<button class="btn bs sm" onclick="exportPV()">📥 Excel</button></div></div>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع الإيراد</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody>'+
+    (data.length?data.map(function(p){
+      return '<tr><td>'+p.id+'</td><td>'+p.date+'</td><td>'+bj("bb",p.rtype||"")+'</td>'+
+        '<td>'+bj("bc",p.boat||"")+'</td>'+
+        '<td style="font-weight:700;color:var(--cy)">'+(p.employee||"")+'</td>'+
+        '<td>'+(p.description||"")+'</td>'+
+        '<td style="color:var(--go);font-weight:700">'+fmt(p.amount)+'</td>'+
+        '<td>'+(p.notes||"")+'</td></tr>';
+    }).join(""):'<tr><td colspan="8"><div class="empty">لا نتائج</div></td></tr>')+'</tbody></table></div>'+
+    (tot?'<div style="padding:8px 14px;border-top:1px solid var(--bd);font-size:12px;display:flex;justify-content:space-between">'+
+    '<span>إجمالي: <strong style="color:var(--go)">'+fmt(tot)+' ج.م</strong> • '+data.length+' سجل</span>'+
+    '<button class="btn bs sm" onclick="exportPV()">📥 Excel</button></div>':"")+
+    '</div>';
+}
+function exportPV(){
+  var fd=el("pv-date")?el("pv-date").value:"";
+  var fb=el("pv-boat")?el("pv-boat").value:"";
+  var fe=el("pv-emp")?el("pv-emp").value:"";
+  var data=ld(K.P,[]).filter(function(p){return(!fd||p.date===fd)&&(!fb||p.boat===fb)&&(!fe||p.employee===fe);});
+  exportExcel(data,[{k:"id",l:"#"},{k:"date",l:"التاريخ"},{k:"rtype",l:"نوع الإيراد"},{k:"boat",l:"المركب"},{k:"employee",l:"الموظف"},{k:"description",l:"البيان"},{k:"amount",l:"المبلغ"},{k:"notes",l:"ملاحظات"}],"بيان_المرتبات");
+}
+
+// ═══════════════════════════
+// PAYROLL REPORT
+// ═══════════════════════════
+function renderPayRep(){
+  return '<div class="card"><div class="fb" style="flex-wrap:wrap;gap:10px">'+
+    '<div class="ffi"><label>📅 الشهر</label><input type="month" id="pr-month" style="min-width:150px"/></div>'+
+    '<div class="ffi"><label>⛵ المركب</label><select id="pr-boat" style="min-width:130px"><option value="">كل المراكب</option>'+BOATS.map(function(b){return'<option>'+b+'</option>';}).join("")+'</select></div>'+
+    '<div class="ffi"><label>👤 الموظف</label><select id="pr-emp" style="min-width:140px"><option value="">كل الموظفين</option>'+EMPLOYEES.map(function(e){return'<option>'+e+'</option>';}).join("")+'</select></div>'+
+    '<button class="btn bg sm" onclick="filterPR()">↺</button></div></div>'+
+    '<div id="pr-sum"></div><div id="pr-tbl"></div>';
+}
+function attachPayRep(){
+  ["pr-month","pr-boat","pr-emp"].forEach(function(i){var e=el(i);if(e)e.addEventListener("change",filterPR);});
+  filterPR();
+}
+function filterPR(){
+  var fm=el("pr-month")?el("pr-month").value:"";
+  var fb=el("pr-boat")?el("pr-boat").value:"";
+  var fe=el("pr-emp")?el("pr-emp").value:"";
   var data=ld(K.P,[]).filter(function(p){
-    var matchM=!fm||p.date&&p.date.startsWith(fm);
-    var matchB=!fb||p.boat===fb;
-    var matchE=!fe||p.employee===fe;
-    return matchM&&matchB&&matchE;
+    return(!fm||p.date&&p.date.startsWith(fm))&&(!fb||p.boat===fb)&&(!fe||p.employee===fe);
   });
-
-  var total=data.reduce(function(a,p){return a+(+p.amount||0);},0);
-
-  // Per-employee
-  var empMap={};
-  data.forEach(function(p){
-    var k=p.employee||"غير محدد";
-    empMap[k]=(empMap[k]||0)+(+p.amount||0);
-  });
-
-  // Per-boat
-  var boatMap={};
-  data.forEach(function(p){
-    var k=p.boat||"غير محدد";
-    boatMap[k]=(boatMap[k]||0)+(+p.amount||0);
-  });
-
-  // Summary section
-  var sumEl=document.getElementById("pr-summary");
+  var tot=data.reduce(function(a,p){return a+(+p.amount||0);},0);
+  var empMap={};data.forEach(function(p){var k=p.employee||"غير محدد";empMap[k]=(empMap[k]||0)+(+p.amount||0);});
+  var boatMap={};data.forEach(function(p){var k=p.boat||"غير محدد";boatMap[k]=(boatMap[k]||0)+(+p.amount||0);});
+  var sumEl=el("pr-sum");
   if(sumEl){
-    var empCards=Object.entries(empMap).map(function(e){
-      var emp=e[0],amt=e[1];
-      return '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;position:relative;overflow:hidden">'+
+    var empCards=Object.keys(empMap).map(function(emp){
+      return '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:16px;position:relative;overflow:hidden">'+
         '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--cy)"></div>'+
-        '<div style="font-size:12px;color:var(--t2);margin-bottom:6px">👤 '+emp+'</div>'+
-        '<div style="font-size:22px;font-weight:800;color:var(--cy)">'+fmt(amt)+'</div>'+
-        '<div style="font-size:11px;color:var(--t3);margin-top:4px">ج.م</div></div>';
+        '<div style="font-size:11px;color:var(--t2);margin-bottom:4px">👤 '+emp+'</div>'+
+        '<div style="font-size:20px;font-weight:800;color:var(--cy)">'+fmt(empMap[emp])+'</div>'+
+        '<div style="font-size:10px;color:var(--t3);margin-top:2px">ج.م</div></div>';
     }).join("");
-
-    var boatRows=Object.entries(boatMap).map(function(e){
-      var b=e[0],amt=e[1];
-      var pct=total>0?Math.round(amt/total*100):0;
-      return '<tr>'+
-        '<td>'+bj("bc",b)+'</td>'+
-        '<td style="color:var(--go);font-weight:700">'+fmt(amt)+' ج.م</td>'+
-        '<td><div style="display:flex;align-items:center;gap:8px">'+
-        '<div style="flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden">'+
-        '<div style="height:100%;width:'+pct+'%;background:var(--cy);border-radius:4px"></div></div>'+
-        '<span style="font-size:12px;color:var(--t2)">'+pct+'%</span></div></td></tr>';
-    }).join("");
-
-    var boatTable=Object.keys(boatMap).length>1?
-      '<div class="card" style="margin-bottom:16px">'+
-      '<div class="ch"><span class="ct">⛵ توزيع حسب المركب</span></div>'+
-      '<div class="tw"><table><thead><tr><th>المركب</th><th>إجمالي المرتبات</th><th>النسبة</th></tr></thead>'+
-      '<tbody>'+boatRows+'</tbody></table></div></div>':
-      "";
-
-    sumEl.innerHTML=
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px">'+
-      '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px;position:relative;overflow:hidden">'+
+    sumEl.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">'+
+      '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:16px;position:relative;overflow:hidden">'+
       '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--go)"></div>'+
-      '<div style="font-size:12px;color:var(--t2);margin-bottom:6px">💰 إجمالي المرتبات</div>'+
-      '<div style="font-size:26px;font-weight:800;color:var(--go)">'+fmt(total)+'</div>'+
-      '<div style="font-size:11px;color:var(--t3);margin-top:4px">ج.م • '+data.length+' سجل</div></div>'+
-      empCards+'</div>'+boatTable;
+      '<div style="font-size:11px;color:var(--t2);margin-bottom:4px">💰 إجمالي المرتبات</div>'+
+      '<div style="font-size:20px;font-weight:800;color:var(--go)">'+fmt(tot)+'</div>'+
+      '<div style="font-size:10px;color:var(--t3);margin-top:2px">ج.م • '+data.length+' سجل</div></div>'+
+      empCards+'</div>'+
+      (Object.keys(boatMap).length>1?
+        '<div class="card" style="margin-bottom:14px"><div class="ch"><span class="ct">⛵ توزيع حسب المركب</span></div>'+
+        '<div class="tw"><table><thead><tr><th>المركب</th><th>الإجمالي</th><th>النسبة</th></tr></thead><tbody>'+
+        Object.keys(boatMap).map(function(b){
+          var pct=tot>0?Math.round(boatMap[b]/tot*100):0;
+          return '<tr><td>'+bj("bc",b)+'</td>'+
+            '<td style="color:var(--go);font-weight:700">'+fmt(boatMap[b])+' ج.م</td>'+
+            '<td><div style="display:flex;align-items:center;gap:8px">'+
+            '<div style="flex:1;height:7px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden">'+
+            '<div style="height:100%;width:'+pct+'%;background:var(--cy);border-radius:3px"></div></div>'+
+            '<span style="font-size:11px;color:var(--t2);min-width:30px">'+pct+'%</span></div></td></tr>';
+        }).join("")+'</tbody></table></div></div>':
+      "");
   }
-
-  // Detail table
-  var tblEl=document.getElementById("pr-table");
+  var tblEl=el("pr-tbl");
   if(tblEl){
-    var tblRows=data.length===0?
-      '<tr><td colspan="7"><div class="empty">لا توجد بيانات بهذه الفلاتر</div></td></tr>':
-      data.map(function(p){
-        return '<tr><td>'+p.id+'</td>'+
-          '<td style="white-space:nowrap">'+p.date+'</td>'+
-          '<td>'+bj("bc",p.boat||"")+'</td>'+
-          '<td style="font-weight:700;color:var(--cy)">'+(p.employee||"")+'</td>'+
-          '<td>'+(p.description||"")+'</td>'+
-          '<td style="color:var(--go);font-weight:700">'+fmt(p.amount)+' ج.م</td>'+
-          '<td style="color:var(--t2)">'+(p.notes||"")+'</td></tr>';
-      }).join("");
-    tblEl.innerHTML=
-      '<div class="card">'+
-      '<div class="ch"><span class="ct">📋 تفاصيل المرتبات</span>'+
+    var tblRows=data.length?data.map(function(p){
+      return '<tr><td>'+p.id+'</td><td>'+p.date+'</td>'+
+        '<td>'+bj("bc",p.boat||"")+'</td>'+
+        '<td style="font-weight:700;color:var(--cy)">'+(p.employee||"")+'</td>'+
+        '<td>'+(p.description||"")+'</td>'+
+        '<td style="color:var(--go);font-weight:700">'+fmt(p.amount)+' ج.م</td>'+
+        '<td>'+(p.notes||"")+'</td></tr>';
+    }).join(""):'<tr><td colspan="7"><div class="empty">لا توجد بيانات</div></td></tr>';
+    tblEl.innerHTML='<div class="card"><div class="ch"><span class="ct">📋 تفاصيل المرتبات</span>'+
       bj("bg2",data.length+" سجل")+
-      '</div>'+
-      '<div class="tw"><table>'+
-      '<thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>الموظف</th>'+
-      '<th>البيان</th><th>المبلغ</th><th>ملاحظات</th></tr></thead>'+
-      '<tbody>'+tblRows+'</tbody></table></div>'+
-      (data.length>0?
-        '<div style="padding:10px 16px;border-top:1px solid var(--bd);font-size:13px;display:flex;justify-content:space-between">'+
-        '<span>إجمالي: <strong style="color:var(--go)">'+fmt(total)+' ج.م</strong> • '+data.length+' سجل</span>'+
-        '<button class="btn bs sm" onclick="exportPayrollExcel()">📥 تصدير Excel</button>'+
-        '</div>':"")+'</div>';
+      '</div><div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody>'+
+      tblRows+'</tbody></table></div>'+
+      (tot?'<div style="padding:8px 14px;border-top:1px solid var(--bd);font-size:12px;display:flex;justify-content:space-between">'+
+      '<span>إجمالي: <strong style="color:var(--go)">'+fmt(tot)+' ج.م</strong></span>'+
+      '<button class="btn bs sm" onclick="exportPR()">📥 Excel</button></div>':"")+
+      '</div>';
   }
-}>
+}
+function exportPR(){
+  var fm=el("pr-month")?el("pr-month").value:"";
+  var data=ld(K.P,[]).filter(function(p){return!fm||p.date&&p.date.startsWith(fm);});
+  exportExcel(data,[{k:"id",l:"#"},{k:"date",l:"التاريخ"},{k:"boat",l:"المركب"},{k:"employee",l:"الموظف"},{k:"description",l:"البيان"},{k:"amount",l:"المبلغ"},{k:"notes",l:"ملاحظات"}],"تقارير_المرتبات");
+}
+
+// ═══════════════════════════
+// REPORTS
+// ═══════════════════════════
+function renderRep(){
+  return '<div class="card"><div class="fb">'+
+    '<div class="ffi"><label>📅 التاريخ</label><input type="date" id="rp-date"/></div>'+
+    '<div class="ffi"><label>⛵ المركب</label><select id="rp-boat"><option value="">الكل</option>'+BOATS.map(function(b){return'<option>'+b+'</option>';}).join("")+'</select></div>'+
+    '<button class="btn bg sm" onclick="filterRep()">↺</button></div></div><div id="rep-tbl"></div>';
+}
+function attachRep(){
+  ["rp-date","rp-boat"].forEach(function(i){var e=el(i);if(e)e.addEventListener("change",filterRep);});
+  filterRep();
+}
+function filterRep(){
+  var fd=el("rp-date")?el("rp-date").value:"";
+  var fb=el("rp-boat")?el("rp-boat").value:"";
+  var sales=ld(K.S,[]);var exps=ld(K.E,[]);
+  var dates=[];
+  sales.forEach(function(s){if(dates.indexOf(s.date)<0)dates.push(s.date);});
+  exps.forEach(function(e){if(dates.indexOf(e.date)<0)dates.push(e.date);});
+  dates.sort(function(a,b){return b.localeCompare(a);});
+  if(fd) dates=dates.filter(function(d){return d===fd;});
+  var tblEl=el("rep-tbl");if(!tblEl) return;
+  tblEl.innerHTML='<div class="card"><div class="ch"><span class="ct">📊 التقارير اليومية التفصيلية</span></div>'+
+    '<div class="tw"><table><thead><tr><th>التاريخ</th><th>الإيرادات</th><th>مصاريف مطابخ</th><th>صافي 1</th><th>مصاريف تشغيل</th><th>صافي 2</th><th>مصاريف إدارية</th><th>الصافي النهائي</th></tr></thead><tbody>'+
+    (dates.length?dates.map(function(d){
+      var rev=sales.filter(function(s){return s.date===d&&(!fb||s.boat===fb);}).reduce(function(a,s){return a+(+s.total||0);},0);
+      var kit=exps.filter(function(e){return e.date===d&&(!fb||e.boat===fb)&&e.exp_type==="المطابخ";}).reduce(function(a,e){return a+(+e.total||0);},0);
+      var op=exps.filter(function(e){return e.date===d&&(!fb||e.boat===fb)&&e.exp_type==="مصاريف التشغيل";}).reduce(function(a,e){return a+(+e.total||0);},0);
+      var adm=exps.filter(function(e){return e.date===d&&(!fb||e.boat===fb)&&e.exp_type==="المصاريف الإدارية";}).reduce(function(a,e){return a+(+e.total||0);},0);
+      var s1=rev-kit,s2=s1-op,fn=s2-adm;
+      return '<tr>'+
+        '<td style="font-weight:700;white-space:nowrap">'+d+'</td>'+
+        '<td style="color:var(--gr);font-weight:700">'+fmt(rev)+'</td>'+
+        '<td style="color:var(--re)">'+fmt(kit)+'</td>'+
+        '<td style="color:'+(s1>=0?"var(--cy)":"var(--re)")+';font-weight:600">'+fmt(s1)+'</td>'+
+        '<td style="color:var(--re)">'+fmt(op)+'</td>'+
+        '<td style="color:'+(s2>=0?"var(--cy)":"var(--re)")+';font-weight:600">'+fmt(s2)+'</td>'+
+        '<td style="color:var(--re)">'+fmt(adm)+'</td>'+
+        '<td style="color:'+(fn>=0?"var(--gr)":"var(--re)")+';font-weight:800;font-size:14px">'+fmt(fn)+'</td></tr>';
+    }).join(""):'<tr><td colspan="8"><div class="empty">لا بيانات</div></td></tr>')+'</tbody></table></div></div>';
+}
+
+// ═══════════════════════════
+// EVENT LISTENERS (after DOM ready)
+// ═══════════════════════════
+window.addEventListener("DOMContentLoaded", function(){
+  // Login
+  el("login-btn").addEventListener("click", doLogin);
+  el("l-pass").addEventListener("keydown", function(e){if(e.key==="Enter")doLogin();});
+  el("l-user").addEventListener("keydown", function(e){if(e.key==="Enter")el("l-pass").focus();});
+  // Sidebar
+  el("hmb-btn").addEventListener("click", toggleSide);
+  el("sclose").addEventListener("click", closeSide);
+  el("sov").addEventListener("click", closeSide);
+  // Logout
+  el("logout-btn").addEventListener("click", doLogout);
+  // Sync
+  var sb=el("bar-sync-btn");if(sb)sb.addEventListener("click", manualSync);
+  // Modal close
+  el("modal-close").addEventListener("click", closeModal);
+  el("modal").addEventListener("click", function(e){if(e.target===el("modal"))closeModal();});
+  // Init
+  if(!localStorage.getItem(K.U)) sv(K.U, INIT_USERS);
+  updateSyncUI("ok");
+  setInterval(updateSyncUI, 5000);
+  setInterval(function(){if(isOnline&&currentUser)drain();}, 3*60*1000);
+  // Slideshow
+  initSlideshow();
+});
+
+// ═══════════════════════════
+// SLIDESHOW
+// ═══════════════════════════
+var slideIdx = 0;
+var slideCaptions = [
+  "مراكب سياحية • شرم الشيخ",
+  "الشعاب المرجانية • البحر الأحمر",
+  "رحلات بحرية فاخرة",
+  "شروق الشمس على البحر الأحمر",
+  "رحلات الغطس والسنوركل"
+];
+function initSlideshow(){
+  var dots=el("ls-dots");if(!dots) return;
+  dots.innerHTML="";
+  slideCaptions.forEach(function(cap,i){
+    var d=document.createElement("button");
+    d.className="ls-dot"+(i===0?" act":"");
+    d.addEventListener("click",function(){goSlide(i);});
+    dots.appendChild(d);
+  });
+  setInterval(function(){goSlide((slideIdx+1)%slideCaptions.length);}, 5000);
+}
+function goSlide(n){
+  var slides=document.querySelectorAll(".ls-slide");
+  var dots=el("ls-dots");var cap=el("ls-cap");
+  if(slides[slideIdx]) slides[slideIdx].classList.remove("act");
+  if(dots&&dots.children[slideIdx]) dots.children[slideIdx].classList.remove("act");
+  slideIdx=n;
+  if(slides[slideIdx]) slides[slideIdx].classList.add("act");
+  if(dots&&dots.children[slideIdx]) dots.children[slideIdx].classList.add("act");
+  if(cap) cap.textContent=slideCaptions[slideIdx];
+}
+</script>
+</body>
+</html>

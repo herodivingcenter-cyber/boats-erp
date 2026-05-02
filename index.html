@@ -177,10 +177,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 /* ── LOGIN ── */
 .lw{min-height:100vh;display:flex;align-items:center;justify-content:center;
   position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#0a1628,#0c2a4a 40%,#0a3d62 70%,#051e3e)}
-.lw::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 120% 60% at 50% 110%,rgba(0,150,255,.2) 0%,transparent 60%);
-  animation:wv 6s ease-in-out infinite alternate}
+  background:#0a1628}
 @keyframes wv{from{transform:translateY(0)}to{transform:translateY(-10px)}}
 .lc{width:100%;max-width:420px;margin:16px;
   background:rgba(5,20,50,.82);border:1px solid rgba(0,180,255,.2);
@@ -262,17 +259,16 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </head>
 <body>
 
-<!-- SLIDESHOW BG (behind login) -->
-<div id="ls-container" style="position:fixed;inset:0;z-index:0;pointer-events:none">
-  <div class="ls-slide act" style="background-image:url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1400&q=80&auto=format')"></div>
-  <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1400&q=80&auto=format')"></div>
-  <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=1400&q=80&auto=format')"></div>
-  <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=1400&q=80&auto=format')"></div>
-  <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1540202404-a2f29016b523?w=1400&q=80&auto=format')"></div>
-</div>
-
 <!-- LOGIN PAGE -->
 <div id="login-page" class="lw" style="position:relative;z-index:10">
+  <!-- SLIDESHOW BG (inside login only) -->
+  <div id="ls-container" style="position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden">
+    <div class="ls-slide act" style="background-image:url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1400&q=80&auto=format')"></div>
+    <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1400&q=80&auto=format')"></div>
+    <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=1400&q=80&auto=format')"></div>
+    <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=1400&q=80&auto=format')"></div>
+    <div class="ls-slide" style="background-image:url('https://images.unsplash.com/photo-1540202404-a2f29016b523?w=1400&q=80&auto=format')"></div>
+  </div>
   <div class="lbrand">
     <div class="lbrand-ic">⛵</div>
     <div><div class="lbrand-t">Daily Account Boats</div><div class="lbrand-s">شرم الشيخ • البحر الأحمر</div></div>
@@ -303,7 +299,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div style="text-align:center;font-size:10px;color:rgba(148,163,184,.35)">🔒 نظام محمي بكلمة مرور</div>
     </div>
   </div>
-</div>
+</div><!-- /login-page -->
 
 <!-- MAIN APP (hidden until login) -->
 <div id="main-app" style="display:none">
@@ -432,7 +428,10 @@ var isOnline = navigator.onLine;
 var draining = false;
 var syncMsg = "";
 
+var pulling = false;
 function pull(){
+  if(pulling) return Promise.resolve();
+  pulling = true;
   var keys = Object.keys(TBL);
   var promises = keys.map(function(k){
     return sbGet(TBL[k]).then(function(rows){
@@ -442,14 +441,22 @@ function pull(){
       sv(k,rows);
     }).catch(function(){});
   });
-  return Promise.all(promises);
+  return Promise.all(promises).finally(function(){ pulling = false; });
 }
 
 function drain(){
   if(draining) return;
   draining = true;
-  updateSyncUI("syncing");
   var q = ld(K.Q,[]);
+  drainHadOps = q.length > 0;
+  updateSyncUI(q.length>0?"syncing":"ok");
+  if(!q.length){ // nothing to push, just pull quietly
+    pull().then(function(){
+      sv(K.Q,[]);updateSyncUI("ok");
+    }).finally(function(){draining=false;drainHadOps=false;});
+    return;
+  }
+  updateSyncUI("syncing");
   var p = Promise.resolve();
   q.forEach(function(item){
     p = p.then(function(){
@@ -463,10 +470,17 @@ function drain(){
    .then(function(){
      sv(K.Q,[]);
      updateSyncUI("ok");
-     if(currentUser && currentPage) renderPage(currentPage);
+     // Only re-render if there were pending ops (user just saved something)
+     // Don't re-render on background auto-sync to prevent flicker
+     if(currentUser && currentPage && drainHadOps){
+       var modal=document.getElementById("modal");
+       if(modal && !modal.classList.contains("show")){
+         renderPage(currentPage);
+       }
+     }
    })
    .catch(function(){updateSyncUI("err");})
-   .finally(function(){draining=false;});
+   .finally(function(){draining=false; drainHadOps=false;});
 }
 
 function enq(k,op,p){
@@ -707,6 +721,7 @@ function buildNav(){
 
 function navigate(id){
   if(!canAccess(id)) return;
+  if(currentPage===id){ closeSide(); return; } // prevent re-render same page
   currentPage=id;
   var t=el("page-title");if(t) t.textContent=TITLES[id]||id;
   buildNav();
@@ -1098,12 +1113,7 @@ function renderSE(){
         '</div></td></tr>';
     }).join(""):'<tr><td colspan="11"><div class="empty">لا توجد مبيعات</div></td></tr>')+'</tbody></table></div></div>';
 }
-function attachSE(){
-  var local=ld(K.S,[]);
-  if(local.length===0&&isOnline){
-    pull().then(function(){renderPage("se");});
-  }
-}
+function attachSE(){}
 function saleForm(id,isPend){
   var allData=ld(K.SP,[]).concat(ld(K.S,[]));
   var s=id?allData.filter(function(x){return x.id===id;})[0]:null;
@@ -1241,7 +1251,7 @@ function renderEE(){
     }).join(""):'<tr><td colspan="11"><div class="empty">لا توجد مصاريف</div></td></tr>')+'</tbody></table></div></div>';
 }
 function saveXR(){sv(K.X,{usd:+el("xr-usd").value||50,eur:+el("xr-eur").value||55});}
-function attachEE(){var local=ld(K.E,[]);if(local.length===0&&isOnline){pull().then(function(){renderPage("ee");});}}
+function attachEE(){}
 function expForm(id,isPend){
   var allData=ld(K.EP,[]).concat(ld(K.E,[]));
   var e=id?allData.filter(function(x){return x.id===id;})[0]:null;
@@ -1387,7 +1397,7 @@ function renderPayroll(){
     (tot?'<div style="padding:8px 14px;border-top:1px solid var(--bd);font-size:12px">الإجمالي: <strong style="color:var(--go)">'+fmt(tot)+' ج.م</strong></div>':"")+
     '</div>';
 }
-function attachPayroll(){var local=ld(K.P,[]);if(local.length===0&&isOnline){pull().then(function(){renderPage("payroll");});}}
+function attachPayroll(){}
 function payrollForm(id,isPend){
   var allData=ld(K.PP,[]).concat(ld(K.P,[]));
   var p=id?allData.filter(function(x){return x.id===id;})[0]:null;

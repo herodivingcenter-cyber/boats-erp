@@ -106,19 +106,35 @@ tbody tr:last-child td{border-bottom:none}
 .fr4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .ff{display:flex;flex-direction:column;gap:5px}
 .ff label{font-size:12px;font-weight:600;color:var(--t2)}
-input,select,textarea{background:rgba(17,34,64,.8);border:1px solid var(--bd);
-  border-radius:var(--r2);padding:9px 12px;font-family:inherit;font-size:14px;
-  color:var(--t1);width:100%;direction:rtl;-webkit-appearance:none}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--cy)}
+input,select,textarea{
+  background:#1e3a5f;
+  border:1px solid rgba(148,163,184,.35);
+  border-radius:var(--r2);padding:9px 12px;
+  font-family:inherit;font-size:14px;
+  color:#f0f6ff;width:100%;direction:rtl;
+  -webkit-appearance:none;
+  transition:border-color .15s,background .15s,box-shadow .15s;
+}
+input:hover,select:hover,textarea:hover{
+  background:#234570;
+  border-color:rgba(148,163,184,.55);
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;
+  background:#254d7a;
+  border-color:var(--cy);
+  box-shadow:0 0 0 3px rgba(8,145,178,.18);
+}
+input::placeholder{color:rgba(148,163,184,.55)}
 textarea{resize:vertical;min-height:68px}
-select option{background:var(--bg2)}
+select option{background:#1a3a5c;color:#f0f6ff}
 
 /* FILTER */
 .fb{display:flex;gap:10px;align-items:flex-end;padding:12px 20px;
   background:rgba(29,78,216,.06);border-bottom:1px solid var(--bd);flex-wrap:wrap}
 .ffi{display:flex;flex-direction:column;gap:4px}
 .ffi label{font-size:11px;font-weight:700;color:var(--t3)}
-.ffi input,.ffi select{min-width:140px;font-size:13px}
+.ffi input,.ffi select{min-width:140px;font-size:13px;background:#1e3a5f;border-color:rgba(148,163,184,.35)}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:var(--r2);
@@ -281,7 +297,7 @@ select option{background:var(--bg2)}
   .btn{font-size:12px;padding:6px 11px}
   .sm{padding:4px 8px;font-size:11px}
   .fb{padding:10px 12px;gap:8px}
-  .ffi input,.ffi select{min-width:110px;font-size:12px}
+  .ffi input,.ffi select{min-width:110px;font-size:12px;background:#1e3a5f}
   #d-kpi{grid-template-columns:1fr 1fr !important}
   .modal{margin:8px}
   .mbody{padding:14px}
@@ -299,6 +315,20 @@ select option{background:var(--bg2)}
   thead th{padding:6px 7px;font-size:9px}
   tbody td{padding:6px 7px}
   .btn{font-size:11px;padding:5px 9px}
+}
+/* Readonly inputs */
+input[readonly]{
+  background:rgba(255,255,255,.04) !important;
+  border-color:rgba(148,163,184,.15) !important;
+  color:var(--t2);cursor:default;
+}
+/* Number inputs */
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+/* Date inputs */
+input[type=date]::-webkit-calendar-picker-indicator{
+  filter:invert(0.7);cursor:pointer;
 }
 </style>
 </head>
@@ -362,12 +392,12 @@ select option{background:var(--bg2)}
       <div class="ff">
         <label style="color:rgba(255,255,255,.6)">👤 اسم المستخدم</label>
         <input id="l-user" placeholder="username" autocomplete="username"
-          style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"/>
+          style="background:#1e3a5f;border-color:rgba(255,255,255,.2);color:#f0f6ff"/>
       </div>
       <div class="ff">
         <label style="color:rgba(255,255,255,.6)">🔑 كلمة المرور</label>
         <input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"
-          style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"/>
+          style="background:#1e3a5f;border-color:rgba(255,255,255,.2);color:#f0f6ff"/>
       </div>
       <div id="l-err" style="display:none;color:#fca5a5;font-size:12px;background:rgba(127,29,29,.3);padding:8px 12px;border-radius:8px;border:1px solid rgba(220,38,38,.3)"></div>
       <button class="btn bp" style="justify-content:center;padding:13px;font-size:15px;font-weight:700;letter-spacing:.3px;border-radius:12px;background:linear-gradient(135deg,#0891b2,#1d4ed8);box-shadow:0 4px 20px rgba(8,145,178,.4)" onclick="doLogin()">

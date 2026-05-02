@@ -428,73 +428,77 @@ var isOnline = navigator.onLine;
 var draining = false;
 var syncMsg = "";
 
+// ═══════════════════════════════════════
+// SYNC — Supabase is the single source of truth
+// ═══════════════════════════════════════
 var pulling = false;
+var draining = false;
+
+// Pull ALL data from Supabase and update localStorage
 function pull(){
   if(pulling) return Promise.resolve();
   pulling = true;
-  var keys = Object.keys(TBL);
-  var promises = keys.map(function(k){
+  updateSyncUI("syncing");
+  var tasks = Object.keys(TBL).map(function(k){
     return sbGet(TBL[k]).then(function(rows){
       if(!Array.isArray(rows)) return;
+      // Never wipe users with empty
       if(k===K.U && rows.length===0) return;
-      if(rows.length===0 && ld(k,[]).length>0) return;
-      sv(k,rows);
-    }).catch(function(){});
+      // Update localStorage with Supabase data
+      sv(k, rows);
+    }).catch(function(e){ console.warn("Pull failed for",TBL[k],e); });
   });
-  return Promise.all(promises).finally(function(){ pulling = false; });
+  return Promise.all(tasks).finally(function(){ pulling = false; });
+}
+
+// Push a single record to Supabase immediately
+function pushNow(tableKey, op, rec){
+  var tbl = TBL[tableKey];
+  if(!tbl || !isOnline) return Promise.resolve();
+  if(op==="u") return sbUpsert(tbl, rec).catch(function(){});
+  else return sbDel(tbl, rec.id).catch(function(){});
+}
+
+// Save locally AND push to Supabase immediately
+function enq(k, op, rec){
+  // 1. Save to localStorage first (instant, offline-safe)
+  var local = ld(k, []);
+  if(op==="u"){
+    var idx = -1;
+    local.forEach(function(x,i){ if(x.id===rec.id) idx=i; });
+    if(idx>=0) local[idx]=rec; else local.push(rec);
+    sv(k, local);
+  } else {
+    sv(k, local.filter(function(x){ return x.id!==rec.id; }));
+  }
+  updateSyncUI("ok");
+  // 2. Push to Supabase immediately if online
+  if(isOnline){
+    updateSyncUI("syncing");
+    pushNow(k, op, rec).then(function(){
+      updateSyncUI("ok");
+    });
+  }
+}
+
+function manualSync(){
+  if(!isOnline){ alert("لا يوجد اتصال بالإنترنت"); return; }
+  updateSyncUI("syncing");
+  // Push any dirty local data and pull fresh
+  pull().then(function(){
+    updateSyncUI("ok");
+    if(currentUser && currentPage) renderPage(currentPage);
+  });
 }
 
 function drain(){
-  if(draining) return;
-  draining = true;
-  var q = ld(K.Q,[]);
-  drainHadOps = q.length > 0;
-  updateSyncUI(q.length>0?"syncing":"ok");
-  if(!q.length){ // nothing to push, just pull quietly
-    pull().then(function(){
-      sv(K.Q,[]);updateSyncUI("ok");
-    }).finally(function(){draining=false;drainHadOps=false;});
-    return;
-  }
-  updateSyncUI("syncing");
-  var p = Promise.resolve();
-  q.forEach(function(item){
-    p = p.then(function(){
-      var t = TBL[item.t];
-      if(!t) return;
-      if(item.op==="u") return sbUpsert(t,item.p);
-      else return sbDel(t,item.p.id);
-    });
-  });
-  p.then(function(){return pull();})
-   .then(function(){
-     sv(K.Q,[]);
-     updateSyncUI("ok");
-     // Only re-render if there were pending ops (user just saved something)
-     // Don't re-render on background auto-sync to prevent flicker
-     if(currentUser && currentPage && drainHadOps){
-       var modal=document.getElementById("modal");
-       if(modal && !modal.classList.contains("show")){
-         renderPage(currentPage);
-       }
-     }
-   })
-   .catch(function(){updateSyncUI("err");})
-   .finally(function(){draining=false; drainHadOps=false;});
+  // Simplified drain — just pull from Supabase
+  if(draining||!isOnline) return;
+  draining=true;
+  pull().then(function(){
+    updateSyncUI("ok");
+  }).finally(function(){ draining=false; });
 }
-
-function enq(k,op,p){
-  var q = ld(K.Q,[]);
-  var i = -1;
-  if(op==="u") q.forEach(function(x,idx){if(x.t===k&&x.p&&x.p.id===p.id) i=idx;});
-  if(i>=0) q[i]={t:k,op:op,p:p};
-  else q.push({t:k,op:op,p:p});
-  sv(K.Q,q);
-  updateSyncUI("ok");
-  if(isOnline) setTimeout(drain,200);
-}
-
-function manualSync(){if(isOnline)drain();}
 
 window.addEventListener("online",function(){isOnline=true;updateSyncUI("ok");drain();});
 window.addEventListener("offline",function(){isOnline=false;updateSyncUI("off");});
@@ -586,13 +590,12 @@ function doLogin(){
     var startPage=found.role==="hr"?"payroll":"dash";
     navigate(startPage);
     if(isOnline){
-      setTimeout(function(){
-        pull().then(function(){
-          sv(K.Q,[]);
-          if(currentUser&&currentPage) renderPage(currentPage);
-          updateSyncUI("ok");
-        });
-      },300);
+      // Pull ALL data from Supabase immediately after login
+      updateSyncUI("syncing");
+      pull().then(function(){
+        updateSyncUI("ok");
+        if(currentUser && currentPage) renderPage(currentPage);
+      });
     }
     if(found.username==="admin"&&found.password==="admin123"){
       setTimeout(function(){alert("⚠️ يرجى تغيير كلمة السر الافتراضية من صفحة المستخدمين!");},2000);
@@ -1642,7 +1645,15 @@ window.addEventListener("DOMContentLoaded", function(){
   if(!localStorage.getItem(K.U)) sv(K.U, INIT_USERS);
   updateSyncUI("ok");
   setInterval(updateSyncUI, 5000);
-  setInterval(function(){if(isOnline&&currentUser)drain();}, 3*60*1000);
+  // Auto-sync every 2 minutes — pull fresh data from Supabase
+  setInterval(function(){
+    if(isOnline && currentUser){
+      pull().then(function(){
+        updateSyncUI("ok");
+        // Quietly refresh current page data (no flicker if same data)
+      });
+    }
+  }, 2*60*1000);
   // Slideshow
   initSlideshow();
 });

@@ -369,7 +369,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 // CONSTANTS & CONFIG
 // ═══════════════════════════
 var SB_URL = "https://qgqemasgnyfdsjmezjsh.supabase.co";
-var SB_KEY = "sb_publishable_Be_aAqJj_itUosit5wLiOA_M_4GSTck";
+var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFncWVtYXNnbnlmZHNqbWV6anNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MzA3ODgsImV4cCI6MjA5MzIwNjc4OH0.NOO9xJnQM0cMauXUggU6AwgK1QmSe1AWzoKZ9Jx_e6g";
 var BOATS = ["روما","آدم","سيريانا","ميس شيرى"];
 var EMPLOYEES = ["صلاح إسماعيل","علي مرعى","ريكو","رامي شلبي"];
 var EXP_CATS = {
@@ -438,13 +438,11 @@ var draining = false;
 function pull(){
   if(pulling) return Promise.resolve();
   pulling = true;
-  updateSyncUI("syncing");
   var tasks = Object.keys(TBL).map(function(k){
     return sbGet(TBL[k]).then(function(rows){
       if(!Array.isArray(rows)) return;
-      // Never wipe users with empty
-      if(k===K.U && rows.length===0) return;
-      // Update localStorage with Supabase data
+      // NEVER overwrite local data with empty array from Supabase
+      if(rows.length === 0) return;
       sv(k, rows);
     }).catch(function(e){ console.warn("Pull failed for",TBL[k],e); });
   });
@@ -461,7 +459,7 @@ function pushNow(tableKey, op, rec){
 
 // Save locally AND push to Supabase immediately
 function enq(k, op, rec){
-  // 1. Save to localStorage first (instant, offline-safe)
+  // 1. Save to localStorage first (instant, always works)
   var local = ld(k, []);
   if(op==="u"){
     var idx = -1;
@@ -472,11 +470,13 @@ function enq(k, op, rec){
     sv(k, local.filter(function(x){ return x.id!==rec.id; }));
   }
   updateSyncUI("ok");
-  // 2. Push to Supabase immediately if online
+  // 2. Push to Supabase if online (fire and forget - don't pull after)
   if(isOnline){
-    updateSyncUI("syncing");
     pushNow(k, op, rec).then(function(){
       updateSyncUI("ok");
+      console.log("Saved to Supabase:", TBL[k], rec.id);
+    }).catch(function(e){
+      console.warn("Supabase save failed, kept in local:", e);
     });
   }
 }
@@ -492,7 +492,7 @@ function manualSync(){
 }
 
 function drain(){
-  // Simplified drain — just pull from Supabase
+  // Background sync - pull from Supabase and merge (never wipe local)
   if(draining||!isOnline) return;
   draining=true;
   pull().then(function(){
@@ -590,8 +590,7 @@ function doLogin(){
     var startPage=found.role==="hr"?"payroll":"dash";
     navigate(startPage);
     if(isOnline){
-      // Pull ALL data from Supabase immediately after login
-      updateSyncUI("syncing");
+      // Pull data from Supabase after login (merge with local, never wipe)
       pull().then(function(){
         updateSyncUI("ok");
         if(currentUser && currentPage) renderPage(currentPage);
@@ -1645,15 +1644,10 @@ window.addEventListener("DOMContentLoaded", function(){
   if(!localStorage.getItem(K.U)) sv(K.U, INIT_USERS);
   updateSyncUI("ok");
   setInterval(updateSyncUI, 5000);
-  // Auto-sync every 2 minutes — pull fresh data from Supabase
+  // Auto-sync every 5 minutes
   setInterval(function(){
-    if(isOnline && currentUser){
-      pull().then(function(){
-        updateSyncUI("ok");
-        // Quietly refresh current page data (no flicker if same data)
-      });
-    }
-  }, 2*60*1000);
+    if(isOnline && currentUser) drain();
+  }, 5*60*1000);
   // Slideshow
   initSlideshow();
 });

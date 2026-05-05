@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <title>Daily Account Boats</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛵</text></svg>"/>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -1114,7 +1115,9 @@ function renderSE(){
   return '<div class="card"><div class="ch"><span class="ct">💼 تسجيل المبيعات اليومية</span>'+
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pending.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pending.length+' بانتظار الموافقة</span>':"")+
-    '<button class="btn bp sm" onclick="saleForm()">+ إضافة</button></div></div>'+
+    '<button class="btn bp sm" onclick="saleForm()">+ إضافة</button>'+
+    '<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(this.files[0],\'sales\');this.value=\'\'" /></label>'+
+    '</div></div>'+
     '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th><th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
     (data.length?data.map(function(s){
       var isPend=s._pending;
@@ -1249,12 +1252,14 @@ function renderEE(){
     '<div class="card"><div class="ch"><span class="ct">🧾 تسجيل مصاريف الخزنة</span>'+
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pendingE.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pendingE.length+'</span>':"")+
-    '<button class="btn bp sm" onclick="expForm()">+ إضافة</button></div></div>'+
-    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
+    '<button class="btn bp sm" onclick="expForm()">+ إضافة</button>'+
+    '<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(this.files[0],\'expenses\');this.value=\'\'" /></label>'+
+    '</div></div>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
     (data.length?data.map(function(e){
       var isPend=e._pending;
       return '<tr style="'+(isPend?"background:rgba(245,158,11,.04)":"")+'">' +
-        '<td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
+        '<td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bc",e.boat||"")+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
         '<td style="font-weight:600">'+(e.name||"")+'</td>'+
         '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(e.description||"")+'</td>'+
         '<td>'+fmt(e.egp)+'</td>'+
@@ -1279,6 +1284,7 @@ function expForm(id,isPend){
   openModal(id?"تعديل المصروف":"إضافة مصروف",
     '<div class="fg"><div class="fr3">'+
     '<div class="ff"><label>التاريخ</label><input id="e-date" type="date" value="'+(e.date||toDay())+'"/></div>'+
+    '<div class="ff"><label>⛵ المركب</label><select id="e-boat">'+BOATS.map(function(b){return'<option'+(e.boat===b?" selected":"")+'>'+b+'</option>';}).join("")+'</select></div>'+
     '<div class="ff"><label>نوع المصاريف</label><select id="e-type" onchange="updateExpNames()">'+Object.keys(EXP_CATS).map(function(k){return'<option'+(curCat===k?" selected":"")+'>'+k+'</option>';}).join("")+'</select></div>'+
     '<div class="ff"><label>الاسم / البند</label><select id="e-name"><option value="">-- اختر --</option>'+(EXP_CATS[curCat]||[]).map(function(n){return'<option'+(e.name===n?" selected":"")+'>'+n+'</option>';}).join("")+'</select></div></div>'+
     '<div class="ff"><label>البيان</label><textarea id="e-desc" rows="2">'+(e.description||"")+'</textarea></div>'+
@@ -1296,7 +1302,7 @@ function expForm(id,isPend){
       var sk=isExpPend?K.EP:K.E;
       var data=ld(sk,[]);
       var rec={id:id||gid(ld(K.E,[]).concat(ld(K.EP,[]))),
-        date:el("e-date").value,exp_type:el("e-type").value,
+        date:el("e-date").value,boat:el("e-boat").value,exp_type:el("e-type").value,
         name:el("e-name").value,description:el("e-desc").value,
         egp:egp,usd:usd,eur:eur,total:egp+usd*xr.usd+eur*xr.eur,
         by_user:currentUser.id,_pending:isExpPend};
@@ -1359,9 +1365,9 @@ function filterEV(){
   tbl.innerHTML='<div class="card"><div class="ch"><span class="ct">📉 بيان المصاريف</span>'+
     '<div style="display:flex;gap:6px;align-items:center">'+bj("br",data.length+" سجل")+
     '<button class="btn bs sm" onclick="exportEV()">📥 Excel</button></div></div>'+
-    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th></tr></thead><tbody>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th></tr></thead><tbody>'+
     (data.length?data.map(function(e){
-      return '<tr><td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
+      return '<tr><td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bc",e.boat||"")+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
         '<td style="font-weight:600">'+(e.name||"")+'</td><td>'+(e.description||"")+'</td>'+
         '<td>'+fmt(e.egp)+'</td>'+
         '<td>'+(+e.usd>0?"$"+(+e.usd).toFixed(0):"-")+'</td>'+
@@ -1395,6 +1401,7 @@ function renderPayroll(){
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pendingP.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pendingP.length+'</span>':"")+
     (!ro?'<button class="btn bp sm" onclick="payrollForm()">+ إضافة</button>':"")+
+    (!ro?'<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(this.files[0],\'payroll\');this.value=\'\'" /></label>':"")+
     '</div></div>'+
     '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع الإيراد</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th><th>الحالة</th>'+(!ro?"<th></th>":"")+'</tr></thead><tbody>'+
     (data.length?data.map(function(p){
@@ -1703,4 +1710,85 @@ function goSlide(n){
 }
 </script>
 </body>
-</html>
+</html// ═══════════════════════════════════════
+// EXCEL EXPORT + IMPORT
+// ═══════════════════════════════════════
+function exportExcel(data,cols,fname){
+  if(!data||!data.length){alert("لا توجد بيانات للتصدير");return;}
+  var wsData=[cols.map(function(c){return c.l;})];
+  data.forEach(function(row){
+    wsData.push(cols.map(function(c){return row[c.k]||"";}));
+  });
+  if(window.XLSX){
+    var wb=XLSX.utils.book_new();
+    var ws=XLSX.utils.aoa_to_sheet(wsData);
+    ws["!cols"]=cols.map(function(){return{wch:18};});
+    XLSX.utils.book_append_sheet(wb,ws,"Sheet1");
+    XLSX.writeFile(wb,fname+"_"+toDay()+".xlsx");
+  } else {
+    var csv="﻿"+wsData.map(function(r){return r.join(",");}).join("
+");
+    var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url;a.download=fname+"_"+toDay()+".csv";
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+  }
+}
+
+function importExcel(file,type){
+  if(!file) return;
+  if(!window.XLSX){alert("جاري تحميل مكتبة Excel، حاول مرة أخرى");return;}
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var wb=XLSX.read(new Uint8Array(ev.target.result),{type:"array"});
+    var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:""});
+    if(rows.length<2){alert("الملف فاضي");return;}
+    var cnt=0;
+    if(type==="sales"){
+      rows.slice(1).forEach(function(r){
+        if(!r[0]) return;
+        var trip=+r[5]||0,kit=+r[6]||0;
+        var rec={id:gid(ld(K.S,[]).concat(ld(K.SP,[]))),
+          date:String(r[0]),rtype:String(r[1]||"إيرادات عامة"),
+          center:String(r[2]||""),boat:String(r[3]||BOATS[0]),
+          count:String(r[4]||""),trip:trip,kitchen:kit,total:trip+kit,
+          notes:String(r[7]||""),by_user:currentUser.id,_pending:true};
+        var sp=ld(K.SP,[]);sp.push(rec);sv(K.SP,sp);cnt++;
+      });
+      alert("تم استيراد "+cnt+" سجل في تسجيل المبيعات");
+      renderPage("se");
+    } else if(type==="expenses"){
+      var xr=ld(K.X,{usd:50,eur:55});
+      rows.slice(1).forEach(function(r){
+        if(!r[0]) return;
+        var egp=+r[5]||0,usd=+r[6]||0,eur=+r[7]||0;
+        var rec={id:gid(ld(K.E,[]).concat(ld(K.EP,[]))),
+          date:String(r[0]),boat:String(r[1]||BOATS[0]),
+          exp_type:String(r[2]||"المطابخ"),name:String(r[3]||""),
+          description:String(r[4]||""),egp:egp,usd:usd,eur:eur,
+          total:egp+usd*xr.usd+eur*xr.eur,
+          by_user:currentUser.id,_pending:true};
+        var ep=ld(K.EP,[]);ep.push(rec);sv(K.EP,ep);cnt++;
+      });
+      alert("تم استيراد "+cnt+" سجل في تسجيل المصاريف");
+      renderPage("ee");
+    } else if(type==="payroll"){
+      rows.slice(1).forEach(function(r){
+        if(!r[0]) return;
+        var rec={id:gid(ld(K.P,[]).concat(ld(K.PP,[]))),
+          date:String(r[0]),rtype:String(r[1]||"إيرادات عامة"),
+          boat:String(r[2]||BOATS[0]),employee:String(r[3]||""),
+          description:String(r[4]||""),amount:+r[5]||0,
+          notes:String(r[6]||""),by_user:currentUser.id,_pending:true};
+        var pp=ld(K.PP,[]);pp.push(rec);sv(K.PP,pp);cnt++;
+      });
+      alert("تم استيراد "+cnt+" سجل في تسجيل المرتبات");
+      renderPage("payroll");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+>

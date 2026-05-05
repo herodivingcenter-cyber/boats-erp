@@ -296,6 +296,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <button id="login-btn" class="btn bp" style="justify-content:center;padding:12px;font-size:14px;font-weight:700;border-radius:12px;background:linear-gradient(135deg,#0891b2,#1d4ed8);box-shadow:0 4px 20px rgba(8,145,178,.35)">
         🔓 تسجيل الدخول
       </button>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <input type="checkbox" id="l-remember" style="width:16px;height:16px;cursor:pointer;accent-color:#0891b2"/>
+        <label for="l-remember" style="font-size:12px;color:rgba(148,216,255,.6);cursor:pointer">تذكرني</label>
+      </div>
       <div style="text-align:center;font-size:10px;color:rgba(148,163,184,.35)">🔒 نظام محمي بكلمة مرور</div>
     </div>
   </div>
@@ -380,6 +384,13 @@ var EXP_CATS = {
   "مرتبات العاملين":["صلاح إسماعيل","علي مرعى","ريكو","رامي شلبي"],
   "الإيجارات":["إيجار شهري","مصاريف أذق"]
 };
+// Load saved lists from localStorage
+var _savedBoats=ld("erp_boats",null);
+if(_savedBoats&&_savedBoats.length) BOATS.splice.apply(BOATS,[0,BOATS.length].concat(_savedBoats));
+var _savedCats=ld("erp_excats",null);
+if(_savedCats) Object.keys(_savedCats).forEach(function(k){EXP_CATS[k]=_savedCats[k];});
+var _savedEmps=EXP_CATS["مرتبات العاملين"];
+if(_savedEmps&&_savedEmps.length){EMPLOYEES.splice(0,EMPLOYEES.length);_savedEmps.forEach(function(e){EMPLOYEES.push(e);});}
 var REV_TYPES = ["إيرادات عامة","إيجارات خارجية"].concat(Object.keys(EXP_CATS));
 var INIT_USERS = [
   {id:1,username:"admin",password:"admin123",name:"أحمد الإدارة",role:"admin"},
@@ -396,6 +407,12 @@ var TBL = {erp_u:"users",erp_c:"clients",erp_s:"sales",erp_e:"expenses",erp_p:"p
 // ═══════════════════════════
 function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function saveLists(){
+  sv("erp_boats",BOATS);
+  sv("erp_excats",EXP_CATS);
+  EMPLOYEES.length=0;
+  (EXP_CATS["مرتبات العاملين"]||[]).forEach(function(e){EMPLOYEES.push(e);});
+}
 function gid(a){return Math.max.apply(null,[0].concat(a.map(function(x){return x.id||0;})))+1;}
 function toDay(){return new Date().toISOString().slice(0,10);}
 function fmt(n){return(+n||0).toLocaleString("ar-EG",{maximumFractionDigits:2});}
@@ -565,10 +582,7 @@ function exportExcel(data,cols,fname){
   data.forEach(function(row){
     wsData.push(cols.map(function(c){
       var v=row[c.k];
-      if(v!==undefined&&v!==null&&v!==""){
-        var n=Number(v);
-        if(!isNaN(n)&&String(v).trim()!=="") return n;
-      }
+      if(v!==undefined&&v!==null&&v!==""){var n=Number(v);if(!isNaN(n)&&String(v).trim()!=="")return n;}
       return v||"";
     }));
   });
@@ -585,7 +599,7 @@ function exportExcel(data,cols,fname){
     s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
     s.onload=function(){exportExcel(data,cols,fname);};
     document.head.appendChild(s);
-    alert("جاري تحميل مكتبة Excel... اضغط تصدير مرة أخرى بعد ثانية.");
+    alert("جاري تحميل مكتبة Excel... اضغط تصدير مرة أخرى.");
   }
 }
 function doLogin(){
@@ -599,6 +613,9 @@ function doLogin(){
   users.forEach(function(u){if(u.username===uname&&u.password===pass)found=u;});
   if(found){
     currentUser=found;
+    var rem=el("l-remember")&&el("l-remember").checked;
+    if(rem){try{localStorage.setItem("erp_session",JSON.stringify({u:found.username,p:found.password,t:Date.now()}));}catch(e){}}
+    else{try{localStorage.removeItem("erp_session");}catch(e){}}
     el("login-page").style.display="none";
     el("main-app").style.display="";
     el("user-av").textContent=(found.name||"U")[0];
@@ -652,6 +669,7 @@ function showLoginErr(msg){
 
 function doLogout(){
   currentUser=null;
+  try{localStorage.removeItem("erp_session");}catch(e){}
   el("main-app").style.display="none";
   el("login-page").style.display="";
   el("l-user").value="";el("l-pass").value="";
@@ -1061,7 +1079,7 @@ function addHREmp(){
   var v=el("hr-emp-input")&&el("hr-emp-input").value.trim();
   if(v){EXP_CATS["مرتبات العاملين"].push(v);EMPLOYEES.push(v);renderPage("lists");}
 }
-function rmHREmp(i){EXP_CATS["مرتبات العاملين"].splice(i,1);renderPage("lists");}
+function rmHREmp(i){EXP_CATS["مرتبات العاملين"].splice(i,1);saveLists();renderPage("lists");}
 function renderBoatsList(){
   return '<div class="card"><div class="ch"><span class="ct">⛵ المراكب</span></div><div class="cb">'+
     '<div style="display:flex;gap:8px;margin-bottom:10px"><input id="new-boat" placeholder="مركب جديد..." style="flex:1"/>'+
@@ -1072,14 +1090,14 @@ function renderBoatsList(){
         '⛵ '+b+'<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:11px" onclick="rmBoat('+i+')">✕</button></div>';
     }).join("")+'</div></div></div>';
 }
-function addBoat(){var v=el("new-boat").value.trim();if(v){BOATS.push(v);renderPage("lists");}}
-function rmBoat(i){BOATS.splice(i,1);renderPage("lists");}
+function addBoat(){var v=el("new-boat").value.trim();if(v){BOATS.push(v);saveLists();renderPage("lists");}}
+function rmBoat(i){BOATS.splice(i,1);saveLists();renderPage("lists");}
 function renderExpLists(){
   var cats=Object.keys(EXP_CATS);
   return '<div class="card"><div class="ch"><span class="ct">📋 فئات المصاريف</span>'+
     '<div style="display:flex;gap:6px"><input id="new-cat" placeholder="فئة جديدة..." style="max-width:160px;font-size:12px;padding:5px 8px"/>'+
     '<button class="btn bp sm" onclick="addCat()">+ فئة</button></div></div><div class="cb">'+
-    cats.map(function(cat){
+    cats.map(function(cat,ci){
       var items=EXP_CATS[cat]||[];
       return '<div style="margin-bottom:12px;background:rgba(29,78,216,.06);border-radius:9px;border:1px solid var(--bd);overflow:hidden">'+
         '<div style="padding:8px 12px;background:rgba(29,78,216,.12);display:flex;justify-content:space-between;align-items:center">'+
@@ -1091,18 +1109,24 @@ function renderExpLists(){
           return '<div style="display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:11px">'+
             it+'<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:10px" onclick="rmItem(\''+cat.replace(/'/g,"\\'")+'\','+i+')">✕</button></div>';
         }).join("")+
-        '</div><div style="display:flex;gap:6px"><input id="ni_'+cat.replace(/\s/g,"_").replace(/[^\w]/g,"")+'_" placeholder="بند جديد..." style="flex:1;font-size:11px;padding:5px 8px"/>'+
-        '<button class="btn bs sm" onclick="addItem(\''+cat.replace(/'/g,"\\'")+'\')">+</button></div></div></div>';
+        '<input id="catinp'+ci+'" placeholder="بند جديد..." style="flex:1;font-size:11px;padding:5px 8px"/>'+
+        '<button class="btn bs sm" onclick="addItem(\u0027'+cat+'\u0027)">+</button></div></div></div>';
     }).join("")+'</div></div>';
 }
-function addCat(){var v=el("new-cat").value.trim();if(v){EXP_CATS[v]=[];renderPage("lists");}}
-function rmCat(cat){delete EXP_CATS[cat];renderPage("lists");}
+function addCat(){var v=el("new-cat").value.trim();if(v){EXP_CATS[v]=[];saveLists();renderPage("lists");}}
+function rmCat(cat){delete EXP_CATS[cat];saveLists();renderPage("lists");}
 function addItem(cat){
-  var iid="ni_"+cat.replace(/\s/g,"_").replace(/[^\w]/g,"")+"_";
-  var inp=el(iid);if(!inp)return;
-  var v=inp.value.trim();if(v){EXP_CATS[cat].push(v);renderPage("lists");}
+  var ci=Object.keys(EXP_CATS).indexOf(cat);
+  var inp=el("catinp"+ci);
+  if(!inp) return;
+  var v=inp.value.trim();
+  if(!v){inp.focus();return;}
+  if(!EXP_CATS[cat]) EXP_CATS[cat]=[];
+  EXP_CATS[cat].push(v);
+  saveLists();
+  renderPage("lists");
 }
-function rmItem(cat,i){if(EXP_CATS[cat])EXP_CATS[cat].splice(i,1);renderPage("lists");}
+function rmItem(cat,i){if(EXP_CATS[cat]){EXP_CATS[cat].splice(i,1);saveLists();}renderPage("lists");}
 
 // ═══════════════════════════
 // SALES ENTRY
@@ -1116,7 +1140,9 @@ function renderSE(){
   return '<div class="card"><div class="ch"><span class="ct">💼 تسجيل المبيعات اليومية</span>'+
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pending.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pending.length+' بانتظار الموافقة</span>':"")+
-    '<button class="btn bp sm" onclick="saleForm()">+ إضافة</button></div></div>'+
+    '<button class="btn bp sm" onclick="saleForm()">+ إضافة</button>'+
+    '<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this.files[0],\'sales\');this.value=\'\'"/></label>'+
+    '</div></div>'+
     '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th><th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
     (data.length?data.map(function(s){
       var isPend=s._pending;
@@ -1251,12 +1277,14 @@ function renderEE(){
     '<div class="card"><div class="ch"><span class="ct">🧾 تسجيل مصاريف الخزنة</span>'+
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pendingE.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pendingE.length+'</span>':"")+
-    '<button class="btn bp sm" onclick="expForm()">+ إضافة</button></div></div>'+
-    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
+    '<button class="btn bp sm" onclick="expForm()">+ إضافة</button>'+
+    '<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this.files[0],\'expenses\');this.value=\'\'"/></label>'+
+    '</div></div>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
     (data.length?data.map(function(e){
       var isPend=e._pending;
       return '<tr style="'+(isPend?"background:rgba(245,158,11,.04)":"")+'">' +
-        '<td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
+        '<td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bc",e.boat||"")+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
         '<td style="font-weight:600">'+(e.name||"")+'</td>'+
         '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(e.description||"")+'</td>'+
         '<td>'+fmt(e.egp)+'</td>'+
@@ -1281,6 +1309,7 @@ function expForm(id,isPend){
   openModal(id?"تعديل المصروف":"إضافة مصروف",
     '<div class="fg"><div class="fr3">'+
     '<div class="ff"><label>التاريخ</label><input id="e-date" type="date" value="'+(e.date||toDay())+'"/></div>'+
+    '<div class="ff"><label>⛵ المركب</label><select id="e-boat">'+BOATS.map(function(b){return'<option'+(e.boat===b?' selected':'')+'>'+b+'</option>';}).join('')+'</select></div>'+
     '<div class="ff"><label>نوع المصاريف</label><select id="e-type" onchange="updateExpNames()">'+Object.keys(EXP_CATS).map(function(k){return'<option'+(curCat===k?" selected":"")+'>'+k+'</option>';}).join("")+'</select></div>'+
     '<div class="ff"><label>الاسم / البند</label><select id="e-name"><option value="">-- اختر --</option>'+(EXP_CATS[curCat]||[]).map(function(n){return'<option'+(e.name===n?" selected":"")+'>'+n+'</option>';}).join("")+'</select></div></div>'+
     '<div class="ff"><label>البيان</label><textarea id="e-desc" rows="2">'+(e.description||"")+'</textarea></div>'+
@@ -1298,7 +1327,7 @@ function expForm(id,isPend){
       var sk=isExpPend?K.EP:K.E;
       var data=ld(sk,[]);
       var rec={id:id||gid(ld(K.E,[]).concat(ld(K.EP,[]))),
-        date:el("e-date").value,exp_type:el("e-type").value,
+        date:el("e-date").value,boat:el("e-boat").value,exp_type:el("e-type").value,
         name:el("e-name").value,description:el("e-desc").value,
         egp:egp,usd:usd,eur:eur,total:egp+usd*xr.usd+eur*xr.eur,
         by_user:currentUser.id,_pending:isExpPend};
@@ -1361,9 +1390,9 @@ function filterEV(){
   tbl.innerHTML='<div class="card"><div class="ch"><span class="ct">📉 بيان المصاريف</span>'+
     '<div style="display:flex;gap:6px;align-items:center">'+bj("br",data.length+" سجل")+
     '<button class="btn bs sm" onclick="exportEV()">📥 Excel</button></div></div>'+
-    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th></tr></thead><tbody>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th></tr></thead><tbody>'+
     (data.length?data.map(function(e){
-      return '<tr><td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
+      return '<tr><td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bc",e.boat||"")+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
         '<td style="font-weight:600">'+(e.name||"")+'</td><td>'+(e.description||"")+'</td>'+
         '<td>'+fmt(e.egp)+'</td>'+
         '<td>'+(+e.usd>0?"$"+(+e.usd).toFixed(0):"-")+'</td>'+
@@ -1397,6 +1426,7 @@ function renderPayroll(){
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pendingP.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pendingP.length+'</span>':"")+
     (!ro?'<button class="btn bp sm" onclick="payrollForm()">+ إضافة</button>':"")+
+    (!ro?'<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this.files[0],\'payroll\');this.value=\'\'"/></label>':"")+
     '</div></div>'+
     '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع الإيراد</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th><th>الحالة</th>'+(!ro?"<th></th>":"")+'</tr></thead><tbody>'+
     (data.length?data.map(function(p){
@@ -1644,6 +1674,26 @@ function filterRep(){
 // EVENT LISTENERS (after DOM ready)
 // ═══════════════════════════
 window.addEventListener("DOMContentLoaded", function(){
+  // Auto-login from saved session
+  try{
+    var sess=JSON.parse(localStorage.getItem("erp_session")||"null");
+    if(sess&&sess.t&&(Date.now()-sess.t)<30*24*3600*1000){
+      var users=ld(K.U,INIT_USERS);
+      var found=null;
+      users.forEach(function(u){if(u.username===sess.u&&u.password===sess.p)found=u;});
+      if(found){
+        currentUser=found;
+        el("login-page").style.display="none";
+        el("main-app").style.display="";
+        el("user-av").textContent=(found.name||"U")[0];
+        el("user-nm").textContent=found.name;
+        el("user-rl").textContent=ROLE_LABELS[found.role]||found.role;
+        buildNav();updateSyncUI("ok");
+        navigate(found.role==="hr"?"payroll":"dash");
+        if(navigator.onLine){pull().then(function(){updateSyncUI("ok");if(currentUser&&currentPage)renderPage(currentPage);});}
+      }else{localStorage.removeItem("erp_session");}
+    }
+  }catch(e){}
   // Login
   el("login-btn").addEventListener("click", doLogin);
   el("l-pass").addEventListener("keydown", function(e){if(e.key==="Enter")doLogin();});

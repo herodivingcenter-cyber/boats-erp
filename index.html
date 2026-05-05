@@ -393,7 +393,8 @@ var EXP_CATS = {
   var emp=EXP_CATS["مرتبات العاملين"];
   if(emp&&emp.length){EMPLOYEES.splice(0,EMPLOYEES.length);emp.forEach(function(e){EMPLOYEES.push(e);});}
 })();
-var REV_TYPES = ["إيرادات عامة","إيجارات خارجية"].concat(Object.keys(EXP_CATS));
+var REV_TYPES = ["إيرادات عامة","إيجارات خارجية"];
+var EXP_REV_TYPES = ["مصاريف المركب"];
 var INIT_USERS = [
   {id:1,username:"admin",password:"admin123",name:"أحمد الإدارة",role:"admin"},
   {id:2,username:"user1",password:"user123",name:"محمد المستخدم",role:"user"},
@@ -1387,7 +1388,7 @@ function expForm(id,isPend){
   openModal(id?"تعديل المصروف":"إضافة مصروف",
     '<div class="fg"><div class="fr3">'+
     '<div class="ff"><label>التاريخ</label><input id="e-date" type="date" value="'+(e.date||toDay())+'"/></div>'+
-    '<div class="ff"><label>نوع الإيراد</label><select id="e-rtype">'+REV_TYPES.map(function(t){return'<option'+(e.rtype===t?" selected":"")+'>'+t+'</option>';}).join("")+'</select></div>'+
+    '<div class="ff"><label>نوع الإيراد</label><select id="e-rtype">'+EXP_REV_TYPES.map(function(t){return'<option'+(e.rtype===t?" selected":"")+'>'+t+'</option>';}).join("")+'</select></div>'+
     '<div class="ff"><label>⛵ المركب</label><select id="e-boat">'+BOATS.map(function(b){return'<option'+(e.boat===b?" selected":"")+'>'+b+'</option>';}).join("")+'</select></div>'+
     '<div class="ff"><label>نوع المصاريف</label><select id="e-type" onchange="updateExpNames()">'+Object.keys(EXP_CATS).map(function(k){return'<option'+(curCat===k?" selected":"")+'>'+k+'</option>';}).join("")+'</select></div>'+
     '<div class="ff"><label>الاسم / البند</label><select id="e-name"><option value="">-- اختر --</option>'+(EXP_CATS[curCat]||[]).map(function(n){return'<option'+(e.name===n?" selected":"")+'>'+n+'</option>';}).join("")+'</select></div></div>'+

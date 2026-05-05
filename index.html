@@ -643,15 +643,16 @@ function importExcel(file,type){
         });
         alert("✅ تم استيراد "+cnt+" سجل");renderPage("se");
       }else if(type==="expenses"){
-        var xr=ld(K.X,{usd:50,eur:55});
+        // Columns: التاريخ, نوع الإيراد, المركب, نوع المصاريف, الاسم, البيان, مصري, تاريخ الاستحقاق
         rows.slice(1).forEach(function(r){
           if(!r[0]) return;
-          var egp=+r[5]||0,usd=+r[6]||0,eur=+r[7]||0;
           var rec={id:gid(ld(K.E,[]).concat(ld(K.EP,[]))),
-            date:String(r[0]),boat:String(r[1]||BOATS[0]),
-            exp_type:String(r[2]||"المطابخ"),name:String(r[3]||""),
-            description:String(r[4]||""),egp:egp,usd:usd,eur:eur,
-            total:egp+usd*xr.usd+eur*xr.eur,by_user:currentUser.id,_pending:true};
+            date:String(r[0]),rtype:String(r[1]||"إيرادات عامة"),
+            boat:String(r[2]||BOATS[0]),
+            exp_type:String(r[3]||"المطابخ"),name:String(r[4]||""),
+            description:String(r[5]||""),egp:+r[6]||0,
+            due_date:String(r[7]||""),
+            by_user:currentUser.id,_pending:true};
           var ep=ld(K.EP,[]);ep.push(rec);sv(K.EP,ep);cnt++;
         });
         alert("✅ تم استيراد "+cnt+" سجل");renderPage("ee");
@@ -1351,27 +1352,23 @@ function renderEE(){
   var approvedE=ld(K.E,[]);
   var data=isAdmin?pendingE.concat(approvedE.filter(function(a){return !pendingE.some(function(p){return p.id===a.id;});})):pendingE;
   data.sort(function(a,b){return b.date.localeCompare(a.date);});
-  var xr=ld(K.X,{usd:50,eur:55});
-  return '<div class="card"><div class="ch"><span class="ct">💱 سعر الصرف</span></div><div class="cb">'+
-    '<div class="fr2"><div class="ff"><label>دولار ($) → ج.م</label><input id="xr-usd" type="number" value="'+xr.usd+'" onchange="saveXR()"/></div>'+
-    '<div class="ff"><label>يورو (€) → ج.م</label><input id="xr-eur" type="number" value="'+xr.eur+'" onchange="saveXR()"/></div></div></div></div>'+
-    '<div class="card"><div class="ch"><span class="ct">🧾 تسجيل مصاريف الخزنة</span>'+
+  return '<div class="card"><div class="ch"><span class="ct">🧾 تسجيل مصاريف الخزنة</span>'+
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pendingE.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pendingE.length+'</span>':"")+
     '<button class="btn bp sm" onclick="expForm()">+ إضافة</button>'+
     '<label class="btn bg sm" style="cursor:pointer" title="التاريخ,المركب,نوع المصاريف,الاسم,البيان,مصري,دولار,يورو">📥 Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this.files[0],\'expenses\');this.value=\'\'"/></label>'+
     '</div></div>'+
-    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع الإيراد</th><th>المركب</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>تاريخ الاستحقاق</th><th>الحالة</th><th></th></tr></thead><tbody>'+
     (data.length?data.map(function(e){
       var isPend=e._pending;
       return '<tr style="'+(isPend?"background:rgba(245,158,11,.04)":"")+'">' +
-        '<td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bc",e.boat||"")+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
+        '<td>'+e.id+'</td><td>'+e.date+'</td>'+
+        '<td>'+bj("bb",e.rtype||"")+'</td>'+
+        '<td>'+bj("bc",e.boat||"")+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
         '<td style="font-weight:600">'+(e.name||"")+'</td>'+
         '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(e.description||"")+'</td>'+
         '<td>'+fmt(e.egp)+'</td>'+
-        '<td>'+(+e.usd>0?"$"+(+e.usd).toFixed(0):"-")+'</td>'+
-        '<td>'+(+e.eur>0?"€"+(+e.eur).toFixed(0):"-")+'</td>'+
-        '<td style="color:var(--re);font-weight:700">'+fmt(e.total)+'</td>'+
+        '<td style="color:var(--go)">'+(e.due_date||"-")+'</td>'+
         '<td>'+(isPend?bj("bg2","⏳ مؤقت"):bj("be","✅ معتمد"))+'</td>'+
         '<td><div class="tda">'+
         (isAdmin||e.by_user===currentUser.id?'<button class="btn bg sm" onclick="expForm('+e.id+','+(isPend?1:0)+')">✏️</button>':"")+
@@ -1380,7 +1377,7 @@ function renderEE(){
         '</div></td></tr>';
     }).join(""):'<tr><td colspan="11"><div class="empty">لا توجد مصاريف</div></td></tr>')+'</tbody></table></div></div>';
 }
-function saveXR(){sv(K.X,{usd:+el("xr-usd").value||50,eur:+el("xr-eur").value||55});}
+
 function attachEE(){}
 function expForm(id,isPend){
   var allData=ld(K.EP,[]).concat(ld(K.E,[]));
@@ -1390,27 +1387,29 @@ function expForm(id,isPend){
   openModal(id?"تعديل المصروف":"إضافة مصروف",
     '<div class="fg"><div class="fr3">'+
     '<div class="ff"><label>التاريخ</label><input id="e-date" type="date" value="'+(e.date||toDay())+'"/></div>'+
-    '<div class="ff"><label>⛵ المركب</label><select id="e-boat">'+BOATS.map(function(b){return'<option'+(e.boat===b?' selected':'')+'>'+b+'</option>';}).join('')+'</select></div>'+
+    '<div class="ff"><label>نوع الإيراد</label><select id="e-rtype">'+REV_TYPES.map(function(t){return'<option'+(e.rtype===t?" selected":"")+'>'+t+'</option>';}).join("")+'</select></div>'+
+    '<div class="ff"><label>⛵ المركب</label><select id="e-boat">'+BOATS.map(function(b){return'<option'+(e.boat===b?" selected":"")+'>'+b+'</option>';}).join("")+'</select></div>'+
     '<div class="ff"><label>نوع المصاريف</label><select id="e-type" onchange="updateExpNames()">'+Object.keys(EXP_CATS).map(function(k){return'<option'+(curCat===k?" selected":"")+'>'+k+'</option>';}).join("")+'</select></div>'+
     '<div class="ff"><label>الاسم / البند</label><select id="e-name"><option value="">-- اختر --</option>'+(EXP_CATS[curCat]||[]).map(function(n){return'<option'+(e.name===n?" selected":"")+'>'+n+'</option>';}).join("")+'</select></div></div>'+
     '<div class="ff"><label>البيان</label><textarea id="e-desc" rows="2">'+(e.description||"")+'</textarea></div>'+
-    '<div class="fr4">'+
-    '<div class="ff"><label>مصري (ج.م)</label><input id="e-egp" type="number" value="'+(e.egp||"")+'" oninput="calcExpTotal()"/></div>'+
-    '<div class="ff"><label>دولار ($)</label><input id="e-usd" type="number" value="'+(e.usd||"")+'" oninput="calcExpTotal()"/></div>'+
-    '<div class="ff"><label>يورو (€)</label><input id="e-eur" type="number" value="'+(e.eur||"")+'" oninput="calcExpTotal()"/></div>'+
-    '<div class="ff"><label>الإجمالي</label><input id="e-total" readonly value="'+fmt(e.total||0)+'" style="color:var(--re);font-weight:700"/></div></div></div>',
+    '<div class="fr2">'+
+    '<div class="ff"><label>مصري (ج.م)</label><input id="e-egp" type="number" value="'+(e.egp||"")+'"/></div>'+
+    '<div class="ff"><label>📅 تاريخ الاستحقاق</label><input id="e-due" type="date" value="'+(e.due_date||"")+'"/></div>'+
+    '</div></div>',
     "حفظ",function(){
       var isAdmin=currentUser.role==="admin";
       var pendingEdit=isPend?true:false;
-      var xr=ld(K.X,{usd:50,eur:55});
-      var egp=+el("e-egp").value||0,usd=+el("e-usd").value||0,eur=+el("e-eur").value||0;
+      var egp=+el("e-egp").value||0;
       var isExpPend=!isAdmin||pendingEdit;
       var sk=isExpPend?K.EP:K.E;
       var data=ld(sk,[]);
       var rec={id:id||gid(ld(K.E,[]).concat(ld(K.EP,[]))),
-        date:el("e-date").value,boat:el("e-boat")&&el("e-boat").value||BOATS[0],exp_type:el("e-type").value,
+        date:el("e-date").value,
+        rtype:el("e-rtype")&&el("e-rtype").value||"إيرادات عامة",
+        boat:el("e-boat")&&el("e-boat").value||BOATS[0],
+        exp_type:el("e-type").value,
         name:el("e-name").value,description:el("e-desc").value,
-        egp:egp,usd:usd,eur:eur,total:egp+usd*xr.usd+eur*xr.eur,
+        egp:egp,due_date:el("e-due")&&el("e-due").value||"",
         by_user:currentUser.id,_pending:isExpPend};
       sv(sk,id?data.map(function(x){return x.id===id?rec:x;}):data.concat([rec]));
       if(!isExpPend) enq(K.E,"u",rec);
@@ -1422,13 +1421,7 @@ function updateExpNames(){
   var sel=el("e-name");if(!sel) return;
   sel.innerHTML='<option value="">-- اختر --</option>'+(EXP_CATS[cat]||[]).map(function(n){return'<option>'+n+'</option>';}).join("");
 }
-function calcExpTotal(){
-  var xr=ld(K.X,{usd:50,eur:55});
-  var egp=+(el("e-egp")&&el("e-egp").value)||0;
-  var usd=+(el("e-usd")&&el("e-usd").value)||0;
-  var eur=+(el("e-eur")&&el("e-eur").value)||0;
-  var t=el("e-total");if(t)t.value=fmt(egp+usd*xr.usd+eur*xr.eur);
-}
+
 function approveExp(id){
   var pending=ld(K.EP,[]);
   var rec=pending.filter(function(x){return x.id===id;})[0];if(!rec) return;
@@ -1471,14 +1464,14 @@ function filterEV(){
   tbl.innerHTML='<div class="card"><div class="ch"><span class="ct">📉 بيان المصاريف</span>'+
     '<div style="display:flex;gap:6px;align-items:center">'+bj("br",data.length+" سجل")+
     '<button class="btn bs sm" onclick="exportEV()">📥 Excel</button></div></div>'+
-    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th></tr></thead><tbody>'+
+    '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع الإيراد</th><th>المركب</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>تاريخ الاستحقاق</th></tr></thead><tbody>'+
     (data.length?data.map(function(e){
-      return '<tr><td>'+e.id+'</td><td>'+e.date+'</td><td>'+bj("bc",e.boat||"")+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
+      return '<tr><td>'+e.id+'</td><td>'+e.date+'</td>'+
+        '<td>'+bj("bb",e.rtype||"")+'</td>'+
+        '<td>'+bj("bc",e.boat||"")+'</td><td>'+bj("bg2",e.exp_type||"")+'</td>'+
         '<td style="font-weight:600">'+(e.name||"")+'</td><td>'+(e.description||"")+'</td>'+
-        '<td>'+fmt(e.egp)+'</td>'+
-        '<td>'+(+e.usd>0?"$"+(+e.usd).toFixed(0):"-")+'</td>'+
-        '<td>'+(+e.eur>0?"€"+(+e.eur).toFixed(0):"-")+'</td>'+
-        '<td style="color:var(--re);font-weight:700">'+fmt(e.total)+'</td></tr>';
+        '<td style="font-weight:700">'+fmt(e.egp)+'</td>'+
+        '<td style="color:var(--go)">'+(e.due_date||"-")+'</td></tr>';
     }).join(""):'<tr><td colspan="9"><div class="empty">لا نتائج</div></td></tr>')+'</tbody></table></div>'+
     (data.length?'<div style="padding:8px 14px;border-top:1px solid var(--bd);font-size:12px;display:flex;justify-content:space-between">'+
     '<span>الإجمالي: <strong style="color:var(--re)">'+fmt(tot)+' ج.م</strong></span></div>':"")+
@@ -1489,7 +1482,7 @@ function exportEV(){
   var ft=el("ev-type")?el("ev-type").value:"";
   var fn=el("ev-name")?el("ev-name").value:"";
   var data=ld(K.E,[]).filter(function(e){return(!fd||e.date===fd)&&(!ft||(e.exp_type===ft))&&(!fn||(e.name||"").includes(fn));});
-  exportExcel(data,[{k:"id",l:"#"},{k:"date",l:"التاريخ"},{k:"exp_type",l:"نوع المصاريف"},{k:"name",l:"الاسم"},{k:"description",l:"البيان"},{k:"egp",l:"مصري"},{k:"usd",l:"دولار"},{k:"eur",l:"يورو"},{k:"total",l:"الإجمالي"}],"بيان_المصاريف");
+  exportExcel(data,[{k:"id",l:"#"},{k:"date",l:"التاريخ"},{k:"rtype",l:"نوع الإيراد"},{k:"boat",l:"المركب"},{k:"exp_type",l:"نوع المصاريف"},{k:"name",l:"الاسم"},{k:"description",l:"البيان"},{k:"egp",l:"مصري"},{k:"due_date",l:"تاريخ الاستحقاق"}],"بيان_المصاريف");
 }
 
 // ═══════════════════════════

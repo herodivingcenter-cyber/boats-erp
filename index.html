@@ -297,6 +297,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <button id="login-btn" class="btn bp" style="justify-content:center;padding:12px;font-size:14px;font-weight:700;border-radius:12px;background:linear-gradient(135deg,#0891b2,#1d4ed8);box-shadow:0 4px 20px rgba(8,145,178,.35)">
         🔓 تسجيل الدخول
       </button>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <input type="checkbox" id="l-remember" style="width:16px;height:16px;cursor:pointer;accent-color:#0891b2"/>
+        <label for="l-remember" style="font-size:12px;color:rgba(148,216,255,.6);cursor:pointer">تذكرني</label>
+      </div>
       <div style="text-align:center;font-size:10px;color:rgba(148,163,184,.35)">🔒 نظام محمي بكلمة مرور</div>
     </div>
   </div>
@@ -371,9 +375,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 // ═══════════════════════════
 var SB_URL = "https://qgqemasgnyfdsjmezjsh.supabase.co";
 var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFncWVtYXNnbnlmZHNqbWV6anNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MzA3ODgsImV4cCI6MjA5MzIwNjc4OH0.NOO9xJnQM0cMauXUggU6AwgK1QmSe1AWzoKZ9Jx_e6g";
-var BOATS = ["روما","آدم","سيريانا","ميس شيرى"];
-var EMPLOYEES = ["صلاح إسماعيل","علي مرعى","ريكو","رامي شلبي"];
-var EXP_CATS = {
+var DEFAULT_BOATS = ["روما","آدم","سيريانا","ميس شيرى"];
+var DEFAULT_EMPLOYEES = ["صلاح إسماعيل","علي مرعى","ريكو","رامي شلبي"];
+var DEFAULT_EXP_CATS = {
   "المطابخ":["سوبرماركت","أنبوبة","مياه","م أخرى"],
   "مصاريف التشغيل":["سولار","زيت","أخرى"],
   "المصاريف الإدارية":["مرتبات","مصاريف نثرية","خدمات","ضرائب عامة","علاج"],
@@ -381,6 +385,10 @@ var EXP_CATS = {
   "مرتبات العاملين":["صلاح إسماعيل","علي مرعى","ريكو","رامي شلبي"],
   "الإيجارات":["إيجار شهري","مصاريف أذق"]
 };
+// Load from localStorage or use defaults
+var BOATS = ld("erp_boats", DEFAULT_BOATS);
+var EXP_CATS = ld("erp_excats", DEFAULT_EXP_CATS);
+var EMPLOYEES = (EXP_CATS["مرتبات العاملين"] || DEFAULT_EMPLOYEES).slice();
 var REV_TYPES = ["إيرادات عامة","إيجارات خارجية"].concat(Object.keys(EXP_CATS));
 var INIT_USERS = [
   {id:1,username:"admin",password:"admin123",name:"أحمد الإدارة",role:"admin"},
@@ -389,7 +397,7 @@ var INIT_USERS = [
   {id:4,username:"viewer1",password:"view123",name:"مشاهد",role:"viewer"}
 ];
 var ROLE_LABELS = {admin:"مدير النظام",user:"مستخدم",hr:"موارد بشرية",viewer:"مشاهد فقط"};
-var K = {U:"erp_u",C:"erp_c",S:"erp_s",SP:"erp_sp",E:"erp_e",EP:"erp_ep",P:"erp_p",PP:"erp_pp",X:"erp_x",Q:"erp_q"};
+var K = {U:"erp_u",C:"erp_c",S:"erp_s",SP:"erp_sp",E:"erp_e",EP:"erp_ep",P:"erp_p",PP:"erp_pp",X:"erp_x",Q:"erp_q",BT:"erp_boats",EC:"erp_excats"};
 var TBL = {erp_u:"users",erp_c:"clients",erp_s:"sales",erp_e:"expenses",erp_p:"payroll"};
 
 // ═══════════════════════════
@@ -397,6 +405,13 @@ var TBL = {erp_u:"users",erp_c:"clients",erp_s:"sales",erp_e:"expenses",erp_p:"p
 // ═══════════════════════════
 function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function saveLists(){
+  sv("erp_boats",BOATS);
+  sv("erp_excats",EXP_CATS);
+  // Update EMPLOYEES from EXP_CATS
+  EMPLOYEES.length=0;
+  (EXP_CATS["مرتبات العاملين"]||[]).forEach(function(e){EMPLOYEES.push(e);});
+}
 function gid(a){return Math.max.apply(null,[0].concat(a.map(function(x){return x.id||0;})))+1;}
 function toDay(){return new Date().toISOString().slice(0,10);}
 function fmt(n){return(+n||0).toLocaleString("ar-EG",{maximumFractionDigits:2});}
@@ -576,7 +591,7 @@ function exportExcel(data,cols,fname){
   var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
   var url=URL.createObjectURL(blob);
   var a=document.createElement("a");
-  a.href=url;a.download=fname+"_"+toDay()+".csv";
+  a.href=url;a.download=fname+"_"+toDay()+".xlsx";
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
 }
@@ -598,6 +613,13 @@ function doLogin(){
   users.forEach(function(u){if(u.username===uname&&u.password===pass)found=u;});
   if(found){
     currentUser=found;
+    // Save session if "Remember me" checked
+    var remember=el("l-remember")&&el("l-remember").checked;
+    if(remember){
+      try{localStorage.setItem("erp_session",JSON.stringify({u:found.username,p:found.password,t:Date.now()}));}catch(e){}
+    } else {
+      try{localStorage.removeItem("erp_session");}catch(e){}
+    }
     el("login-page").style.display="none";
     el("main-app").style.display="";
     el("user-av").textContent=(found.name||"U")[0];
@@ -651,6 +673,8 @@ function showLoginErr(msg){
 
 function doLogout(){
   currentUser=null;
+  // Clear saved session on manual logout
+  try{localStorage.removeItem("erp_session");}catch(e){}
   el("main-app").style.display="none";
   el("login-page").style.display="";
   el("l-user").value="";el("l-pass").value="";
@@ -1058,9 +1082,9 @@ function renderHRList(){
 }
 function addHREmp(){
   var v=el("hr-emp-input")&&el("hr-emp-input").value.trim();
-  if(v){EXP_CATS["مرتبات العاملين"].push(v);EMPLOYEES.push(v);renderPage("lists");}
+  if(v){EXP_CATS["مرتبات العاملين"].push(v);EMPLOYEES.push(v);saveLists();renderPage("lists");}
 }
-function rmHREmp(i){EXP_CATS["مرتبات العاملين"].splice(i,1);renderPage("lists");}
+function rmHREmp(i){EXP_CATS["مرتبات العاملين"].splice(i,1);saveLists();renderPage("lists");}
 function renderBoatsList(){
   return '<div class="card"><div class="ch"><span class="ct">⛵ المراكب</span></div><div class="cb">'+
     '<div style="display:flex;gap:8px;margin-bottom:10px"><input id="new-boat" placeholder="مركب جديد..." style="flex:1"/>'+
@@ -1071,8 +1095,8 @@ function renderBoatsList(){
         '⛵ '+b+'<button style="background:none;border:none;cursor:pointer;color:var(--re);font-size:11px" onclick="rmBoat('+i+')">✕</button></div>';
     }).join("")+'</div></div></div>';
 }
-function addBoat(){var v=el("new-boat").value.trim();if(v){BOATS.push(v);renderPage("lists");}}
-function rmBoat(i){BOATS.splice(i,1);renderPage("lists");}
+function addBoat(){var v=el("new-boat").value.trim();if(v){BOATS.push(v);saveLists();renderPage("lists");}}
+function rmBoat(i){BOATS.splice(i,1);saveLists();renderPage("lists");}
 function renderExpLists(){
   var cats=Object.keys(EXP_CATS);
   return '<div class="card"><div class="ch"><span class="ct">📋 فئات المصاريف</span>'+
@@ -1094,14 +1118,14 @@ function renderExpLists(){
         '<button class="btn bs sm" onclick="addItem(\''+cat.replace(/'/g,"\\'")+'\')">+</button></div></div></div>';
     }).join("")+'</div></div>';
 }
-function addCat(){var v=el("new-cat").value.trim();if(v){EXP_CATS[v]=[];renderPage("lists");}}
-function rmCat(cat){delete EXP_CATS[cat];renderPage("lists");}
+function addCat(){var v=el("new-cat").value.trim();if(v){EXP_CATS[v]=[];saveLists();renderPage("lists");}}
+function rmCat(cat){delete EXP_CATS[cat];saveLists();renderPage("lists");}
 function addItem(cat){
   var iid="ni_"+cat.replace(/\s/g,"_").replace(/[^\w]/g,"")+"_";
   var inp=el(iid);if(!inp)return;
-  var v=inp.value.trim();if(v){EXP_CATS[cat].push(v);renderPage("lists");}
+  var v=inp.value.trim();if(v){EXP_CATS[cat].push(v);saveLists();renderPage("lists");}
 }
-function rmItem(cat,i){if(EXP_CATS[cat])EXP_CATS[cat].splice(i,1);renderPage("lists");}
+function rmItem(cat,i){if(EXP_CATS[cat]){EXP_CATS[cat].splice(i,1);saveLists();}renderPage("lists");}
 
 // ═══════════════════════════
 // SALES ENTRY
@@ -1116,7 +1140,7 @@ function renderSE(){
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pending.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pending.length+' بانتظار الموافقة</span>':"")+
     '<button class="btn bp sm" onclick="saleForm()">+ إضافة</button>'+
-    '<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(this.files[0],\'sales\');this.value=\'\'" /></label>'+
+    '<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this.files[0],\'sales\');this.value=\'\'" /></label>'+
     '</div></div>'+
     '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>السنتر</th><th>المركب</th><th>العدد</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
     (data.length?data.map(function(s){
@@ -1253,7 +1277,7 @@ function renderEE(){
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pendingE.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pendingE.length+'</span>':"")+
     '<button class="btn bp sm" onclick="expForm()">+ إضافة</button>'+
-    '<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(this.files[0],\'expenses\');this.value=\'\'" /></label>'+
+    '<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this.files[0],\'expenses\');this.value=\'\'" /></label>'+
     '</div></div>'+
     '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>نوع المصاريف</th><th>الاسم</th><th>البيان</th><th>مصري</th><th>دولار</th><th>يورو</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'+
     (data.length?data.map(function(e){
@@ -1401,7 +1425,7 @@ function renderPayroll(){
     '<div style="display:flex;gap:6px;align-items:center">'+
     (pendingP.length>0&&isAdmin?'<span class="pend-badge">⏳ '+pendingP.length+'</span>':"")+
     (!ro?'<button class="btn bp sm" onclick="payrollForm()">+ إضافة</button>':"")+
-    (!ro?'<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(this.files[0],\'payroll\');this.value=\'\'" /></label>':"")+
+    (!ro?'<label class="btn bg sm" style="cursor:pointer">📥 Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this.files[0],\'payroll\');this.value=\'\'" /></label>':"")+
     '</div></div>'+
     '<div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>نوع الإيراد</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th><th>الحالة</th>'+(!ro?"<th></th>":"")+'</tr></thead><tbody>'+
     (data.length?data.map(function(p){
@@ -1649,6 +1673,42 @@ function filterRep(){
 // EVENT LISTENERS (after DOM ready)
 // ═══════════════════════════
 window.addEventListener("DOMContentLoaded", function(){
+  // Auto-login from saved session
+  try{
+    var sess=localStorage.getItem("erp_session");
+    if(sess){
+      var s=JSON.parse(sess);
+      // Session valid for 30 days
+      if(s && s.t && (Date.now()-s.t)<30*24*3600*1000){
+        var users=ld(K.U,INIT_USERS);
+        var found=null;
+        users.forEach(function(u){if(u.username===s.u&&u.password===s.p)found=u;});
+        if(found){
+          currentUser=found;
+          el("login-page").style.display="none";
+          el("main-app").style.display="";
+          el("user-av").textContent=(found.name||"U")[0];
+          el("user-nm").textContent=found.name;
+          el("user-rl").textContent=ROLE_LABELS[found.role]||found.role;
+          buildNav();
+          updateSyncUI("ok");
+          var startPage=found.role==="hr"?"payroll":"dash";
+          navigate(startPage);
+          if(navigator.onLine){
+            pull().then(function(){
+              updateSyncUI("ok");
+              if(currentUser&&currentPage) renderPage(currentPage);
+            });
+          }
+        } else {
+          localStorage.removeItem("erp_session");
+        }
+      } else {
+        localStorage.removeItem("erp_session");
+      }
+    }
+  }catch(e){}
+
   // Login
   el("login-btn").addEventListener("click", doLogin);
   el("l-pass").addEventListener("keydown", function(e){if(e.key==="Enter")doLogin();});
@@ -1731,7 +1791,7 @@ function exportExcel(data,cols,fname){
     var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a");
-    a.href=url;a.download=fname+"_"+toDay()+".csv";
+    a.href=url;a.download=fname+"_"+toDay()+".xlsx";
     document.body.appendChild(a);a.click();
     document.body.removeChild(a);URL.revokeObjectURL(url);
   }

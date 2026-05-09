@@ -207,6 +207,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 /* ── MOBILE ── */
 @media(max-width:900px){
   html,body{font-size:14px;overflow-x:hidden}
+  #d-kpi{grid-template-columns:1fr 1fr!important;gap:8px}
+  #d-charts-row{grid-template-columns:1fr!important}
+  #d-detail-row{grid-template-columns:1fr!important}
   .side{width:270px;transform:translateX(100%);max-width:88vw}
   .side.open{transform:translateX(0)}
   .main{margin-right:0!important;overflow-x:hidden;max-width:100vw}
@@ -663,8 +666,8 @@ function importExcel(file,type){
           var rec={id:gid(ld(K.P,[]).concat(ld(K.PP,[]))),
             date:String(r[0]),rtype:String(r[1]||"إيرادات عامة"),
             boat:String(r[2]||BOATS[0]),employee:String(r[3]||""),
-            description:String(r[4]||""),amount:+r[5]||0,
-            notes:String(r[6]||""),by_user:currentUser.id,_pending:true};
+            description:String(r[5]||""),amount:+r[6]||0,
+            notes:String(r[7]||""),by_user:currentUser.id,_pending:true};
           var pp=ld(K.PP,[]);pp.push(rec);sv(K.PP,pp);cnt++;
         });
         alert("✅ تم استيراد "+cnt+" سجل");renderPage("payroll");
@@ -905,131 +908,321 @@ function renderPage(id){
 // DASHBOARD
 // ═══════════════════════════
 function renderDash(){
-  var d=toDay(),m=d.slice(0,7);
-  return '<div class="card" style="margin-bottom:14px">'+
-    '<div class="fb">'+
-    '<div class="ffi"><label>📅 من</label><input type="date" id="df-from" value="'+m+'-01"/></div>'+
-    '<div class="ffi"><label>📅 إلى</label><input type="date" id="df-to" value="'+d+'"/></div>'+
-    '<div class="ffi"><label>⛵ المركب</label><select id="df-boat"><option value="">كل المراكب</option>'+
-    BOATS.map(function(b){return'<option>'+b+'</option>';}).join("")+'</select></div>'+
-    '<div style="display:flex;gap:6px;align-items:flex-end">'+
-    '<button class="btn bp sm" onclick="updateDash()">🔍</button>'+
+  var m=toDay().slice(0,7);
+  return '<div class="card" style="margin-bottom:12px">'+
+    '<div style="padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">'+
+    '<div class="ff" style="flex:1;min-width:130px"><label>📅 الشهر</label><input type="month" id="df-month" value="'+m+'"/></div>'+
+    '<div class="ff" style="flex:1;min-width:130px"><label>⛵ المركب</label><select id="df-boat"><option value="">كل المراكب</option>'+
+    BOATS.map(function(b){return'<option>'+b+'</option>';}).join('')+'</select></div>'+
+    '<div style="display:flex;gap:6px;align-items:flex-end;padding-bottom:1px">'+
+    '<button class="btn bp sm" onclick="updateDash()">🔍 عرض</button>'+
     '<button class="btn bg sm" onclick="resetDash()">↺</button></div>'+
     '</div></div>'+
-    '<div id="d-kpi" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px"></div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" id="d-charts"></div>'+
-    '<div id="d-boats" style="margin-bottom:14px"></div>'+
-    '<div id="d-recent"></div>';
+    '<div id="d-kpi" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px"></div>'+
+    '<div id="d-charts-row" style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px"></div>'+
+    '<div id="d-boats-table" style="margin-bottom:12px"></div>'+
+    '<div id="d-detail-row" style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px"></div>'+
+    '<div id="d-payroll-section"></div>';
 }
+
 function attachDash(){
-  ["df-from","df-to","df-boat"].forEach(function(i){
-    var e=el(i);if(e)e.addEventListener("change",updateDash);
-  });
+  var dfm=el("df-month"),dfb=el("df-boat");
+  if(dfm) dfm.addEventListener("change",updateDash);
+  if(dfb) dfb.addEventListener("change",updateDash);
   updateDash();
 }
+
 function resetDash(){
-  var d=toDay(),m=d.slice(0,7);
-  var f=el("df-from"),t=el("df-to"),b=el("df-boat");
-  if(f)f.value=m+"-01";if(t)t.value=d;if(b)b.value="";
+  var m=toDay().slice(0,7);
+  var dfm=el("df-month"),dfb=el("df-boat");
+  if(dfm)dfm.value=m;
+  if(dfb)dfb.value="";
   updateDash();
 }
+
+function drawBar(canvas,labels,values,color){
+  var ctx=canvas.getContext("2d");
+  var W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  if(!values.length) return;
+  var max=Math.max.apply(null,values)||1;
+  var pad=30,barW=Math.max(8,(W-pad*2)/values.length-6);
+  ctx.fillStyle="rgba(255,255,255,0.04)";
+  ctx.fillRect(0,0,W,H);
+  for(var i=0;i<values.length;i++){
+    var x=pad+(W-pad*2)/values.length*i+3;
+    var barH=(values[i]/max)*(H-pad-10);
+    var y=H-pad-barH;
+    // Bar
+    var grad=ctx.createLinearGradient(0,y,0,H-pad);
+    grad.addColorStop(0,color);
+    grad.addColorStop(1,color.replace("1)","0.3)"));
+    ctx.fillStyle=grad;
+    ctx.beginPath();
+    ctx.roundRect?ctx.roundRect(x,y,barW,barH,3):ctx.rect(x,y,barW,barH);
+    ctx.fill();
+    // Label
+    ctx.fillStyle="rgba(148,163,184,0.8)";
+    ctx.font="9px sans-serif";
+    ctx.textAlign="center";
+    ctx.fillText(labels[i],x+barW/2,H-8);
+    // Value
+    if(values[i]>0){
+      ctx.fillStyle="#e2e8f0";
+      ctx.font="bold 9px sans-serif";
+      var vStr=values[i]>=1000?Math.round(values[i]/1000)+"K":Math.round(values[i])+"";
+      ctx.fillText(vStr,x+barW/2,y-3);
+    }
+  }
+}
+
+function drawDonut(canvas,labels,values,colors){
+  var ctx=canvas.getContext("2d");
+  var W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  var total=values.reduce(function(a,b){return a+b;},0);
+  if(!total) return;
+  var cx=W/2-30,cy=H/2,R=Math.min(cx,cy)-10,r=R*0.55;
+  var start=-Math.PI/2;
+  for(var i=0;i<values.length;i++){
+    var slice=values[i]/total*Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R,start,start+slice);
+    ctx.closePath();
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.fill();
+    start+=slice;
+  }
+  // Hole
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle="#112240";
+  ctx.fill();
+  // Total text
+  ctx.fillStyle="#e2e8f0";
+  ctx.font="bold 12px sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText(total>=1000?Math.round(total/1000)+"K":total+"",cx,cy+4);
+  // Legend
+  var legX=W-75,legY=10;
+  for(var j=0;j<labels.length;j++){
+    ctx.fillStyle=colors[j%colors.length];
+    ctx.fillRect(legX,legY+j*18,10,10);
+    ctx.fillStyle="#94a3b8";
+    ctx.font="9px sans-serif";
+    ctx.textAlign="left";
+    ctx.fillText(labels[j].slice(0,10),legX+14,legY+j*18+9);
+  }
+}
+
 function updateDash(){
   var kpi=el("d-kpi");if(!kpi)return;
-  var fd=el("df-from")?el("df-from").value:"";
-  var ft=el("df-to")?el("df-to").value:"";
+  var fm=el("df-month")?el("df-month").value:"";
   var fb=el("df-boat")?el("df-boat").value:"";
-  var sales=ld(K.S,[]);var exps=ld(K.E,[]);var pays=ld(K.P,[]);
-  function inR(d){return(!fd||d>=fd)&&(!ft||d<=ft);}
-  var fs=sales.filter(function(s){return inR(s.date)&&(!fb||s.boat===fb);});
-  var fe=exps.filter(function(e){return inR(e.date)&&(!fb||e.boat===fb);});
-  var fp=pays.filter(function(p){return inR(p.date)&&(!fb||p.boat===fb);});
-  var rev=fs.reduce(function(a,s){return a+(+s.total||0);},0);
-  var exp=fe.reduce(function(a,e){return a+(+e.total||0);},0);
+
+  var sales=ld(K.S,[]);
+  var exps=ld(K.E,[]);
+  var pays=ld(K.P,[]);
+
+  function matchM(d){return !fm||String(d).startsWith(fm);}
+  function matchB(b){return !fb||b===fb;}
+
+  var fs=sales.filter(function(s){return matchM(s.date)&&matchB(s.boat);});
+  var fe=exps.filter(function(e){return matchM(e.date)&&matchB(e.boat);});
+  var fp=pays.filter(function(p){return matchM(p.date)&&matchB(p.boat);});
+
+  var rev=fs.reduce(function(a,s){return a+(+s.trip||0)+(+s.kitchen||0);},0);
+  var expT=fe.reduce(function(a,e){return a+(+e.egp||0);},0);
   var payT=fp.reduce(function(a,p){return a+(+p.amount||0);},0);
-  var net=rev-exp-payT;
-  var kit=fe.filter(function(e){return e.exp_type==="المطابخ";}).reduce(function(a,e){return a+(+e.total||0);},0);
-  var opX=fe.filter(function(e){return e.exp_type==="مصاريف التشغيل";}).reduce(function(a,e){return a+(+e.total||0);},0);
-  var adm=fe.filter(function(e){return e.exp_type==="المصاريف الإدارية";}).reduce(function(a,e){return a+(+e.total||0);},0);
-  // KPI
+  var net=rev-expT-payT;
+
+  // ── KPI Cards ──
   var kpis=[
     {ic:"💰",l:"إجمالي الإيرادات",v:rev,c:"var(--cy)",sub:fs.length+" رحلة"},
-    {ic:"📊",l:"إجمالي المصاريف",v:exp+payT,c:"var(--re)",sub:"مطابخ: "+fmt(kit)},
-    {ic:"📈",l:"صافي الربح",v:net,c:net>=0?"var(--gr)":"var(--re)",sub:net>=0?"✅ ربح":"⚠️ خسارة"},
-    {ic:"👥",l:"إجمالي المرتبات",v:payT,c:"var(--go)",sub:fp.length+" سجل"}
+    {ic:"📊",l:"إجمالي المصاريف",v:expT,c:"var(--re)",sub:fe.length+" بند"},
+    {ic:"👥",l:"إجمالي المرتبات",v:payT,c:"var(--go)",sub:fp.length+" سجل"},
+    {ic:"📈",l:"صافي الربح",v:net,c:net>=0?"var(--gr)":"var(--re)",sub:net>=0?"✅ ربح":"⚠️ خسارة"}
   ];
   kpi.innerHTML=kpis.map(function(x){
     return '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:18px;position:relative;overflow:hidden">'+
       '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+x.c+'"></div>'+
-      '<div style="font-size:22px;margin-bottom:6px">'+x.ic+'</div>'+
+      '<div style="font-size:18px;margin-bottom:4px">'+x.ic+'</div>'+
       '<div style="font-size:11px;color:var(--t2);margin-bottom:4px">'+x.l+'</div>'+
-      '<div style="font-size:20px;font-weight:800;color:'+x.c+'">'+fmt(x.v)+'</div>'+
+      '<div style="font-size:17px;font-weight:800;color:'+x.c+'">'+fmt(x.v)+'</div>'+
       '<div style="font-size:10px;color:var(--t3);margin-top:3px">'+x.sub+'</div></div>';
   }).join("");
-  // Charts
-  var ch=el("d-charts");
-  if(ch){
-    var bmax=0;
-    var bdata=BOATS.map(function(b){
-      var v=fs.filter(function(s){return s.boat===b;}).reduce(function(a,s){return a+(+s.total||0);},0);
-      if(v>bmax)bmax=v;return{l:b,v:v};
-    }).filter(function(x){return x.v>0;}).sort(function(a,b2){return b2.v-a.v;});
-    var colors=["var(--go)","#60a5fa","var(--re)","var(--cy)"];
-    var edata=[{l:"المطابخ",v:kit},{l:"التشغيل",v:opX},{l:"الإدارية",v:adm},{l:"المرتبات",v:payT}].filter(function(x){return x.v>0;});
-    var etot=edata.reduce(function(a,x){return a+x.v;},0);
-    ch.innerHTML=
-      '<div class="card"><div class="ch"><span class="ct">⛵ إيرادات المراكب</span></div><div class="cb">'+
-      (bdata.length?bdata.map(function(x){
-        var p=bmax>0?Math.round(x.v/bmax*100):0;
-        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-          '<div style="width:65px;font-size:11px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+x.l+'</div>'+
-          '<div style="flex:1;height:18px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden">'+
-          '<div style="height:100%;width:'+p+'%;background:var(--cy);border-radius:3px;transition:width .5s"></div></div>'+
-          '<div style="width:80px;font-size:11px;font-weight:700;color:var(--cy);text-align:left">'+fmt(x.v)+'</div></div>';
-      }).join(""):'<div class="empty">لا بيانات</div>')+'</div></div>'+
-      '<div class="card"><div class="ch"><span class="ct">📊 توزيع المصاريف</span></div><div class="cb">'+
-      (edata.length?edata.map(function(x,i){
-        var p=etot>0?Math.round(x.v/etot*100):0;
-        return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">'+
-          '<div style="width:9px;height:9px;border-radius:50%;background:'+colors[i%4]+';flex-shrink:0"></div>'+
-          '<div style="flex:1;font-size:11px;color:var(--t1)">'+x.l+'</div>'+
-          '<div style="width:90px;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">'+
-          '<div style="height:100%;width:'+p+'%;background:'+colors[i%4]+';border-radius:3px"></div></div>'+
-          '<div style="width:25px;font-size:10px;color:var(--t3)">'+p+'%</div>'+
-          '<div style="width:70px;font-size:11px;font-weight:700;color:'+colors[i%4]+';text-align:left">'+fmt(x.v)+'</div></div>';
-      }).join(""):'<div class="empty">لا بيانات</div>')+'</div></div>';
+
+  // ── Charts Row ──
+  var cr=el("d-charts-row");
+  if(cr){
+    cr.innerHTML=
+      '<div class="card"><div class="ch"><span class="ct">📊 مقارنة الإيرادات والمصاريف</span></div>'+
+      '<div class="cb" style="padding:10px"><canvas id="c-compare" width="400" height="200" style="width:100%;max-height:200px"></canvas></div></div>'+
+      '<div class="card"><div class="ch"><span class="ct">🥧 توزيع المصاريف</span></div>'+
+      '<div class="cb" style="padding:10px"><canvas id="c-exp-donut" width="300" height="200" style="width:100%;max-height:200px"></canvas></div></div>';
+
+    setTimeout(function(){
+      // Bar chart: إيرادات vs مصاريف vs مرتبات per boat
+      var c1=el("c-compare");
+      if(c1){
+        c1.width=c1.offsetWidth||400;
+        var ctx=c1.getContext("2d");
+        var W=c1.width,H=c1.height;
+        ctx.clearRect(0,0,W,H);
+        var bts=fb?[fb]:BOATS;
+        var bRevs=bts.map(function(b){return fs.filter(function(s){return s.boat===b;}).reduce(function(a,s){return a+(+s.trip||0)+(+s.kitchen||0);},0);});
+        var bExps=bts.map(function(b){return fe.filter(function(e){return e.boat===b;}).reduce(function(a,e){return a+(+e.egp||0);},0);});
+        var bPays=bts.map(function(b){return fp.filter(function(p){return p.boat===b;}).reduce(function(a,p){return a+(+p.amount||0);},0);});
+        var maxV=Math.max.apply(null,[1].concat(bRevs,bExps,bPays));
+        var pad=35,grpW=(W-pad*2)/bts.length,barW=Math.max(6,grpW/4-2);
+        var colors=["rgba(8,145,178,0.85)","rgba(220,38,38,0.75)","rgba(217,119,6,0.75)"];
+        [bRevs,bExps,bPays].forEach(function(vals,vi){
+          vals.forEach(function(v,bi){
+            var x=pad+grpW*bi+barW*vi+2;
+            var bH=(v/maxV)*(H-pad-10);
+            var y=H-pad-bH;
+            ctx.fillStyle=colors[vi];
+            ctx.fillRect(x,y,barW,bH);
+          });
+        });
+        // X labels
+        ctx.fillStyle="rgba(148,163,184,0.8)";ctx.font="9px sans-serif";ctx.textAlign="center";
+        bts.forEach(function(b,bi){ctx.fillText(b.slice(0,4),pad+grpW*bi+grpW/2,H-8);});
+        // Legend
+        var lgd=["إيرادات","مصاريف","مرتبات"];
+        colors.forEach(function(c,i){
+          ctx.fillStyle=c;ctx.fillRect(W-100,10+i*16,10,10);
+          ctx.fillStyle="#94a3b8";ctx.font="9px sans-serif";ctx.textAlign="left";
+          ctx.fillText(lgd[i],W-86,10+i*16+9);
+        });
+      }
+      // Donut: expense types
+      var c2=el("c-exp-donut");
+      if(c2){
+        c2.width=c2.offsetWidth||300;
+        var catTotals={};
+        fe.forEach(function(e){var k=e.exp_type||"أخرى";catTotals[k]=(catTotals[k]||0)+(+e.egp||0);});
+        var cats=Object.keys(catTotals);
+        var vals2=cats.map(function(k){return catTotals[k];});
+        var clrs=["rgba(8,145,178,0.9)","rgba(220,38,38,0.8)","rgba(217,119,6,0.8)","rgba(5,150,105,0.8)","rgba(124,58,237,0.8)","rgba(99,102,241,0.8)"];
+        drawDonut(c2,cats,vals2,clrs);
+      }
+    },50);
   }
-  // Boats table
-  var bt=el("d-boats");
+
+  // ── Boats Table ──
+  var bt=el("d-boats-table");
   if(bt){
-    var rows=BOATS.map(function(b){
-      var br=fs.filter(function(s){return s.boat===b;}).reduce(function(a,s){return a+(+s.total||0);},0);
-      var be=fe.filter(function(e){return e.boat===b;}).reduce(function(a,e){return a+(+e.total||0);},0);
+    var bts2=fb?[fb]:BOATS;
+    var rows=bts2.map(function(b){
+      var br=fs.filter(function(s){return s.boat===b;}).reduce(function(a,s){return a+(+s.trip||0)+(+s.kitchen||0);},0);
+      var be=fe.filter(function(e){return e.boat===b;}).reduce(function(a,e){return a+(+e.egp||0);},0);
       var bp=fp.filter(function(p){return p.boat===b;}).reduce(function(a,p){return a+(+p.amount||0);},0);
-      var bn=br-be-bp;var tr=fs.filter(function(s){return s.boat===b;}).length;
-      return{b:b,br:br,be:be,bp:bp,bn:bn,tr:tr};
+      var bn=br-be-bp;
+      var trips=fs.filter(function(s){return s.boat===b;}).length;
+      return{b:b,br:br,be:be,bp:bp,bn:bn,trips:trips};
     }).filter(function(r){return r.br>0||r.be>0;});
     bt.innerHTML='<div class="card"><div class="ch"><span class="ct">⛵ ملخص المراكب</span></div>'+
-      '<div class="tw"><table><thead><tr><th>المركب</th><th>الرحلات</th><th>الإيرادات</th><th>المصاريف</th><th>المرتبات</th><th>الصافي</th></tr></thead><tbody>'+
+      '<div class="tw"><table><thead><tr>'+
+      '<th>المركب</th><th>الرحلات</th><th>الإيرادات</th><th>المصاريف</th><th>المرتبات</th><th>الصافي</th><th>نسبة الربح</th>'+
+      '</tr></thead><tbody>'+
       (rows.length?rows.map(function(r){
-        return '<tr><td>'+bj("bc",r.b)+'</td><td style="text-align:center">'+r.tr+'</td>'+
+        var pct=r.br>0?Math.round(r.bn/r.br*100):0;
+        return '<tr>'+
+          '<td>'+bj("bc",r.b)+'</td>'+
+          '<td style="text-align:center">'+r.trips+'</td>'+
           '<td style="color:var(--gr);font-weight:700">'+fmt(r.br)+'</td>'+
           '<td style="color:var(--re)">'+fmt(r.be)+'</td>'+
           '<td style="color:var(--go)">'+fmt(r.bp)+'</td>'+
-          '<td style="color:'+(r.bn>=0?"var(--gr)":"var(--re)")+';font-weight:800">'+fmt(r.bn)+'</td></tr>';
-      }).join(""):'<tr><td colspan="6"><div class="empty">لا بيانات</div></td></tr>')+'</tbody></table></div></div>';
+          '<td style="color:'+(r.bn>=0?"var(--gr)":"var(--re)")+';font-weight:800">'+fmt(r.bn)+'</td>'+
+          '<td><div style="display:flex;align-items:center;gap:6px">'+
+          '<div style="flex:1;height:7px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">'+
+          '<div style="height:100%;width:'+Math.max(0,pct)+'%;background:'+(pct>=0?"var(--gr)":"var(--re)")+';border-radius:3px"></div></div>'+
+          '<span style="font-size:11px;min-width:30px;color:'+(pct>=0?"var(--gr)":"var(--re)")+'">'+pct+'%</span></div></td>'+
+          '</tr>';
+      }).join(""):'<tr><td colspan="7"><div class="empty">لا بيانات</div></td></tr>')+
+      '</tbody></table></div></div>';
   }
-  // Recent
-  var rc=el("d-recent");
-  if(rc){
-    var recent=fs.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,5);
-    rc.innerHTML='<div class="card"><div class="ch"><span class="ct">🕐 آخر المبيعات</span></div>'+
-      '<div class="tw"><table><thead><tr><th>التاريخ</th><th>المركب</th><th>السنتر</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th></tr></thead><tbody>'+
-      (recent.length?recent.map(function(s){
-        return '<tr><td>'+s.date+'</td><td>'+bj("bc",s.boat||"")+'</td><td>'+(s.center||"-")+'</td>'+
-          '<td style="color:var(--cy)">'+fmt(s.trip)+'</td>'+
-          '<td style="color:var(--go)">'+fmt(s.kitchen)+'</td>'+
-          '<td style="color:var(--gr);font-weight:700">'+fmt(s.total)+'</td></tr>';
-      }).join(""):'<tr><td colspan="6"><div class="empty">لا بيانات بعد</div></td></tr>')+'</tbody></table></div></div>';
+
+  // ── Detail Row: Sales + Expenses breakdown ──
+  var dr=el("d-detail-row");
+  if(dr){
+    // Sales by type
+    var saleTypes={};
+    fs.forEach(function(s){
+      var k=s.rtype||"إيرادات عامة";
+      if(!saleTypes[k]) saleTypes[k]={trip:0,kitchen:0,total:0,cnt:0};
+      saleTypes[k].trip+=(+s.trip||0);
+      saleTypes[k].kitchen+=(+s.kitchen||0);
+      saleTypes[k].total+=(+s.trip||0)+(+s.kitchen||0);
+      saleTypes[k].cnt++;
+    });
+    // Expense by type
+    var expTypes={};
+    fe.forEach(function(e){
+      var k=e.exp_type||"أخرى";
+      expTypes[k]=(expTypes[k]||0)+(+e.egp||0);
+    });
+
+    dr.innerHTML=
+      '<div class="card"><div class="ch"><span class="ct">💼 تفصيل الإيرادات</span></div>'+
+      '<div class="tw"><table><thead><tr><th>نوع الإيراد</th><th>الرحلات</th><th>الطلعة</th><th>المطبخ</th><th>الإجمالي</th></tr></thead><tbody>'+
+      (Object.keys(saleTypes).length?Object.keys(saleTypes).map(function(k){
+        var t=saleTypes[k];
+        return '<tr><td>'+bj("bb",k)+'</td>'+
+          '<td style="text-align:center">'+t.cnt+'</td>'+
+          '<td style="color:var(--cy)">'+fmt(t.trip)+'</td>'+
+          '<td style="color:var(--go)">'+fmt(t.kitchen)+'</td>'+
+          '<td style="color:var(--gr);font-weight:700">'+fmt(t.total)+'</td></tr>';
+      }).join(""):'<tr><td colspan="5"><div class="empty">لا بيانات</div></td></tr>')+
+      '<tr style="border-top:2px solid var(--bd)"><td><strong>الإجمالي</strong></td>'+
+      '<td style="text-align:center"><strong>'+fs.length+'</strong></td>'+
+      '<td style="color:var(--cy)"><strong>'+fmt(fs.reduce(function(a,s){return a+(+s.trip||0);},0))+'</strong></td>'+
+      '<td style="color:var(--go)"><strong>'+fmt(fs.reduce(function(a,s){return a+(+s.kitchen||0);},0))+'</strong></td>'+
+      '<td style="color:var(--gr);font-weight:800">'+fmt(rev)+'</td></tr>'+
+      '</tbody></table></div></div>'+
+
+      '<div class="card"><div class="ch"><span class="ct">🧾 تفصيل المصاريف</span></div>'+
+      '<div class="tw"><table><thead><tr><th>نوع المصروف</th><th>المبلغ</th><th>النسبة</th></tr></thead><tbody>'+
+      (Object.keys(expTypes).length?Object.keys(expTypes).sort(function(a,b){return expTypes[b]-expTypes[a];}).map(function(k){
+        var pct=expT>0?Math.round(expTypes[k]/expT*100):0;
+        return '<tr><td>'+bj("bg2",k)+'</td>'+
+          '<td style="color:var(--re);font-weight:700">'+fmt(expTypes[k])+'</td>'+
+          '<td><div style="display:flex;align-items:center;gap:6px">'+
+          '<div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">'+
+          '<div style="height:100%;width:'+pct+'%;background:var(--re);border-radius:3px"></div></div>'+
+          '<span style="font-size:10px;color:var(--t2);min-width:28px">'+pct+'%</span></div></td></tr>';
+      }).join(""):'<tr><td colspan="3"><div class="empty">لا بيانات</div></td></tr>')+
+      '<tr style="border-top:2px solid var(--bd)"><td><strong>الإجمالي</strong></td>'+
+      '<td style="color:var(--re);font-weight:800"><strong>'+fmt(expT)+'</strong></td><td></td></tr>'+
+      '</tbody></table></div></div>';
+  }
+
+  // ── Payroll Section ──
+  var ps=el("d-payroll-section");
+  if(ps){
+    var empMap={};
+    fp.forEach(function(p){var k=p.employee||"غير محدد";empMap[k]=(empMap[k]||0)+(+p.amount||0);});
+    var empKeys=Object.keys(empMap).sort(function(a,b){return empMap[b]-empMap[a];});
+
+    ps.innerHTML='<div class="card"><div class="ch"><span class="ct">👥 تفصيل المرتبات</span>'+
+      bj("bg2",fp.length+" سجل")+'</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;padding:14px">'+
+      (empKeys.length?empKeys.map(function(emp){
+        var pct=payT>0?Math.round(empMap[emp]/payT*100):0;
+        return '<div style="background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px">'+
+          '<div style="font-size:11px;color:var(--t2);margin-bottom:4px">👤 '+emp+'</div>'+
+          '<div style="font-size:18px;font-weight:800;color:var(--go)">'+fmt(empMap[emp])+'</div>'+
+          '<div style="font-size:10px;color:var(--t3)">ج.م • '+pct+'% من الإجمالي</div>'+
+          '<div style="margin-top:8px;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden">'+
+          '<div style="height:100%;width:'+pct+'%;background:var(--go);border-radius:3px"></div></div></div>';
+      }).join(""):'<div style="color:var(--t3);font-size:13px;padding:20px;text-align:center">لا توجد مرتبات</div>')+
+      '</div>'+
+      (payT?'<div style="padding:8px 14px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:12px">'+
+      '<span>إجمالي المرتبات: <strong style="color:var(--go)">'+fmt(payT)+' ج.م</strong></span>'+
+      '<span style="color:var(--t3)">'+fp.length+' سجل</span></div>':"")+
+      '</div>';
   }
 }
 
@@ -1547,7 +1740,9 @@ function payrollForm(id,isPend){
       var data=ld(sk,[]);
       var rec={id:id||gid(ld(K.P,[]).concat(ld(K.PP,[]))),
         date:el("p-date").value,rtype:el("p-rtype").value,
-        boat:el("p-boat").value,employee:emp,
+        boat:el("p-boat").value,
+        exp_type:el("p-exp-type")&&el("p-exp-type").value||Object.keys(EXP_CATS)[0]||'',
+        employee:emp,
         description:el("p-desc").value,
         amount:+el("p-amount").value||0,
         notes:el("p-notes").value,
@@ -1603,6 +1798,7 @@ function filterPV(){
     (data.length?data.map(function(p){
       return '<tr><td>'+p.id+'</td><td>'+p.date+'</td><td>'+bj("bb",p.rtype||"")+'</td>'+
         '<td>'+bj("bc",p.boat||"")+'</td>'+
+        '<td>'+bj("bg2",p.exp_type||"")+'</td>'+
         '<td style="font-weight:700;color:var(--cy)">'+(p.employee||"")+'</td>'+
         '<td>'+(p.description||"")+'</td>'+
         '<td style="color:var(--go);font-weight:700">'+fmt(p.amount)+'</td>'+
@@ -1618,18 +1814,20 @@ function exportPV(){
   var fb=el("pv-boat")?el("pv-boat").value:"";
   var fe=el("pv-emp")?el("pv-emp").value:"";
   var data=ld(K.P,[]).filter(function(p){return(!fd||p.date===fd)&&(!fb||p.boat===fb)&&(!fe||p.employee===fe);});
-  exportExcel(data,[{k:"id",l:"#"},{k:"date",l:"التاريخ"},{k:"rtype",l:"نوع الإيراد"},{k:"boat",l:"المركب"},{k:"employee",l:"الموظف"},{k:"description",l:"البيان"},{k:"amount",l:"المبلغ"},{k:"notes",l:"ملاحظات"}],"بيان_المرتبات");
+  exportExcel(data,[{k:"id",l:"#"},{k:"date",l:"التاريخ"},{k:"rtype",l:"نوع الإيراد"},{k:"boat",l:"المركب"},{k:"exp_type",l:"نوع المصاريف"},{k:"employee",l:"الموظف"},{k:"description",l:"البيان"},{k:"amount",l:"المبلغ"},{k:"notes",l:"ملاحظات"}],"بيان_المرتبات");
 }
 
 // ═══════════════════════════
 // PAYROLL REPORT
 // ═══════════════════════════
 function renderPayRep(){
-  return '<div class="card"><div class="fb" style="flex-wrap:wrap;gap:10px">'+
-    '<div class="ffi"><label>📅 الشهر</label><input type="month" id="pr-month" style="min-width:150px"/></div>'+
-    '<div class="ffi"><label>⛵ المركب</label><select id="pr-boat" style="min-width:130px"><option value="">كل المراكب</option>'+BOATS.map(function(b){return'<option>'+b+'</option>';}).join("")+'</select></div>'+
-    '<div class="ffi"><label>👤 الموظف</label><select id="pr-emp" style="min-width:140px"><option value="">كل الموظفين</option>'+EMPLOYEES.map(function(e){return'<option>'+e+'</option>';}).join("")+'</select></div>'+
-    '<button class="btn bg sm" onclick="filterPR()">↺</button></div></div>'+
+  return '<div class="card" style="margin-bottom:12px">'+
+    '<div style="padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">'+
+    '<div class="ff" style="flex:1;min-width:120px"><label>📅 الشهر</label><input type="month" id="pr-month"/></div>'+
+    '<div class="ff" style="flex:1;min-width:110px"><label>⛵ المركب</label><select id="pr-boat"><option value="">كل المراكب</option>'+BOATS.map(function(b){return'<option>'+b+'</option>';}).join("")+'</select></div>'+
+    '<div class="ff" style="flex:1;min-width:120px"><label>👤 الموظف</label><select id="pr-emp"><option value="">كل الموظفين</option>'+EMPLOYEES.map(function(e){return'<option>'+e+'</option>';}).join("")+'</select></div>'+
+    '<div style="align-self:flex-end"><button class="btn bg sm" onclick="filterPR()">↺</button></div>'+
+    '</div></div>'+
     '<div id="pr-sum"></div><div id="pr-tbl"></div>';
 }
 function attachPayRep(){
@@ -1652,18 +1850,18 @@ function filterPR(){
       return '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:16px;position:relative;overflow:hidden">'+
         '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--cy)"></div>'+
         '<div style="font-size:11px;color:var(--t2);margin-bottom:4px">👤 '+emp+'</div>'+
-        '<div style="font-size:20px;font-weight:800;color:var(--cy)">'+fmt(empMap[emp])+'</div>'+
+        '<div style="font-size:16px;font-weight:800;color:var(--cy)">'+fmt(empMap[emp])+'</div>'+
         '<div style="font-size:10px;color:var(--t3);margin-top:2px">ج.م</div></div>';
     }).join("");
-    sumEl.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">'+
-      '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:16px;position:relative;overflow:hidden">'+
+    sumEl.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px">'+
+      '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:12px;position:relative;overflow:hidden">'+
       '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--go)"></div>'+
       '<div style="font-size:11px;color:var(--t2);margin-bottom:4px">💰 إجمالي المرتبات</div>'+
       '<div style="font-size:20px;font-weight:800;color:var(--go)">'+fmt(tot)+'</div>'+
       '<div style="font-size:10px;color:var(--t3);margin-top:2px">ج.م • '+data.length+' سجل</div></div>'+
       empCards+'</div>'+
       (Object.keys(boatMap).length>1?
-        '<div class="card" style="margin-bottom:14px"><div class="ch"><span class="ct">⛵ توزيع حسب المركب</span></div>'+
+        '<div class="card" style="margin-bottom:12px"><div class="ch"><span class="ct">⛵ توزيع حسب المركب</span></div>'+
         '<div class="tw"><table><thead><tr><th>المركب</th><th>الإجمالي</th><th>النسبة</th></tr></thead><tbody>'+
         Object.keys(boatMap).map(function(b){
           var pct=tot>0?Math.round(boatMap[b]/tot*100):0;
@@ -1688,7 +1886,7 @@ function filterPR(){
     }).join(""):'<tr><td colspan="7"><div class="empty">لا توجد بيانات</div></td></tr>';
     tblEl.innerHTML='<div class="card"><div class="ch"><span class="ct">📋 تفاصيل المرتبات</span>'+
       bj("bg2",data.length+" سجل")+
-      '</div><div class="tw"><table><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody>'+
+      '</div><div class="tw"><table style="min-width:400px"><thead><tr><th>#</th><th>التاريخ</th><th>المركب</th><th>الموظف</th><th>البيان</th><th>المبلغ</th></tr></thead><tbody>'+
       tblRows+'</tbody></table></div>'+
       (tot?'<div style="padding:8px 14px;border-top:1px solid var(--bd);font-size:12px;display:flex;justify-content:space-between">'+
       '<span>إجمالي: <strong style="color:var(--go)">'+fmt(tot)+' ج.م</strong></span>'+
